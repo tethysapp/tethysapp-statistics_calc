@@ -1171,3 +1171,5 @@ def test_controller1_ajax(request):
         table_html = table.transpose().to_html(classes="table table-hover table-striped")
 
         return HttpResponse(table_html)
+
+# THIS IS A TEST
