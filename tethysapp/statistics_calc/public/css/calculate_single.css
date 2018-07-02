@@ -1,0 +1,58 @@
+h1 {
+    background-color: #AEDB9F;
+    color: #000000;
+    text-align: center;
+    font-family: "Arial";
+}
+
+h2 {
+    color: #000000;
+    font-family: "Arial";
+}
+
+h3 {
+    color: #000000;
+    font-family: "Times New Roman";
+    font-size: 14pt;
+}
+
+h4 {
+    color: #000000;
+    font-family: "Times New Roman";
+    font-size: 11pt;
+}
+
+h5 {
+    color: #000000;
+    font-family: "Times New Roman";
+}
+
+h6 {
+    color: #000000;
+    font-family: "Times New Roman";
+}
+
+label {
+    font-family: "Times New Roman";
+    font-size: 16;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px;
+}
+
+td, th {
+    border: 1px solid #000000;
+    text-align: left;
+    padding: 8px;
+}
+
+div.ex1 {
+    background-color: white;
+    width: 100%;
+    height: 200px;
+    overflow: scroll;
+}

@@ -1,0 +1,16 @@
+setup.py
+tethysapp/__init__.py
+tethysapp/statistics_calc/__init__.py
+tethysapp/statistics_calc/api.py
+tethysapp/statistics_calc/app.py
+tethysapp/statistics_calc/controllers.py
+tethysapp/statistics_calc/handoff.py
+tethysapp/statistics_calc/model.py
+tethysapp/statistics_calc/tests/__init__.py
+tethysapp/statistics_calc/tests/tests.py
+tethysapp_statistics_calc.egg-info/PKG-INFO
+tethysapp_statistics_calc.egg-info/SOURCES.txt
+tethysapp_statistics_calc.egg-info/dependency_links.txt
+tethysapp_statistics_calc.egg-info/namespace_packages.txt
+tethysapp_statistics_calc.egg-info/not-zip-safe
+tethysapp_statistics_calc.egg-info/top_level.txt

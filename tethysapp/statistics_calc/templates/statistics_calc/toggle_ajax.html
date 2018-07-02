@@ -1,0 +1,16 @@
+{% extends "statistics_calc/base.html" %}
+{% load tethys_gizmos staticfiles %}
+
+{% block app_content %}
+
+<form id="add-data-form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/some_view/">
+    {% csrf_token %}
+    Observed Data (CSV)<input type="file" name="observed_csv" accept=".csv" id="observed_csv"> <br>
+    Simulated Data (CSV)<input type="file" name="simulated_csv" accept=".csv" id="simulated_csv"> <br>
+    <button type=submit>Submit</button>
+</form>
+
+<button onclick="submit_form_single_calc()">Click me</button>
+<div id="myDiv"></div>
+
+{% endblock %}

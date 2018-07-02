@@ -1,0 +1,219 @@
+
+function myFunction() {
+  console.log('myFunction is Running!') // sanity check
+  // Get the checkbox
+  var mase = document.getElementById('MASE');
+  var dmod = document.getElementById('d (Mod.)');
+  var nse_mod = document.getElementById('NSE (Mod.)');
+  var upload = document.getElementById('upload');
+  var sfpt = document.getElementById('sfpt');
+  var h6_mean = document.getElementById('H6 (MHE)');
+  var h6_abs = document.getElementById('H6 (AHE)');
+  var h6_rmshe = document.getElementById('H6 (RMSHE)');
+  var lm_index = document.getElementById("E1'");
+  var d1_p = document.getElementById("D1'");
+  var date_range_bool = document.getElementById("date_range_bool");
+  var lag_analysis_bool = document.getElementById("lag_analysis_bool");
+
+  // Get the output text
+  var mase_label = document.getElementById('MASE_label');
+  var dmod_label = document.getElementById('d (Mod.)_label');
+  var nse_mod_label = document.getElementById('NSE (Mod.)_label');
+  var predicted_label = document.getElementById('predicted_label');
+  var predicted_upload = document.getElementById('predicted_upload');
+  var reach_id = document.getElementById('reach_id');
+  var select_watershed = document.getElementById('select_watershed');
+  var h6_mean_label = document.getElementById('H6 (MHE)_label');
+  var h6_abs_label = document.getElementById('H6 (AHE)_label');
+  var h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
+  var lm_index_label = document.getElementById("E1'_label");
+  var d1_p_label = document.getElementById("D1'_label");
+  var date_range_form = document.getElementById("date_range_form");
+  var end_date = document.getElementById("end_date");
+  var lag_analysis_form = document.getElementById("lag_analysis_form");
+
+  // If the checkbox is checked, display the output text
+  if (mase.checked == true){
+    mase_label.style.display = "block";
+  } else {
+    mase_label.style.display = "none";
+  }
+
+  if (dmod.checked == true){
+    dmod_label.style.display = "block";
+  } else {
+    dmod_label.style.display = "none";
+  }
+
+  if (nse_mod.checked == true){
+    nse_mod_label.style.display = "block";
+  } else {
+    nse_mod_label.style.display = "none";
+  }
+
+  if (h6_mean.checked == true){
+    h6_mean_label.style.display = "block";
+  } else {
+    h6_mean_label.style.display = "none";
+  }
+
+  if (h6_abs.checked == true){
+    h6_abs_label.style.display = "block";
+  } else {
+    h6_abs_label.style.display = "none";
+  }
+
+  if (h6_rmshe.checked == true){
+    h6_rmshe_label.style.display = "block";
+  } else {
+     h6_rmshe_label.style.display = "none";
+  }
+
+  if (lm_index.checked == true){
+    lm_index_label.style.display = "block";
+  } else {
+     lm_index_label.style.display = "none";
+  }
+
+  if (d1_p.checked == true){
+    d1_p_label.style.display = "block";
+  } else {
+     d1_p_label.style.display = "none";
+  }
+
+  if (upload.checked == true){
+    predicted_label.style.display = "block";
+    predicted_upload.style.display = "block";
+    reach_id.style.display = "none";
+    select_watershed.style.display = "none";
+  } else {
+    predicted_label.style.display = "none";
+    predicted_upload.style.display = "none";
+    reach_id.style.display = "block";
+    select_watershed.style.display = "block";
+  }
+
+  if (date_range_bool.checked == true){
+    date_range_form.style.display = "block";
+  } else {
+    date_range_form.style.display = "none";
+  }
+
+//  if (lag_analysis_bool.checked == true){
+//    lag_analysis_form.style.display = "block";
+//  } else {
+//    lag_analysis_form.style.display = "none";
+//  }
+}
+
+function addFields() {
+    // Number of inputs to create
+    var number = document.getElementById("Num_of_Date_Ranges").value;
+    // Container <div> where dynamic content will be placed
+    var container = document.getElementById("date_range_container");
+    // Clear previous contents of the container
+    while (container.hasChildNodes()) {
+        container.removeChild(container.lastChild);
+    }
+    // Inserting a page break for consistent spacing
+    container.appendChild(document.createElement("br"));
+    for (i=0; i<number; i++){
+        // Append a node with a dynamic title for date ranges
+        var title = document.createElement("b");
+        title.innerHTML = "Date Range " + (i+1)
+        container.appendChild(title)
+        container.appendChild(document.createElement("br"));
+        container.appendChild(document.createElement("br"));
+
+        // Create <input> elements, set its type and name attributes
+        var begin_day = document.createElement("input");
+        var begin_month = document.createElement("input");
+        var end_day = document.createElement("input");
+        var end_month = document.createElement("input");
+
+        container.appendChild(document.createTextNode("Beginning Date:"));
+        container.appendChild(document.createElement("br"));
+        begin_day.type = "number";
+        begin_day.name = "begin_day" + i;
+        container.appendChild(document.createTextNode("Day:"));
+        container.appendChild(begin_day);
+        container.appendChild(document.createElement("br"));
+
+        begin_month.type = "number";
+        begin_month.name = "begin_month" + i;
+        container.appendChild(document.createTextNode("Month:"));
+        container.appendChild(begin_month);
+        container.appendChild(document.createElement("br"));
+
+        container.appendChild(document.createTextNode("Ending Date:"));
+        container.appendChild(document.createElement("br"));
+        end_day.type = "number";
+        end_day.name = "end_day" + i;
+        container.appendChild(document.createTextNode("Day:"));
+        container.appendChild(end_day);
+        container.appendChild(document.createElement("br"));
+
+        end_month.type = "number";
+        end_month.name = "end_month" + i;
+        container.appendChild(document.createTextNode("Month:"));
+        container.appendChild(end_month);
+
+        // Append a line break
+        container.appendChild(document.createElement("br"));
+        container.appendChild(document.createElement("br"));
+    }
+}
+
+// ####################################################################################################################
+//                                                  Ajax Functions
+// ####################################################################################################################
+
+// Getting the csrf token
+var csrftoken = Cookies.get('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+// Submit post on submit
+$('#post-form').on('submit', function(event){
+    event.preventDefault();
+    console.log("form submitted!")  // sanity check
+    create_post();
+});
+
+
+// AJAX for posting
+function create_post() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/test_controller1_ajax/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            $('#results').html(resp); // Render the Table
+            console.log("success"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};

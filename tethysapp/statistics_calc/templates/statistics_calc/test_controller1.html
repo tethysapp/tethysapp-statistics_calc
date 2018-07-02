@@ -1,0 +1,14 @@
+{% extends "statistics_calc/base.html" %}
+{% load tethys_gizmos staticfiles %}
+
+{% block app_content %}
+
+<form method="POST" id="post-form" name="post-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    Observed Data (CSV)<input type="file" name="observed_csv" accept=".csv" id="observed_csv"> <br>
+    Simulated Data (CSV)<input type="file" name="simulated_csv" accept=".csv" id="simulated_csv"> <br>
+    <div id="results"></div> <!-- errors go here -->
+    <button type="submit">Submit</button>
+</form>
+
+{% endblock %}

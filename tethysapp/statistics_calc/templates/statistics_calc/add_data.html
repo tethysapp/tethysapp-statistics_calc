@@ -1,0 +1,74 @@
+{% extends "statistics_calc/base.html" %}
+{% load tethys_gizmos %}
+{% load tethys_gizmos staticfiles %}
+
+{% block app_content %}
+  <h1>Calculate</h1>
+    <form id="add-data-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group{% if data_error %}has-error{% endif %}">
+            <label class="gauge_label">Gauge Data (CSV, TXT)</label>
+            <input type="file" name="gauge_data_upload" accept=".csv, .txt">
+            <br>
+            {% if data_error %}<p style="color: #B22222;">{{ data_error }}</p>{% endif %}
+            {% if data_upload_error %}<p style="color: #B22222;">{{ data_upload_error }}</p>{% endif %}
+        </div>
+        {% gizmo stream_id_input %}
+        {% gizmo watershed_select_input %}
+        {% gizmo metric_select_input %}
+        {% gizmo time_series_toggle %}
+        {% gizmo daily_average_toggle %}
+        {% gizmo monthly_average_toggle %}
+        {% gizmo histogram_toggle %}
+        {% gizmo scatter_toggle %}
+        <h4>Seasonal Period (Optional):</h4>
+        <p>If you wish to only analyze a seasonal period of the data, then you can input
+        a starting and ending date range, as well as a seasonal period. If this is not wanted, simply leave these
+        fields blank</p>
+        {% gizmo date_range_begin %}
+        {% gizmo date_range_end %}
+        <p>Note: The beginning and ending of the seasonal periods must be of the form MM-DD, e.g. 01-27 for January 27th.</p>
+        {% gizmo seasonal_period_begin %}
+        {% gizmo seasonal_period_end %}
+        </form>
+    {% gizmo add_button %}
+
+    <br>
+    <br>
+
+    {% if seasonal_data_error %}<p style="color: #B22222;">{{ seasonal_data_error }}</p>{% endif %}
+
+    {% if calculate %}
+        {% gizmo table_view %}
+    {% endif %}
+
+    {% if time_series_bool == True %}
+        <h1>Time Series</h1>
+        {% gizmo my_plotly_view_time_series %}
+    {% endif %}
+
+    {% if daily_average_bool == True %}
+        <h1>Daily Average</h1>
+        {% gizmo my_plotly_view_daily_average %}
+    {% endif %}
+
+    {% if monthly_average_bool == True %}
+        <h1>Monthly Average</h1>
+        {% gizmo my_plotly_view_monthly_average %}
+    {% endif %}
+
+    {% if histogram_bool == True %}
+        <h1>Histogram</h1>
+        {% gizmo my_plotly_view_histogram %}
+    {% endif %}
+
+    {% if scatter_bool == True %}
+        <h1>Scatter Plot</h1>
+        {% gizmo my_plotly_view_scatter %}
+    {% endif %}
+
+{% endblock %}
+
+{% block app_actions %}
+  {% gizmo cancel_button %}
+{% endblock %}
