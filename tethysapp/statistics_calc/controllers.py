@@ -4,7 +4,7 @@
 Created on Jan 16 5:02:32 2018
 @author: Wade Roberts
 """
-from __future__ import division
+from __future__ import division, print_function
 
 # Django Imports
 from django.shortcuts import render, reverse, HttpResponse

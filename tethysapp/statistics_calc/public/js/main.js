@@ -5,8 +5,6 @@ function myFunction() {
   var mase = document.getElementById('MASE');
   var dmod = document.getElementById('d (Mod.)');
   var nse_mod = document.getElementById('NSE (Mod.)');
-  var upload = document.getElementById('upload');
-  var sfpt = document.getElementById('sfpt');
   var h6_mean = document.getElementById('H6 (MHE)');
   var h6_abs = document.getElementById('H6 (AHE)');
   var h6_rmshe = document.getElementById('H6 (RMSHE)');
@@ -19,10 +17,6 @@ function myFunction() {
   var mase_label = document.getElementById('MASE_label');
   var dmod_label = document.getElementById('d (Mod.)_label');
   var nse_mod_label = document.getElementById('NSE (Mod.)_label');
-  var predicted_label = document.getElementById('predicted_label');
-  var predicted_upload = document.getElementById('predicted_upload');
-  var reach_id = document.getElementById('reach_id');
-  var select_watershed = document.getElementById('select_watershed');
   var h6_mean_label = document.getElementById('H6 (MHE)_label');
   var h6_abs_label = document.getElementById('H6 (AHE)_label');
   var h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
@@ -79,18 +73,6 @@ function myFunction() {
     d1_p_label.style.display = "block";
   } else {
      d1_p_label.style.display = "none";
-  }
-
-  if (upload.checked == true){
-    predicted_label.style.display = "block";
-    predicted_upload.style.display = "block";
-    reach_id.style.display = "none";
-    select_watershed.style.display = "none";
-  } else {
-    predicted_label.style.display = "none";
-    predicted_upload.style.display = "none";
-    reach_id.style.display = "block";
-    select_watershed.style.display = "block";
   }
 
   if (date_range_bool.checked == true){
@@ -165,6 +147,19 @@ function addFields() {
 }
 
 // ####################################################################################################################
+//                                                  jQuery Functions
+// ####################################################################################################################
+
+$(document).ready(function() {
+    $("input[name=predicted_radio]").on( "change", function() {
+         console.log('Radio Checkbox function working!') // sanity check
+         var test = $(this).val();
+         $(".desc").hide();
+         $("#"+test).show();
+    } );
+});
+
+// ####################################################################################################################
 //                                                  Ajax Functions
 // ####################################################################################################################
 
@@ -183,13 +178,13 @@ $.ajaxSetup({
     }
 });
 
-
-// Submit post on submit
+// Create Table on Button Click
 function createTable() {
     create_table();
     console.log('Button Event Triggered') // Sanity Check
 };
 
+// Create Hydrograph on Button Click
 function createHydrograph() {
     create_hydrograph();
     console.log('Hydrograph Created')

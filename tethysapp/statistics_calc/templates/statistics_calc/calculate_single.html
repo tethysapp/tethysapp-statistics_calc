@@ -9,76 +9,128 @@
 
 {% block app_content %}
 
-<br>
-
-<h1>Single Stream Analyzer</h1>
-
-<br>
+<div class="jumbotron jumbotron-fluid">
+    <h1>Single Stream Analyzer</h1>
+</div>
 
 <!--data upload form-->
 <form id="csv-upload" name="csv-upload" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <button type=submit onclick="return false;" style="display:none"></button>
 
-        <h2>Observed Data</h2><hr>
-            <h3>Units
-                <input type="checkbox" name="observed_units" data-toggle="toggle"
+        <h2>Data Upload</h2><hr>
+
+        <h3>Observed Data</h3>
+          <div class="form-row">
+            <div class="form-group col-md-2">
+              <label for="observed_units">Units</label>
+              <input type="checkbox" name="observed_units" data-toggle="toggle"
                                         data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary"
-                                        data-size="small" checked>
-            </h3>
+                                        data-size="small" id="observed_units" checked>
+            </div>
+            <div class="form-group col-md-10">
+              <label for="observed_csv">File Upload (CSV):</label>
+              <label class="btn btn-default btn-file">
+                <input type="file" name="observed_csv" id="observed_csv" multiple>
+            </label>
+            </div>
+          </div>
 
-            <h3>File Upload (CSV):</h3><input type="file" name="observed_csv" multiple>
-        <hr>
+        <h3>Simulated Data</h3>
 
-        <h2>Simulated Data</h2><hr>
-            <h3>Units
-                <input type="checkbox" name="simulated_units" data-toggle="toggle"
-                                        data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary"
-                                        data-size="small" checked>
-            </h3>
-            <!--pretty but isn't working properly-->
 
-              <!--<div class="btn-group btn-group-toggle" data-toggle="buttons">-->
-              <!--<label class="btn btn-secondary active">-->
-                <!--<input type="radio" name="predicted" value="upload" id="upload" onclick="myFunction()" checked>-->
-                  <!--Use Streamflow Prediction Tool Historical Data:-->
-              <!--</label>-->
-              <!--<label class="btn btn-secondary">-->
-                <!--<input type="radio" name="predicted" value="sfpt" id="sfpt" onclick="myFunction()">-->
-                  <!--Upload Predicted Data (CSV):-->
-              <!--</label>-->
-            <!--</div>-->
+            <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default form-check-label waves-effect waves-light">
+                    <input class="form-check-input" type="radio" autocomplete="off"
+                           name="predicted_radio" value="upload">
+                    <h4>Upload Predicted Data (CSV):</h4>
+                </label>
+                <label class="btn btn-default form-check-label waves-effect waves-light">
+                    <input class="form-check-input" type="radio" autocomplete="off"
+                           name="predicted_radio" value="sfpt">
+                    <h4>Use Streamflow Prediction Tool Historical Data:</h4>
+                </label>
+            </div>
 
-        <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
-            <h3>Choose how you would like to provide your simulated data:</h3>
+            <br><br>
+            <!--Form for uploading simulated data-->
+            <div class="desc" id="upload">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                      <label for="simulated_units">Units</label>
+                      <input type="checkbox" name="simulated_units_upload" data-toggle="toggle"
+                                                data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary"
+                                                data-size="small" checked>
+                    </div>
+                    <div>
+                        <div class="form-group col-md-10">
+                            <label for="observed_csv">File Upload (CSV):</label>
+                            <label class="btn btn-default btn-file">
+                                <input type="file" name="observed_csv" multiple>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <h4>Use Streamflow Prediction Tool Historical Data:<input type="radio" name="predicted" value="upload"
-                                                        id="upload" onclick="myFunction()" checked></h4>
+            <!--Form for using the streamflow prediction tool data-->
+            <div class="desc" id="sfpt">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                      <label for="simulated_units">Units</label>
+                      <input type="checkbox" name="simulated_units_sfpt" data-toggle="toggle"
+                             data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary"
+                             data-size="small" id="simulated_units" checked>
+                    </div>
+                    <div>
+                        <div class="form-group col-md-4">
+                            <label for="sfpt_watershed">Reach ID:</label>
+                            <input type="number" value=1 name="sfpt_watershed" id="sfpt_watershed"
+                                   class="form-control">
 
-                <h4>Upload Predicted Data (CSV):<input type="radio" name="predicted" value="sfpt"
-                                                                           id="sfpt" onclick="myFunction()"></h4>
-
-        <br>
-
-                    <label id="predicted_label" style="display:block">Predicted Data (CSV)</label>
-                    <input type="file" id="predicted_upload" name="simulated_csv"
-                           multiple style="display:block">
-
-                    <!--Form for using the streamflow prediction tool data-->
-                    {% if not watershed_error %}
-                    <label id="reach_id" style="display:none">Reach ID: <input type="number" value=1 name="reach_id"></label>
-                    <select id="select_watershed" name="watershed" style="display:none">
-                            {% for choice in watersheds %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group col-md-6">
+                            <label for="simulated_watershed">Watershed:</label>
+                            <select id="select_watershed" name="watershed" id="simulated_watershed"
+                                    class="form-control">
+                                {% for choice in watersheds %}
                                 <option value="{{ choice }}">{{ choice }}</option>
-                            {% endfor %}
-                    </select>
-                    {% else %}
-                        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for
-                            the watershed names, we are working to fix this. Please come back later.</p></label>
-                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--{% if not watershed_error %}-->
+            <!--<label id="reach_id" style="display:none">Reach ID: <input ></label>-->
+            <!--<select id="select_watershed" name="watershed" style="display:none">-->
+            <!--</select>-->
+            <!--{% else %}-->
+                <!--<label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for-->
+                    <!--the watershed names, we are working to fix this. Please come back later.</p></label>-->
+            <!--{% endif %}-->
 
-        <br>
         <hr>
+
+
+    <h2>Visualization</h2>
+        <h3>Plot of Entire Time Series:</h3>
+            {% for plot in list_of_plots|slice:":5" %}
+                <h4>
+                    -{{ plot }}: <input type="checkbox" name="{{ plot }}" data-toggle="toggle" data-on="Yes" data-off="No"
+                                        data-onstyle="success" data-offstyle="danger" data-size="small">
+                </h4>
+            {% endfor %}
+        <h3>Plot of Daily Averages:</h3>
+            {% for plot in list_of_plots|slice:"5:" %}
+                <h4>
+                    -{{ plot }}: <input type="checkbox" name="{{ plot }}_daily_average" data-toggle="toggle"
+                                        data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger"
+                                        data-size="small">
+                </h4>
+            {% endfor %}
 
     <h2>Table</h2><hr>
 
@@ -216,24 +268,6 @@
                     <!--<a href="javascript:void(0);" id="fill_date_ranges" onclick="addFields()">Add Date Range Forms</a>-->
                     <div id="date_range_container"></div></h4>
             </label>
-
-
-    <h2>Plots</h2>
-        <h3>Plot of Entire Time Series:</h3>
-            {% for plot in list_of_plots|slice:":5" %}
-                <h4>
-                    -{{ plot }}: <input type="checkbox" name="{{ plot }}" data-toggle="toggle" data-on="Yes" data-off="No"
-                                        data-onstyle="success" data-offstyle="danger" data-size="small">
-                </h4>
-            {% endfor %}
-        <h3>Plot of Daily Averages:</h3>
-            {% for plot in list_of_plots|slice:"5:" %}
-                <h4>
-                    -{{ plot }}: <input type="checkbox" name="{{ plot }}_daily_average" data-toggle="toggle"
-                                        data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger"
-                                        data-size="small">
-                </h4>
-            {% endfor %}
 
 </form>
 
