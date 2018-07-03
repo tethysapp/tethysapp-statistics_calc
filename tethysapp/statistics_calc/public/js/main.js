@@ -10,7 +10,6 @@ function myFunction() {
   var h6_rmshe = document.getElementById('H6 (RMSHE)');
   var lm_index = document.getElementById("E1'");
   var d1_p = document.getElementById("D1'");
-  var date_range_bool = document.getElementById("date_range_bool");
   var lag_analysis_bool = document.getElementById("lag_analysis_bool");
 
   // Get the output text
@@ -22,8 +21,6 @@ function myFunction() {
   var h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
   var lm_index_label = document.getElementById("E1'_label");
   var d1_p_label = document.getElementById("D1'_label");
-  var date_range_form = document.getElementById("date_range_form");
-  var end_date = document.getElementById("end_date");
   var lag_analysis_form = document.getElementById("lag_analysis_form");
 
   // If the checkbox is checked, display the output text
@@ -74,76 +71,6 @@ function myFunction() {
   } else {
      d1_p_label.style.display = "none";
   }
-
-  if (date_range_bool.checked == true){
-    date_range_form.style.display = "block";
-  } else {
-    date_range_form.style.display = "none";
-  }
-
-//  if (lag_analysis_bool.checked == true){
-//    lag_analysis_form.style.display = "block";
-//  } else {
-//    lag_analysis_form.style.display = "none";
-//  }
-}
-
-function addFields() {
-    // Number of inputs to create
-    var number = document.getElementById("Num_of_Date_Ranges").value;
-    // Container <div> where dynamic content will be placed
-    var container = document.getElementById("date_range_container");
-    // Clear previous contents of the container
-    while (container.hasChildNodes()) {
-        container.removeChild(container.lastChild);
-    }
-    // Inserting a page break for consistent spacing
-    container.appendChild(document.createElement("br"));
-    for (i=0; i<number; i++){
-        // Append a node with a dynamic title for date ranges
-        var title = document.createElement("b");
-        title.innerHTML = "Date Range " + (i+1)
-        container.appendChild(title)
-        container.appendChild(document.createElement("br"));
-        container.appendChild(document.createElement("br"));
-
-        // Create <input> elements, set its type and name attributes
-        var begin_day = document.createElement("input");
-        var begin_month = document.createElement("input");
-        var end_day = document.createElement("input");
-        var end_month = document.createElement("input");
-
-        container.appendChild(document.createTextNode("Beginning Date:"));
-        container.appendChild(document.createElement("br"));
-        begin_day.type = "number";
-        begin_day.name = "begin_day" + i;
-        container.appendChild(document.createTextNode("Day:"));
-        container.appendChild(begin_day);
-        container.appendChild(document.createElement("br"));
-
-        begin_month.type = "number";
-        begin_month.name = "begin_month" + i;
-        container.appendChild(document.createTextNode("Month:"));
-        container.appendChild(begin_month);
-        container.appendChild(document.createElement("br"));
-
-        container.appendChild(document.createTextNode("Ending Date:"));
-        container.appendChild(document.createElement("br"));
-        end_day.type = "number";
-        end_day.name = "end_day" + i;
-        container.appendChild(document.createTextNode("Day:"));
-        container.appendChild(end_day);
-        container.appendChild(document.createElement("br"));
-
-        end_month.type = "number";
-        end_month.name = "end_month" + i;
-        container.appendChild(document.createTextNode("Month:"));
-        container.appendChild(end_month);
-
-        // Append a line break
-        container.appendChild(document.createElement("br"));
-        container.appendChild(document.createElement("br"));
-    }
 }
 
 // ####################################################################################################################
@@ -159,6 +86,101 @@ $(document).ready(function() {
     } );
 });
 
+// Create hydrograph on Button Click
+$(document).ready(function(){
+    $("#create-hydrograph").click(function(){
+        createHydrograph();
+        console.log('Hydrograph Button Event Triggered');
+    });
+});
+
+// Create hydrograph of daily averages on button click
+$(document).ready(function(){
+    $("#create-hydrograph-daily-avg").click(function(){
+        createHydrographDailyAvg();
+        console.log('Hydrograph Daily Avg Button Event Triggered');
+    });
+});
+
+// Create scatterplot on button click
+$(document).ready(function(){
+    $("#create-hydrograph-daily-avg").click(function(){
+        createHydrographDailyAvg();
+        console.log('Hydrograph Daily Avg Button Event Triggered');
+    });
+});
+
+// Create scatterplot on button click
+$(document).ready(function(){
+    $("#create-scatter").click(function(){
+        createScatter();
+        console.log('Scatter Button Event Triggered');
+    });
+});
+
+// Create scatterplot log on button click
+$(document).ready(function(){
+    $("#create-scatter-log").click(function(){
+        createScatterLog();
+        console.log('Scatter Log-Log Button Event Triggered');
+    });
+});
+
+// Show the date range creator when the switch is on
+$(document).ready(function() {
+    $("#date_range_bool").on("change", function() {
+        if(document.getElementById('date_range_bool').checked) {
+            $("#date_range_form").show();
+        } else {
+            $("#date_range_form").hide();
+        }
+    });
+});
+
+// Create a variable amount of date ranges for the user
+$(document).ready(function() {
+  $("#date_range_form").on("change", function() {
+    var number = $("#Num_of_Date_Ranges").val();
+    if (number === 0) {
+      $("#date_range_container").hide();
+    } else {
+      var form_inputs = ""
+      for (i=1; i<=number; i++) {
+        var html = `<h3>Date Range ${i}</h3>\
+                  <div class="form-row">\
+                      <div class="form-group col-md-3">\
+                        <label for="start_day_${i}">Start Day</label>\
+                        <input type="number" class="form-control" id="start_day_${i}" month="start_day_${i}">\
+                      </div>\
+                    <div class="form-group col-md-3">\
+                        <label for="start_month_${i}">Start Month</label>\
+                        <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
+                      </div>\
+                    <div class="form-group col-md-3">\
+                      <label for="end_day_${i}">End Day</label>\
+                      <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
+                    </div>\
+                    <div class="form-group col-md-3">\
+                      <label for="end_month_${i}">End Month</label>\
+                      <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
+                    </div>\
+                  </div>`
+          form_inputs += html;
+        }
+
+      $( "#date-ranges" ).html( form_inputs );
+    };
+  });
+});
+
+// Event handler for the make table button
+$(document).ready(function(){
+    $("#make-table").click(function(){
+        createTable();
+        console.log('Make Table Event Triggered');
+    });
+});
+
 // ####################################################################################################################
 //                                                  Ajax Functions
 // ####################################################################################################################
@@ -170,6 +192,7 @@ function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
+
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -178,23 +201,13 @@ $.ajaxSetup({
     }
 });
 
-// Create Table on Button Click
-function createTable() {
-    create_table();
-    console.log('Button Event Triggered') // Sanity Check
-};
-
-// Create Hydrograph on Button Click
-function createHydrograph() {
-    create_hydrograph();
-    console.log('Hydrograph Created')
-};
 
 // AJAX for table
-function create_table() {
-    var formData = new FormData(document.getElementsByName('csv-upload')[0]);// getting the data from the form
+function createTable() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
     console.log(formData) // another sanity check
 
+    // Creating the table
     $.ajax({
         url : "/apps/statistics-calc/make_table_ajax/", // the endpoint
         type : "POST", // http method
@@ -204,6 +217,7 @@ function create_table() {
 
         // handle a successful response
         success : function(resp) {
+            console.log(thisIsTest);
             $('#table').html(resp); // Render the Table
             console.log("success"); // another sanity check
         },
@@ -216,8 +230,23 @@ function create_table() {
     });
 };
 
+// AJAX for getting the selected_metrics
+//function getMetrics() {
+//    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+//    console.log(formData) // another sanity check
+//}
+//
+//
+//function getDateRanges() {
+//
+//}
+//
+//function makeTable () {
+//
+//}
+
 // AJAX for Hydrograph
-function create_hydrograph() {
+function createHydrograph() {
     var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
     console.log(formData) // another sanity check
 
@@ -251,7 +280,7 @@ function create_hydrograph() {
                 title: 'Hydrograph',
             };
 
-            Plotly.newPlot('Hydrograph', data, layout);
+            Plotly.newPlot('hydrograph', data, layout);
 
             console.log("successfully plotted the hydrograph"); // another sanity check
         },
@@ -262,5 +291,147 @@ function create_hydrograph() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
+};
 
+// AJAX for Hydrograph of Daily Averages
+function createHydrographDailyAvg() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/hydrograph_daily_avg_ajax_plotly/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            var trace1 = {
+                type: "scatter",
+                mode: "lines",
+                name: "Simulated Data",
+                x: resp["dates"],
+                y: resp["simulated"],
+                line: {color: '#17BECF'}
+            }
+            var trace2 = {
+                type: "scatter",
+                mode: "lines",
+                name: 'Observed Data',
+                x: resp["dates"],
+                y: resp["observed"],
+                line: {color: '#7F7F7F'}
+            }
+            var data = [trace1,trace2];
+            var layout = {
+                title: 'Hydrograph of Daily Averages',
+
+                xaxis: {
+                    autotick: false,
+                    tick0: 0,
+                    dtick: 10,
+                    tickangle: 45,
+                 },
+             };
+
+            Plotly.newPlot('hydrograph-daily-avg', data, layout);
+
+            console.log("successfully plotted the daily average hydrograph"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+//AJAX for Scatter Plot
+function createScatter() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            var trace1 = {
+                x: resp["simulated"],
+                y: resp["observed"],
+                mode: 'markers',
+                type: 'scatter'
+            };
+
+            var data = [trace1];
+
+            var layout = {
+                title: 'Scatter Plot',
+             };
+
+            Plotly.newPlot('scatter', data, layout);
+
+            console.log("successfully plotted the scatter plot!"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+//AJAX for Scatter Plot
+function createScatterLog() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            var trace1 = {
+                x: resp["simulated"],
+                y: resp["observed"],
+                mode: 'markers',
+                type: 'scatter'
+            };
+
+            var data = [trace1];
+
+            var layout = {
+                title: 'Scatter Plot',
+                xaxis: {
+                    type: 'log',
+                    autorange: true
+                },
+                yaxis: {
+                    type: 'log',
+                    autorange: true
+                },
+             };
+
+            Plotly.newPlot('scatter-log', data, layout);
+
+            console.log("successfully plotted the scatter plot!"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
 };

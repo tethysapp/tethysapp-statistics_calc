@@ -865,7 +865,7 @@ def some_view(request):
         # Retrieving the User data From Selecting Metrics:
         list_of_metric_post_data = []
 
-        metric_abbreviations = hs.HydrostatsVariables.metric_abbr
+        metric_abbreviations = hs.metric_abbr
 
         for metric_abbreviation in metric_abbreviations:
             list_of_metric_post_data.append(request.POST.get(metric_abbreviation, None))
@@ -1137,41 +1137,99 @@ def some_view(request):
 
 
 @login_required()
-def toggle_ajax(request):
-
-    context = {}
-
-    return render(request, 'statistics_calc/toggle_ajax.html', context)
-
-
-# @csrf_exempt
-@login_required()
-def test_controller1(request):
-    context = {}
-
-    return render(request, 'statistics_calc/test_controller1.html', context)
-
-
-@login_required()
 def make_table_ajax(request):
     if request.method == 'POST':
-        print('In the make table AJAX controller!')  # Sanity check
-        # print(request.FILES.get('observed_csv', None))
-        # print(request.POST)
 
-        obs = request.FILES['observed_csv']
-        obs_unit = request.POST['observed_units']
-        sim = request.FILES['simulated_csv']
-        sim_units = request.POST['simulated_units']
+        # Retrieving the extra optional parameters
+        extra_param_dict = {}
+
+        if request.POST.get('mase_m', None) is not None:
+            mase_m = float(request.POST.get('mase_m', None))
+            extra_param_dict['mase_m'] = mase_m
+        else:
+            mase_m = 1
+            extra_param_dict['mase_m'] = mase_m
+
+        if request.POST.get('dmod_j', None) is not None:
+            dmod_j = float(request.POST.get('dmod_j', None))
+            extra_param_dict['dmod_j'] = dmod_j
+        else:
+            dmod_j = 1
+            extra_param_dict['dmod_j'] = dmod_j
+
+        if request.POST.get('nse_mod_j', None) is not None:
+            nse_mod_j = float(request.POST.get('nse_mod_j', None))
+            extra_param_dict['nse_mod_j'] = nse_mod_j
+        else:
+            nse_mod_j = 1
+            extra_param_dict['nse_mod_j'] = nse_mod_j
+
+        if request.POST.get('h6_k_MHE', None) is not None:
+            h6_mhe_k = float(request.POST.get('h6_k_MHE', None))
+            extra_param_dict['h6_mhe_k'] = h6_mhe_k
+        else:
+            h6_mhe_k = 1
+            extra_param_dict['h6_mhe_k'] = h6_mhe_k
+
+        if request.POST.get('h6_k_AHE', None) is not None:
+            h6_ahe_k = float(request.POST.get('h6_k_AHE', None))
+            extra_param_dict['h6_ahe_k'] = h6_ahe_k
+        else:
+            h6_ahe_k = 1
+            extra_param_dict['h6_ahe_k'] = h6_ahe_k
+
+        if request.POST.get('h6_k_RMSHE', None) is not None:
+            h6_rmshe_k = float(request.POST.get('h6_k_RMSHE', None))
+            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+        else:
+            h6_rmshe_k = 1
+            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+
+        if float(request.POST.get('lm_x_bar', None)) != 1:
+            lm_x_bar_p = float(request.POST.get('lm_x_bar', None))
+            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+        else:
+            lm_x_bar_p = None
+            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+
+        if float(request.POST.get('d1_p_x_bar', None)) != 1:
+            d1_p_x_bar_p = float(request.POST.get('d1_p_x_bar', None))
+            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+        else:
+            d1_p_x_bar_p = None
+            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+
+        # # Retrieving the User Selected Metrics:
+        # list_of_metric_post_data = []
+        #
+        # metric_abbreviations = hs.metric_abbr
+        #
+        # for metric_abbreviation in metric_abbreviations:
+        #     list_of_metric_post_data.append(request.POST.get(metric_abbreviation, None))
+        #
+
+        #
+        # # Retriving the selected metrics and creating a list of their functions
+        # list_of_metric_names = hs.HydrostatsVariables.metric_names
+        #
+        # selected_metric_names = []
+        #
+        # for name_index, post_data in enumerate(list_of_metric_post_data):
+        #     if post_data == 'on':
+        #         selected_metric_names.append(list_of_metric_names[name_index])
+
+        print('In the make table AJAX controller!')  # Sanity check
+
+        obs = request.FILES.get('observed-csv', None)
+        obs_unit = request.POST.get('observed-units', None)
+        sim = request.FILES.get('simulated-csv', None)
+        sim_units = request.POST.get('simulated-units-upload', None)
 
         merged_df = hd.merge_data(sim, obs)
-
-        print(request.POST.get('mase_m', None))
 
         table = hs.make_table(
             merged_dataframe=merged_df,
             metrics=['MAE', 'R^2', 'ACC', 'NSE', 'SA', 'KGE (2012)'],
-            seasonal_periods=[['01-01', '03-31'], ['04-01', '06-30'], ['07-01', '09-30'], ['10-01', '12-31']],
             remove_neg=True, remove_zero=True,
         )
 
@@ -1184,8 +1242,10 @@ def make_table_ajax(request):
 def hydrograph_ajax_plotly(request):
 
     if request.method == 'POST':
-        obs = request.FILES['observed_csv']
-        sim = request.FILES['simulated_csv']
+        sim = request.FILES.get('simulated-csv', None)
+        obs = request.FILES.get('observed-csv', None)
+
+        print(sim, obs)
 
         merged_df = hd.merge_data(sim, obs)
 
@@ -1200,6 +1260,51 @@ def hydrograph_ajax_plotly(request):
 
         resp = {'dates': date_list,
                 'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp, safe=False)
+
+@login_required()
+def hydrograph_daily_avg_ajax_plotly(request):
+
+    if request.method == 'POST':
+        sim = request.FILES.get('simulated-csv', None)
+        obs = request.FILES.get('observed-csv', None)
+
+        print(sim, obs)
+
+        merged_df = hd.merge_data(sim, obs)
+
+        daily_avg_df = hd.daily_average(merged_df)
+
+        date_list = daily_avg_df.index.tolist()
+        print(type(date_list))
+        print(date_list)
+
+        sim_list = daily_avg_df.iloc[:, 0].tolist()
+        print(type(sim_list))
+        obs_list = daily_avg_df.iloc[:, 1].tolist()
+
+        resp = {'dates': date_list,
+                'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp, safe=False)
+
+
+@login_required()
+def scatter_ajax_plotly(request):
+
+    if request.method == 'POST':
+        sim = request.FILES.get('simulated-csv', None)
+        obs = request.FILES.get('observed-csv', None)
+
+        merged_df = hd.merge_data(sim, obs)
+
+        sim_list = merged_df.iloc[:, 0].tolist()
+        obs_list = merged_df.iloc[:, 1].tolist()
+
+        resp = {'simulated': sim_list,
                 'observed': obs_list}
 
         return JsonResponse(resp, safe=False)
