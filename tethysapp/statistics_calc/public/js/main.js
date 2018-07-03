@@ -183,21 +183,25 @@ $.ajaxSetup({
     }
 });
 
+
 // Submit post on submit
-$('#post-form').on('submit', function(event){
-    event.preventDefault();
-    console.log("form submitted!")  // sanity check
-    create_post();
-});
+function createTable() {
+    create_table();
+    console.log('Button Event Triggered') // Sanity Check
+};
 
+function createHydrograph() {
+    create_hydrograph();
+    console.log('Hydrograph Created')
+};
 
-// AJAX for posting
-function create_post() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+// AJAX for table
+function create_table() {
+    var formData = new FormData(document.getElementsByName('csv-upload')[0]);// getting the data from the form
     console.log(formData) // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/test_controller1_ajax/", // the endpoint
+        url : "/apps/statistics-calc/make_table_ajax/", // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -205,15 +209,63 @@ function create_post() {
 
         // handle a successful response
         success : function(resp) {
-            $('#results').html(resp); // Render the Table
+            $('#table').html(resp); // Render the Table
             console.log("success"); // another sanity check
         },
 
         // handle a non-successful response
         error : function(xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            $('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
+};
+
+// AJAX for Hydrograph
+function create_hydrograph() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/hydrograph_ajax_plotly/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            var trace1 = {
+                type: "scatter",
+                mode: "lines",
+                name: "Simulated Data",
+                x: resp["dates"],
+                y: resp["simulated"],
+                line: {color: '#17BECF'}
+            }
+            var trace2 = {
+                type: "scatter",
+                mode: "lines",
+                name: 'Observed Data',
+                x: resp["dates"],
+                y: resp["observed"],
+                line: {color: '#7F7F7F'}
+            }
+            var data = [trace1,trace2];
+            var layout = {
+                title: 'Hydrograph',
+            };
+
+            Plotly.newPlot('Hydrograph', data, layout);
+
+            console.log("successfully plotted the hydrograph"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+
 };

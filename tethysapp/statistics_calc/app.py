@@ -49,9 +49,12 @@ class StatisticsCalc(TethysAppBase):
             UrlMap(name='test_controller1',
                    url='test_controller1',
                    controller='statistics_calc.controllers.test_controller1'),
-            UrlMap(name='test_controller1_ajax',
-                   url='test_controller1_ajax',
-                   controller='statistics_calc.controllers.test_controller1_ajax'),
+            UrlMap(name='make_table_ajax',
+                   url='make_table_ajax',
+                   controller='statistics_calc.controllers.make_table_ajax'),
+            UrlMap(name='hydrograph_ajax_plotly',
+                   url='hydrograph_ajax_plotly',
+                   controller='statistics_calc.controllers.hydrograph_ajax_plotly'),
         )
 
         return url_maps

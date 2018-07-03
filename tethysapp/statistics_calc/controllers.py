@@ -1153,13 +1153,20 @@ def test_controller1(request):
 
 
 @login_required()
-def test_controller1_ajax(request):
-
+def make_table_ajax(request):
     if request.method == 'POST':
+        print('In the make table AJAX controller!')  # Sanity check
+        # print(request.FILES.get('observed_csv', None))
+        # print(request.POST)
+
         obs = request.FILES['observed_csv']
+        obs_unit = request.POST['observed_units']
         sim = request.FILES['simulated_csv']
+        sim_units = request.POST['simulated_units']
 
         merged_df = hd.merge_data(sim, obs)
+
+        print(request.POST.get('mase_m', None))
 
         table = hs.make_table(
             merged_dataframe=merged_df,
@@ -1172,4 +1179,27 @@ def test_controller1_ajax(request):
 
         return HttpResponse(table_html)
 
-# THIS IS A TEST
+
+@login_required()
+def hydrograph_ajax_plotly(request):
+
+    if request.method == 'POST':
+        obs = request.FILES['observed_csv']
+        sim = request.FILES['simulated_csv']
+
+        merged_df = hd.merge_data(sim, obs)
+
+        date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = date_list.tolist()
+        print(type(date_list))
+        print(date_list)
+
+        sim_list = merged_df.iloc[:, 0].tolist()
+        print(type(sim_list))
+        obs_list = merged_df.iloc[:, 1].tolist()
+
+        resp = {'dates': date_list,
+                'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp, safe=False)
