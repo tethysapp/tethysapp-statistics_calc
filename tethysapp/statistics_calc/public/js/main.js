@@ -77,13 +77,26 @@ function myFunction() {
 //                                                  jQuery Functions
 // ####################################################################################################################
 
+// Function to Hide and Show Values based on the radio box for the simulated data
 $(document).ready(function() {
     $("input[name=predicted_radio]").on( "change", function() {
          console.log('Radio Checkbox function working!') // sanity check
          var test = $(this).val();
-         $(".desc").hide();
+         $(".sim_upload").hide();
          $("#"+test).show();
-    } );
+    });
+});
+
+// Function to hide and show divs based on the preprocessing input
+$(document).ready(function() {
+    $('input[name=preprocessing]').on( "change", function() {
+        console.log("Preprocessing Checkbox Function Working!")
+        if(document.getElementById('unequal_time').checked) {
+            $("#preprocessing_form").show();
+        } else {
+            $("#preprocessing_form").hide();
+        }
+    });
 });
 
 // Create hydrograph on Button Click
@@ -150,7 +163,7 @@ $(document).ready(function() {
                   <div class="form-row">\
                       <div class="form-group col-md-3">\
                         <label for="start_day_${i}">Start Day</label>\
-                        <input type="number" class="form-control" id="start_day_${i}" month="start_day_${i}">\
+                        <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
                       </div>\
                     <div class="form-group col-md-3">\
                         <label for="start_month_${i}">Start Month</label>\
@@ -217,7 +230,6 @@ function createTable() {
 
         // handle a successful response
         success : function(resp) {
-            console.log(thisIsTest);
             $('#table').html(resp); // Render the Table
             console.log("success"); // another sanity check
         },

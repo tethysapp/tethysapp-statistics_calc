@@ -51,7 +51,7 @@
 
     <br><br>
     <!--Form for uploading simulated data-->
-    <div class="desc" id="upload">
+    <div class="sim_upload" id="upload" style="display:none">
         <div class="row">
             <div class="col-md-3">
                 <h4>Units</h4>
@@ -75,7 +75,7 @@
     </div>
 
     <!--Form for using the streamflow prediction tool data-->
-    <div class="desc" id="sfpt">
+    <div class="sim_upload" id="sfpt" style="display:none">
         <div class="row">
             <div class="col-md-2">
                 <h4>Units</h4>
@@ -140,13 +140,53 @@
         </div>
         <div class="col-md-4">
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="radio" name="preprocessing" value="unequal-time">
+                <input type="radio" name="preprocessing" value="unequal-time" id="unequal_time">
             </label>
         </div>
         <div class="col-md-4">
             <label class="btn btn-default form-check-label waves-effect waves-light">
                 <input type="checkbox" name="timezone">
             </label>
+        </div>
+    </div>
+
+    <br>
+
+    <!--Interpolation Choice Form-->
+    <div id="preprocessing_form" style="display:none" >
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default form-check-label waves-effect waves-light">
+                <input class="form-check-input" type="radio" autocomplete="off"
+                       name="interpolate_radio" value="simulated">
+                <h4>Interpolate Simulated Data</h4>
+            </label>
+            <label class="btn btn-default form-check-label waves-effect waves-light">
+                <input class="form-check-input" type="radio" autocomplete="off"
+                       name="interpolate_radio" value="observed">
+                <h4>Interpolate Observed Data</h4>
+            </label>
+        </div>
+    </div>
+
+    <!--Timezone Form-->
+    <div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="sim_timezone">Simulated Data Timezone</label>
+                <select class="form-control" id="sim_timezone" name="sim_timezone" data-live-search="true">
+                    {% for choice in timezones %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="obs_timezone">Observed Data Timezone</label>
+                <select class="form-control" id="obs_timezone" name="obs_timezone" data-live-search="true">
+                    {% for choice in timezones %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
     </div>
 
@@ -197,9 +237,11 @@
             <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
                    step="1" value="0">
         </h4>
-        <div id="date-ranges"></div>
-        <br><br>
     </div>
+
+    <div id="date-ranges"></div>
+    <br><br>
+
 
     <h3>Select the Metrics to Include in the Table:</h3>
 
@@ -290,17 +332,14 @@
 
 <button type="button" class="btn btn-success" id="make-table">Make Table</button><br><br>
 
-<div id="table"></div>
-<!-- The table or errors go here -->
+<div class="metric-table">
+    <div id="table"><!-- The table or errors go here --></div>
+</div>
 
 <hr>
 
-
-
 <!--<h2>Volume</h2>-->
 <!--<h3>Create Table of Streamflow Volumes? <input type="checkbox" name="volume_table"></h3>-->
-
 <!--<button type=submit class="btn btn-success">Submit</button>-->
-
 
 {% endblock %}

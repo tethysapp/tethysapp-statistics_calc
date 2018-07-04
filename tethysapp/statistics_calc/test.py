@@ -4,16 +4,25 @@ import io
 # from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-import hydrostats_visual as hv
+import hydrostats.visual as hv
 
+
+a = np.random.rand(5, 5)
+
+df = pd.DataFrame(a)
+
+print(df)
+df.iloc[:, 1] *= 2
+
+print(df)
 
 """Testing my plotting function"""
-df_index = pd.date_range('1980-01-01', periods=1000, freq='D')
-
-merged_df = pd.DataFrame(np.random.rand(len(df_index), 2), index=df_index, columns=['Sim', 'Obs'])
-
-hv.plot(merged_df, labels=['Datetime', 'Streamflow'],
-        metrics=['ME', 'MAE', 'MSE', 'ED', 'NED', 'RMSE', 'RMSLE', 'MASE', 'R^2', 'ACC'])
+# df_index = pd.date_range('1980-01-01', periods=1000, freq='D')
+#
+# merged_df = pd.DataFrame(np.random.rand(len(df_index), 2), index=df_index, columns=['Sim', 'Obs'])
+#
+# hv.plot(merged_df, labels=['Datetime', 'Streamflow'],
+#         metrics=['ME', 'MAE', 'MSE', 'ED', 'NED', 'RMSE', 'RMSLE', 'MASE', 'R^2', 'ACC'])
 
 """Testing writing a zip file"""
 # plt.figure()

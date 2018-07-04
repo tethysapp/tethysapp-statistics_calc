@@ -27,7 +27,6 @@ import sympy as sp
 from matplotlib import use as matplotlib_use
 import matplotlib.pyplot as plt
 import model as md
-import json
 
 # Hydrostats Imports
 import hydrostats as hs
@@ -41,6 +40,7 @@ import os
 import shutil
 import datetime
 from StringIO import StringIO
+from pytz import all_timezones
 
 # Setting the Matplotlib Backend
 matplotlib_use('Agg')
@@ -105,6 +105,9 @@ def calculate_single(request):
 
     watersheds = ['South Asia (Mainland)']
     context['watersheds'] = watersheds
+
+    # Adding the timezones
+    context['timezones'] = all_timezones
 
     return render(request, 'statistics_calc/calculate_single.html', context)
 
@@ -1138,7 +1141,17 @@ def some_view(request):
 
 @login_required()
 def make_table_ajax(request):
+    """AJAX controller to make a table and display the html for the user."""
+
+    print('In the make table AJAX controller!')  # Sanity check
+
     if request.method == 'POST':
+
+        # Getting the CSV data and parameters and Merging it
+        obs = request.FILES.get('observed-csv', None)
+        sim = request.FILES.get('simulated-csv', None)
+
+        merged_df = hd.merge_data(sim, obs)
 
         # Retrieving the extra optional parameters
         extra_param_dict = {}
@@ -1199,41 +1212,115 @@ def make_table_ajax(request):
             d1_p_x_bar_p = None
             extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 
-        # # Retrieving the User Selected Metrics:
-        # list_of_metric_post_data = []
-        #
-        # metric_abbreviations = hs.metric_abbr
-        #
-        # for metric_abbreviation in metric_abbreviations:
-        #     list_of_metric_post_data.append(request.POST.get(metric_abbreviation, None))
-        #
+        # Indexing the metrics to get the abbreviations
+        selected_metric_abbr = []
 
-        #
-        # # Retriving the selected metrics and creating a list of their functions
-        # list_of_metric_names = hs.HydrostatsVariables.metric_names
-        #
-        # selected_metric_names = []
-        #
-        # for name_index, post_data in enumerate(list_of_metric_post_data):
-        #     if post_data == 'on':
-        #         selected_metric_names.append(list_of_metric_names[name_index])
+        for abbr in metric_abbr:
+            metric_post_boolean = request.POST.get(abbr, None)
+            if metric_post_boolean == 'on':
+                selected_metric_abbr.append(abbr)
 
-        print('In the make table AJAX controller!')  # Sanity check
+        # Getting the Units of the Simulated and Observed Data and Converting if Necessary
+        obs_units = request.POST.get('observed-units')
+        sim_radio = request.POST.get('predicted_radio')
 
-        obs = request.FILES.get('observed-csv', None)
-        obs_unit = request.POST.get('observed-units', None)
-        sim = request.FILES.get('simulated-csv', None)
-        sim_units = request.POST.get('simulated-units-upload', None)
+        if sim_radio == 'upload':
+            sim_units = request.POST.get('simulated-units-upload')
+        else:
+            sim_units = request.POST.get('simulated_units_sfpt')
 
-        merged_df = hd.merge_data(sim, obs)
+        if obs_units is None and sim_units is None:
+            pass
+        elif obs_units == 'on' and sim_units == 'on':
+            pass
+        elif sim_units is None and obs_units == 'on':
+            merged_df.iloc[:, 0] *= 35.314666212661
+        else:
+            merged_df.iloc[:, 1] *= 35.314666212661
 
+        # Getting the form data to see of the user wants to remove zeros and negatives
+        remove_neg_bool = request.POST.get('remove_neg_bool')
+
+        if remove_neg_bool == 'on':
+            remove_neg = True
+        else:
+            remove_neg = False
+
+        remove_zero_bool = request.POST.get('remove_zero_bool')
+
+        if remove_zero_bool == 'on':
+            remove_zero = True
+        else:
+            remove_zero = False
+
+        print(remove_zero, remove_neg)
+
+        # Retrieving any date ranges the user wishes to analyze
+        date_range_bool = request.POST.get('date_range_bool')
+
+        if date_range_bool == 'on':
+            all_date_range_list = []
+            date_counter = 1
+
+            while True:
+                date_list = []
+
+                begin_day = str(request.POST.get('start_day_{}'.format(date_counter), None))
+                print(begin_day)
+                if len(begin_day) == 1:
+                    begin_day = '0' + begin_day
+
+                begin_month = str(request.POST.get('start_month_{}'.format(date_counter), None))
+                print(begin_month)
+                if len(begin_month) == 1:
+                    begin_month = '0' + begin_month
+
+                end_day = str(request.POST.get('end_day_{}'.format(date_counter), None))
+                print(end_day)
+                if len(end_day) == 1:
+                    end_day = '0' + end_day
+
+                end_month = str(request.POST.get('end_month_{}'.format(date_counter), None))
+                print(end_month)
+                if len(end_month) == 1:
+                    end_month = '0' + end_month
+
+                if begin_day == 'None':
+                    break
+
+                begin_date = '{}-{}'.format(begin_month, begin_day)
+                end_date = '{}-{}'.format(end_month, end_day)
+                date_list.append(begin_date)
+                date_list.append(end_date)
+
+                all_date_range_list.append(date_list)
+
+                date_counter += 1
+
+            print("The date ranges are: {}".format(all_date_range_list))
+
+        else:
+            all_date_range_list = None
+
+        # Creating the Table Based on User Input
         table = hs.make_table(
             merged_dataframe=merged_df,
-            metrics=['MAE', 'R^2', 'ACC', 'NSE', 'SA', 'KGE (2012)'],
-            remove_neg=True, remove_zero=True,
+            metrics=selected_metric_abbr,
+            remove_neg=remove_neg,
+            remove_zero=remove_zero,
+            mase_m=extra_param_dict['mase_m'],
+            dmod_j=extra_param_dict['dmod_j'],
+            nse_mod_j=extra_param_dict['nse_mod_j'],
+            h6_mhe_k=extra_param_dict['h6_mhe_k'],
+            h6_ahe_k=extra_param_dict['h6_ahe_k'],
+            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
+            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
+            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
+            seasonal_periods=all_date_range_list
         )
 
-        table_html = table.transpose().to_html(classes="table table-hover table-striped")
+        table_html = table.transpose()
+        table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
 
         return HttpResponse(table_html)
 
