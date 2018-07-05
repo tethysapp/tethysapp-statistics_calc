@@ -99,6 +99,18 @@ $(document).ready(function() {
     });
 });
 
+// Function to hide and show timezones based on the user input
+$(document).ready(function() {
+    $('#timezone').on( "change", function() {
+        console.log("Timezone Checkbox Function Working!")
+        if(document.getElementById('timezone').checked) {
+            $("#timezone_form").show();
+        } else {
+            $("#timezone_form").hide();
+        }
+    });
+});
+
 // Create hydrograph on Button Click
 $(document).ready(function(){
     $("#create-hydrograph").click(function(){

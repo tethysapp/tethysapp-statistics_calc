@@ -10,7 +10,7 @@ app_class = 'statistics_calc.app:StatisticsCalc'
 app_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tethysapp', app_package)
 
 ### Python Dependencies ###
-dependencies = ['hydrostats', 'pandas', 'plotly', 'numpy', 'sympy', 'matplotlib', 'requests', ]
+dependencies = ['hydrostats', 'pandas', 'plotly', 'numpy', 'sympy', 'matplotlib', 'requests', 'pytz', ]
 
 setup(
     name=release_package,

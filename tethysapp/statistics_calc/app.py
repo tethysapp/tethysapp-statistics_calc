@@ -34,27 +34,41 @@ class StatisticsCalc(TethysAppBase):
                 url='calculate_single',
                 controller='statistics_calc.controllers.calculate_single'
             ),
-            UrlMap(name='add_country_data',
-                   url='add_country_data',
-                   controller='statistics_calc.controllers.add_country_data'),
-            UrlMap(name='some_view',
-                   url='some_view',
-                   controller='statistics_calc.controllers.some_view'),
-            UrlMap(name='calculate_single',
-                   url='calculate_single',
-                   controller='statistics_calc.controllers.calculate_single'),
-            UrlMap(name='make_table_ajax',
-                   url='make_table_ajax',
-                   controller='statistics_calc.controllers.make_table_ajax'),
-            UrlMap(name='hydrograph_ajax_plotly',
-                   url='hydrograph_ajax_plotly',
-                   controller='statistics_calc.controllers.hydrograph_ajax_plotly'),
-            UrlMap(name='hydrograph_daily_avg_ajax_plotly',
-                   url='hydrograph_daily_avg_ajax_plotly',
-                   controller='statistics_calc.controllers.hydrograph_daily_avg_ajax_plotly'),
-            UrlMap(name='scatter_ajax_plotly',
-                   url='scatter_ajax_plotly',
-                   controller='statistics_calc.controllers.scatter_ajax_plotly'),
+            UrlMap(
+                name='validate_multiple_streams',
+                url='validate_multiple_streams',
+                controller='statistics_calc.controllers.validate_multiple_streams'
+            ),
+            UrlMap(
+                name='some_view',
+                url='some_view',
+                controller='statistics_calc.controllers.some_view'
+            ),
+            UrlMap(
+                name='calculate_single',
+                url='calculate_single',
+                controller='statistics_calc.controllers.calculate_single'
+            ),
+            UrlMap(
+                name='make_table_ajax',
+                url='make_table_ajax',
+                controller='statistics_calc.controllers.make_table_ajax'
+            ),
+            UrlMap(
+                name='hydrograph_ajax_plotly',
+                url='hydrograph_ajax_plotly',
+                controller='statistics_calc.controllers.hydrograph_ajax_plotly'
+            ),
+            UrlMap(
+                name='hydrograph_daily_avg_ajax_plotly',
+                url='hydrograph_daily_avg_ajax_plotly',
+                controller='statistics_calc.controllers.hydrograph_daily_avg_ajax_plotly'
+            ),
+            UrlMap(
+                name='scatter_ajax_plotly',
+                url='scatter_ajax_plotly',
+                controller='statistics_calc.controllers.scatter_ajax_plotly'
+            ),
         )
 
         return url_maps

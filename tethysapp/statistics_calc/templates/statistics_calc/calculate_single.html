@@ -94,7 +94,7 @@
                        class="form-control" checked>
             </div>
             <div class="col-md-3">
-                <input type="number" value=1 name="sfpt_watershed" id="sfpt_watershed">
+                <input type="number" value=1 name="reach_id" id="reach_id" min="0">
             </div>
             <div class="col-md-7">
                 <select id="select_watershed" name="watershed" id="simulated_watershed" class="selectpicker">
@@ -115,8 +115,6 @@
     <!--the watershed names, we are working to fix this. Please come back later.</p></label>-->
     <!--{% endif %}-->
 
-    <hr>
-
     <h2>Preprocessing</h2><hr>
 
     <div class="row">
@@ -132,10 +130,11 @@
             <h5>Timeseries have Different Timezones</h5>
         </div>
     </div>
+
     <div class="row">
         <div class="col-md-4">
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="radio" name="preprocessing" value="equal-time">
+                <input type="radio" name="preprocessing" value="equal-time" checked>
             </label>
         </div>
         <div class="col-md-4">
@@ -145,7 +144,7 @@
         </div>
         <div class="col-md-4">
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="checkbox" name="timezone">
+                <input type="checkbox" name="timezone" id="timezone">
             </label>
         </div>
     </div>
@@ -153,7 +152,7 @@
     <br>
 
     <!--Interpolation Choice Form-->
-    <div id="preprocessing_form" style="display:none" >
+    <div id="preprocessing_form" style="display:none">
         <div class="btn-group" data-toggle="buttons">
             <label class="btn btn-default form-check-label waves-effect waves-light">
                 <input class="form-check-input" type="radio" autocomplete="off"
@@ -168,8 +167,10 @@
         </div>
     </div>
 
+    <br>
+
     <!--Timezone Form-->
-    <div>
+    <div id="timezone_form" style="display:none">
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="sim_timezone">Simulated Data Timezone</label>
@@ -190,9 +191,7 @@
         </div>
     </div>
 
-    <hr>
-    <h2>Visualization</h2>
-    <hr>
+    <h2>Visualization</h2><hr>
 
     <h3>Hydrograph of Entire Time Series</h3>
 
@@ -214,9 +213,7 @@
     <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log Scale</button>
     <div id="scatter-log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
 
-    <hr>
-    <h2>Table</h2>
-    <hr>
+    <h2>Table</h2><hr>
 
     <h3>Remove Negative Values?&nbsp;</h3>
     <input type="checkbox" name="remove_neg_bool" data-toggle="toggle" data-on="Yes" data-off="No"
