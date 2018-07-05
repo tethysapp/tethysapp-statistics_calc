@@ -1,7 +1,7 @@
 # Define your REST API endpoints here.
 # In the comments below is an example.
 # For more information, see:
-# http://docs.tethysplatform.org/en/dev/tethys_sdk/rest_api.html
+# http://docs.tethysplatform.org/en/dev/tethys_sdk/rest_api.html (Not Real Anymore)
 """
 from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication

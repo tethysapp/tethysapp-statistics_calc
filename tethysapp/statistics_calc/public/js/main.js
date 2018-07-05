@@ -156,8 +156,10 @@ $(document).ready(function() {
     $("#date_range_bool").on("change", function() {
         if(document.getElementById('date_range_bool').checked) {
             $("#date_range_form").show();
+            $("#date-ranges").show();
         } else {
             $("#date_range_form").hide();
+            $("#date-ranges").hide();
         }
     });
 });
@@ -242,6 +244,7 @@ function createTable() {
 
         // handle a successful response
         success : function(resp) {
+            $("#metric-table").show();
             $('#table').html(resp); // Render the Table
             console.log("success"); // another sanity check
         },

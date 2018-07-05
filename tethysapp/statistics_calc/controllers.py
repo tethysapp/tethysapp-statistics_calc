@@ -51,7 +51,17 @@ def home(request):
     """
     Controller for the app home page.
     """
-    context = {}
+
+    first_name = request.user.get_short_name()
+
+    if first_name == "":
+        first_name = "there"
+
+    context = {
+        "first_name": first_name,
+    }
+
+    print(first_name)
 
     return render(request, 'statistics_calc/home.html', context)
 
