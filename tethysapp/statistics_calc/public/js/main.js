@@ -208,6 +208,13 @@ $(document).ready(function(){
     });
 });
 
+$(document).ready(function(){
+    $("#make_volume_table").click(function(){
+        createVolumeTable();
+        console.log('Make Volume Table Event Triggered');
+    });
+});
+
 // ####################################################################################################################
 //                                                  Ajax Functions
 // ####################################################################################################################
@@ -228,49 +235,6 @@ $.ajaxSetup({
     }
 });
 
-
-// AJAX for table
-function createTable() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
-
-    // Creating the table
-    $.ajax({
-        url : "/apps/statistics-calc/make_table_ajax/", // the endpoint
-        type : "POST", // http method
-        data : formData, // data sent with the post request, the form data from above
-        processData : false,
-        contentType : false,
-
-        // handle a successful response
-        success : function(resp) {
-            $("#metric-table").show();
-            $('#table').html(resp); // Render the Table
-            console.log("success"); // another sanity check
-        },
-
-        // handle a non-successful response
-        error : function(xhr, errmsg, err) {
-            $('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-        }
-    });
-};
-
-// AJAX for getting the selected_metrics
-//function getMetrics() {
-//    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-//    console.log(formData) // another sanity check
-//}
-//
-//
-//function getDateRanges() {
-//
-//}
-//
-//function makeTable () {
-//
-//}
 
 // AJAX for Hydrograph
 function createHydrograph() {
@@ -453,6 +417,76 @@ function createScatterLog() {
             Plotly.newPlot('scatter-log', data, layout);
 
             console.log("successfully plotted the scatter plot!"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+// AJAX for table
+function createTable() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    // Creating the table
+    $.ajax({
+        url : "/apps/statistics-calc/make_table_ajax/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            $("#metric-table").show();
+            $('#table').html(resp); // Render the Table
+            console.log("success"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+// Ajax for Volume Table
+function createVolumeTable() {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/volume_table_ajax/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            console.log(resp)
+            sim_volume = resp["sim_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            obs_volume = resp["obs_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            $("#volume_table_div").show();
+            $("#volume_table").html(`<table class="table table-hover table-striped">\
+                                        <thead>\
+                                          <tr>\
+                                            <th>Simulated Data Volume</th>\
+                                            <th>Observed Data Volume</th>\
+                                          </tr>\
+                                        </thead>\
+                                        <tbody>\
+                                          <tr>\
+                                            <td>${sim_volume}</td>\
+                                            <td>${obs_volume}</td>\
+                                          </tr>\
+                                        </tbody>\
+                                      </table>`);
         },
 
         // handle a non-successful response

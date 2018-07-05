@@ -69,6 +69,11 @@ class StatisticsCalc(TethysAppBase):
                 url='scatter_ajax_plotly',
                 controller='statistics_calc.controllers.scatter_ajax_plotly'
             ),
+            UrlMap(
+                name='volume_table_ajax',
+                url='volume_table_ajax',
+                controller='statistics_calc.controllers.volume_table_ajax'
+            ),
         )
 
         return url_maps

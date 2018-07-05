@@ -6,7 +6,7 @@
     <h1>Single Stream Analyzer</h1>
 </div>
 
-<!--data upload form-->
+<!-- data form-->
 <form id="csv-upload" name="post-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -26,9 +26,9 @@
     <div class="row">
         <div class="col-md-3">
             <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
-                   data-onstyle="success" data-offstyle="primary" data-size="small" id="observed-units" checked>
+                   data-onstyle="success" data-offstyle="primary" data-size="normal" id="observed-units" checked>
         </div>
-        <div class="col-md-9"><label class="btn btn-default btn-file">
+        <div class="col-md-9"><label class="btn btn-default btn-file btn-sm">
             <input type="file" name="observed-csv" id="observed-csv" multiple>
         </label></div>
 
@@ -63,11 +63,11 @@
         <div class="row">
             <div class="col-md-3">
                 <input type="checkbox" name="simulated-units-upload" id="simulated-units-upload" data-toggle="toggle"
-                       data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="small"
+                       data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="normal"
                        class="form-control" checked>
             </div>
             <div class="col-md-9">
-                <label class="btn btn-default btn-file">
+                <label class="btn btn-default btn-file btn-sm">
                     <input type="file" name="simulated-csv" id="simulated-csv">
                 </label>
             </div>
@@ -335,10 +335,14 @@
     <div id="table"><!-- The table or errors go here --></div>
 </div>
 
-<hr>
+<h2>Volume</h2><hr>
 
-<!--<h2>Volume</h2>-->
-<!--<h3>Create Table of Streamflow Volumes? <input type="checkbox" name="volume_table"></h3>-->
-<!--<button type=submit class="btn btn-success">Submit</button>-->
+<button class="btn btn-success" id="make_volume_table">Compare Volumes</button>
+
+<br>
+
+<div class="metric-table" id="volume_table_div" style="display:none">
+    <div id="volume_table"><!-- The table or errors go here --></div>
+</div>
 
 {% endblock %}

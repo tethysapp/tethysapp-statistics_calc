@@ -26,7 +26,7 @@ import numpy as np
 import sympy as sp
 from matplotlib import use as matplotlib_use
 import matplotlib.pyplot as plt
-import model as md
+from scipy import integrate
 
 # Hydrostats Imports
 import hydrostats as hs
@@ -791,7 +791,7 @@ def validate_multiple_streams(request):
     watersheds = ['South Asia (Mainland)']
     context['watersheds'] = watersheds
 
-    return render(request, 'statistics_calc/add_country_data.html', context)
+    return render(request, 'statistics_calc/validate_multiple_streams.html', context)
 
 
 @login_required()
@@ -1462,3 +1462,44 @@ def scatter_ajax_plotly(request):
                 'observed': obs_list}
 
         return JsonResponse(resp, safe=False)
+
+
+def volume_table_ajax(request):
+    """Calculates the volumes of two streams"""
+
+    if request.method == 'POST':
+        sim = request.FILES.get('simulated-csv', None)
+        obs = request.FILES.get('observed-csv', None)
+        preprocessing_radio = request.POST.get('preprocessing', None)
+        timezone_boolean = request.POST.get('timezone', None)
+
+        if preprocessing_radio == "unequal-time":
+            interpolate = request.POST.get('interpolate_radio')
+        else:
+            interpolate = None
+
+        if timezone_boolean == 'on':
+            simulated_tz = request.POST.get('sim_timezone', None)
+            observed_tz = request.POST.get('obs_timezone', None)
+            print(simulated_tz, observed_tz)
+        else:
+            simulated_tz = None
+            observed_tz = None
+
+        merged_df = hd.merge_data(
+            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+        )
+
+        sim_array = merged_df.iloc[:, 0].values
+        obs_array = merged_df.iloc[:, 1].values
+
+        sim_volume = round(integrate.simps(sim_array), 3)
+        obs_volume = round(integrate.simps(obs_array), 3)
+
+        resp = {
+            "sim_volume": sim_volume,
+            "obs_volume": obs_volume,
+        }
+
+        return JsonResponse(resp)
