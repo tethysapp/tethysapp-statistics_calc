@@ -1,6 +1,15 @@
-{% extends "statistics_calc/base.html" %} {% load tethys_gizmos %} {% load tethys_gizmos staticfiles %} {% block styles %} {{ block.super }}
+{% extends "statistics_calc/base.html" %}
+{% load staticfiles %}
+{% load tethys_gizmos %}
+{% load tethys_gizmos staticfiles %}
+
+{% block styles %}
+{{ block.super }}
 <link href="{% static 'statistics_calc/css/calculate_single.css' %}"
-      rel="stylesheet"/> {% endblock %} {% block app_content %}
+      rel="stylesheet"/>
+{% endblock %}
+
+{% block app_content %}
 
 <div class="jumbotron jumbotron-fluid">
     <h1>Single Stream Analyzer</h1>

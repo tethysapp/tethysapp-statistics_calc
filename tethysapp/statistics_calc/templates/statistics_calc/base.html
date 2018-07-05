@@ -18,8 +18,10 @@
   {% url 'statistics_calc:home' as home_url %}
   {% url 'statistics_calc:calculate_single' as calculate_single_url %}
   {% url 'statistics_calc:validate_multiple_streams' as validate_multiple_streams %}
+  {% url 'statistics_calc:preprocessing' as preprocessing %}
 
   <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{ home_url }}">Home</a></li>
+  <li class="{% if request.path == preprocessing %}active{% endif %}"><a href="{{ preprocessing }}">Process a Dataset</a></li>
   <li class="{% if request.path == calculate_single_url %}active{% endif %}"><a href="{{ calculate_single_url }}">Calculate Single Country</a></li>
   <li class="{% if request.path == validate_multiple_streams %}active{% endif %}"><a href="{{ validate_multiple_streams }}">Validate Multiple Streams</a></li>
 

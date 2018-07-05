@@ -67,6 +67,26 @@ def home(request):
 
 
 @login_required()
+def preprocessing(request):
+    """
+    Controller for the app home page.
+    """
+
+    first_name = request.user.get_short_name()
+
+    if first_name == "":
+        first_name = "there"
+
+    context = {
+        "first_name": first_name,
+    }
+
+    print(first_name)
+
+    return render(request, 'statistics_calc/preprocessing.html', context)
+
+
+@login_required()
 def calculate_single(request):
     """
     Controller for page to upload data to perform analysis on a single stream reach.

@@ -30,6 +30,11 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.home'
             ),
             UrlMap(
+                name='preprocessing',
+                url='preprocessing',
+                controller='statistics_calc.controllers.preprocessing'
+            ),
+            UrlMap(
                 name='calculate_single',
                 url='calculate_single',
                 controller='statistics_calc.controllers.calculate_single'

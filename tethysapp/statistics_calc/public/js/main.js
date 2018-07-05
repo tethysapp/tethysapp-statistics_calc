@@ -1,3 +1,68 @@
+// ####################################################################################################################
+// Preprocesing Functions
+// ####################################################################################################################
+
+
+// >>>>>>>>jQuery Functions<<<<<<<<
+
+$(document).ready(function() {
+    $("#pps_csv").on( "change", function() {
+         console.log('File Upload Event Triggered') // sanity check
+         ppsPlotHydrograph('no_interp');
+    });
+});
+
+function ppsPlotHydrograph(interpType) {
+    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData) // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/hydrograph_ajax_plotly/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            var trace1 = {
+                type: "scatter",
+                mode: "lines",
+                name: "Simulated Data",
+                x: resp["dates"],
+                y: resp["simulated"],
+                line: {color: '#17BECF'}
+            }
+            var trace2 = {
+                type: "scatter",
+                mode: "lines",
+                name: 'Observed Data',
+                x: resp["dates"],
+                y: resp["observed"],
+                line: {color: '#7F7F7F'}
+            }
+            var data = [trace1,trace2];
+            var layout = {
+                title: 'Hydrograph',
+            };
+
+            Plotly.newPlot('hydrograph', data, layout);
+
+            console.log("successfully plotted the hydrograph"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+// ####################################################################################################################
+// Calculate Single Stream Functions
+// ####################################################################################################################
+
 
 function myFunction() {
   console.log('myFunction is Running!') // sanity check
@@ -73,9 +138,9 @@ function myFunction() {
   }
 }
 
-// ####################################################################################################################
-//                                                  jQuery Functions
-// ####################################################################################################################
+
+// >>>>>>>jQuery Functions<<<<<<<
+
 
 // Function to Hide and Show Values based on the radio box for the simulated data
 $(document).ready(function() {
@@ -215,9 +280,7 @@ $(document).ready(function(){
     });
 });
 
-// ####################################################################################################################
-//                                                  Ajax Functions
-// ####################################################################################################################
+// >>>>>>>Ajax Functions<<<<<<<
 
 // Getting the csrf token
 var csrftoken = Cookies.get('csrftoken');

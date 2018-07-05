@@ -1,0 +1,62 @@
+{% extends "statistics_calc/base.html" %}
+{% load tethys_gizmos %}
+{% load tethys_gizmos staticfiles %}
+
+{% block styles %}
+{{ block.super }}
+<link href="{% static 'statistics_calc/css/calculate_single.css' %}"
+      rel="stylesheet"/>
+{% endblock %}
+
+{% block app_content %}
+
+<div class="jumbotron jumbotron-fluid">
+  <h1>Process a Dataset</h1>
+  <p>
+      This page is for preprocessing a single dataset before merging it. You can view, interpolate, and download the
+      the preprocessed data here so that it can be used in the merge data page.
+  </p>
+</div>
+
+<form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h2>Timeseries Data</h2><hr>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h4>File Upload (CSV)</h4>
+        </div>
+        <div class="col-md-8">
+            <h4>Test Interpolation Methods</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <label class="btn btn-default btn-file btn-md">
+                <input type="file" name="pps_csv" id="pps_csv">
+            </label>
+        </div>
+        <div class="col-md-8">
+            <div class="btn-group-vertical" id="pps_interpolation_types">
+                <button type="button" class="btn btn-success" value="no_interp" id="pps_no_interp">
+                    No Interpolation
+                </button>
+                <button type="button" class="btn btn-success" value="no_interp" id="pps_linear">
+                    Linear Interpolation
+                </button>
+                <button type="button" class="btn btn-success" value="no_interp" id="pps_pchip">
+                    Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)
+                </button>
+                <button type="button" class="btn btn-success" value="no_interp" id="pps_cubic">
+                    Cubic Spline Interpolation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pps_hydrograph"><!-- The table goes here --></div>
+
+</form>
+
+{% endblock %}
