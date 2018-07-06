@@ -6,16 +6,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import hydrostats.visual as hv
 
+x = pd.date_range('1980-01-01', periods=50)
+y = np.sin(np.arange(50) / 2)
 
-a = np.random.rand(5, 5)
+df = pd.DataFrame(y, index=x, columns=["Data"])
 
-df = pd.DataFrame(a)
+new_index = pd.date_range(df.index[0], df.index[-1], freq="1H 0min")
+
+df = df.reindex(new_index)
+
+df = df.interpolate('linear')
 
 print(df)
-df.iloc[:, 1] *= 2
 
-print(df)
-
+df.plot()
+plt.show()
 """Testing my plotting function"""
 # df_index = pd.date_range('1980-01-01', periods=1000, freq='D')
 #

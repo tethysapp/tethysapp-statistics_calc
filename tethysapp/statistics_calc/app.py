@@ -35,6 +35,11 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.preprocessing'
             ),
             UrlMap(
+                name='pps_hydrograph_ajax',
+                url='pps_hydrograph_ajax',
+                controller='statistics_calc.controllers.pps_hydrograph_ajax'
+            ),
+            UrlMap(
                 name='calculate_single',
                 url='calculate_single',
                 controller='statistics_calc.controllers.calculate_single'

@@ -7,7 +7,7 @@ Created on Jan 16 5:02:32 2018
 from __future__ import division, print_function
 
 # Django Imports
-from django.shortcuts import render, reverse, HttpResponse
+from django.shortcuts import render, reverse, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 # from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse
@@ -84,6 +84,78 @@ def preprocessing(request):
     print(first_name)
 
     return render(request, 'statistics_calc/preprocessing.html', context)
+
+
+@login_required()
+def pps_hydrograph_ajax(request):
+    """AJAX Controller for the preprocessing page. Creates a Hydrograph given the Interpolation method selected"""
+
+    if request.method == "POST":
+
+        interp_method = request.POST.get('interp_method', None)
+        csv_file = request.FILES.get('pps_csv', None)
+
+        print("Csv file is: {}".format(csv_file))
+
+        if interp_method == "no_interp":
+
+            print("No Interpolation")  # Sanity Check
+            # try:
+            df = pd.read_csv(csv_file, index_col=0, names=['Data'])
+
+            print(df.dtypes)
+
+            # Changing index to datetime type
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+            df = df[df.index.notnull()]  # Dropping bad time values if necessary
+
+            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+
+            data_list = df.iloc[:, 0].tolist()
+
+            resp = {'dates': date_list,
+                    'data': data_list,
+                    }
+
+            return JsonResponse(resp)
+
+        else:
+            print("Other Interpolation Type")  # Sanity Check
+            print(interp_method)
+            df = pd.read_csv(csv_file, index_col=0)
+            df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+            # Changing index to datetime type
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+            # Dropping bad time values if necessary
+            df = df[df.index.notnull()]
+
+            # Interpolating the time series
+            hours = request.POST.get("pps_interp_hours", None)
+            minutes = request.POST.get("pps_interp_minutes", None)
+
+            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(hours, minutes))
+
+            df = df.reindex(new_index)
+            print(df)
+            print(interp_method)
+            df = df.interpolate(interp_method)
+
+            print(df)
+
+            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+
+            data_list = df.iloc[:, 0].tolist()
+
+            resp = {
+                'dates': date_list,
+                'data': data_list,
+                    }
+
+            return JsonResponse(resp)
 
 
 @login_required()
@@ -1091,7 +1163,8 @@ def some_view(request):
             for i, plot_bool in enumerate(post_data_plots):
                 if i == 0 and plot_bool == 'on':
                     if station_name is None:
-                        hv.plot(merged_data_df=df_merged, legend=['Simulated Data', 'Observed Data'], title='Hydrograph',
+                        hv.plot(merged_data_df=df_merged, legend=['Simulated Data', 'Observed Data'],
+                                title='Hydrograph',
                                 labels=['Datetime', 'Streamflow ({})'.format(streamflow)])
                     else:
                         hv.plot(merged_data_df=df_merged, legend=['Simulated Data', 'Observed Data'],
@@ -1099,8 +1172,10 @@ def some_view(request):
                                 labels=['Datetime', 'Streamflow ({})'.format(streamflow)])
                 if i == 1 and plot_bool == 'on':
                     if station_name is None:
-                        hv.scatter(merged_data_df=df_merged, title=None, labels=['Datetime', 'Streamflow ({})'.format(streamflow)], best_fit=False,
-                                    savefigure=None, marker_style='ko', metrics=None, log_scale=False, line45=False, figsize=(12, 8))
+                        hv.scatter(merged_data_df=df_merged, title=None,
+                                   labels=['Datetime', 'Streamflow ({})'.format(streamflow)], best_fit=False,
+                                   savefigure=None, marker_style='ko', metrics=None, log_scale=False, line45=False,
+                                   figsize=(12, 8))
                     else:
                         hv.plot(merged_data_df=df_merged, legend=['Simulated Data', 'Observed Data'],
                                 title='Hydrograph for {}'.format(station_name),
@@ -1367,7 +1442,6 @@ def make_table_ajax(request):
 
 @login_required()
 def hydrograph_ajax_plotly(request):
-
     if request.method == 'POST':
         sim = request.FILES.get('simulated-csv', None)
         obs = request.FILES.get('observed-csv', None)
@@ -1410,7 +1484,6 @@ def hydrograph_ajax_plotly(request):
 
 @login_required()
 def hydrograph_daily_avg_ajax_plotly(request):
-
     if request.method == 'POST':
         sim = request.FILES.get('simulated-csv', None)
         obs = request.FILES.get('observed-csv', None)
@@ -1450,7 +1523,6 @@ def hydrograph_daily_avg_ajax_plotly(request):
 
 @login_required()
 def scatter_ajax_plotly(request):
-
     if request.method == 'POST':
         sim = request.FILES.get('simulated-csv', None)
         obs = request.FILES.get('observed-csv', None)

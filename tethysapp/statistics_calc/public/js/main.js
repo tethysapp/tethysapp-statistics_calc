@@ -5,19 +5,50 @@
 
 // >>>>>>>>jQuery Functions<<<<<<<<
 
+// Creating a plot with no interpolation applied
 $(document).ready(function() {
-    $("#pps_csv").on( "change", function() {
-         console.log('File Upload Event Triggered') // sanity check
-         ppsPlotHydrograph('no_interp');
+    $("#pps_no_interp").click( function() {
+        console.log('No Interpolation Event Triggered') // sanity check
+        name = "interp_method";
+        value = "no_interp";
+        ppsPlotHydrograph(name, value);
     });
 });
 
-function ppsPlotHydrograph(interpType) {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+$(document).ready(function() {
+    $("#pps_linear").click( function() {
+        console.log('Linear Interpolation Event Triggered') // sanity check
+        name = "interp_method";
+        value = "linear";
+        ppsPlotHydrograph(name, value);
+    });
+});
+
+$(document).ready(function() {
+    $("#pps_cubic").click( function() {
+        console.log('Cubic Spline Interpolation Event Triggered') // sanity check
+        name = "interp_method";
+        value = "cubic";
+        ppsPlotHydrograph(name, value);
+    });
+});
+
+$(document).ready(function() {
+    $("#pps_pchip").click( function() {
+        console.log('PCHIP Interpolation Event Triggered') // sanity check
+        name = "interp_method";
+        value = "pchip";
+        ppsPlotHydrograph(name, value);
+    });
+});
+
+function ppsPlotHydrograph(name, value) {
+    var formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+    formData.append(name, value); // appending the name and value based on the button clicked
     console.log(formData) // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/hydrograph_ajax_plotly/", // the endpoint
+        url : "/apps/statistics-calc/pps_hydrograph_ajax/", // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -25,36 +56,29 @@ function ppsPlotHydrograph(interpType) {
 
         // handle a successful response
         success : function(resp) {
-            var trace1 = {
+            var trace = {
                 type: "scatter",
                 mode: "lines",
                 name: "Simulated Data",
                 x: resp["dates"],
-                y: resp["simulated"],
+                y: resp["data"],
                 line: {color: '#17BECF'}
             }
-            var trace2 = {
-                type: "scatter",
-                mode: "lines",
-                name: 'Observed Data',
-                x: resp["dates"],
-                y: resp["observed"],
-                line: {color: '#7F7F7F'}
-            }
-            var data = [trace1,trace2];
+
+            var data = [trace];
             var layout = {
                 title: 'Hydrograph',
             };
 
-            Plotly.newPlot('hydrograph', data, layout);
+            Plotly.newPlot('pps_hydrograph', data, layout);
 
-            console.log("successfully plotted the hydrograph"); // another sanity check
         },
 
         // handle a non-successful response
         error : function(xhr, errmsg, err) {
             $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+//            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#pps_hydrograph").html(xhr.responseText);
         }
     });
 };
