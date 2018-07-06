@@ -124,7 +124,8 @@
     <!--the watershed names, we are working to fix this. Please come back later.</p></label>-->
     <!--{% endif %}-->
 
-    <h2>Preprocessing</h2><hr>
+    <h2>Preprocessing</h2>
+    <hr>
 
     <div class="row">
         <div class="col-md-4">
@@ -200,7 +201,8 @@
         </div>
     </div>
 
-    <h2>Visualization</h2><hr>
+    <h2>Visualization</h2>
+    <hr>
 
     <h3>Hydrograph of Entire Time Series</h3>
 
@@ -209,22 +211,28 @@
 
     <h3>Hydrograph of Daily Averages</h3>
 
-    <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">Create Hydrograph of Daily Averages</button>
+    <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">Create Hydrograph of Daily
+        Averages
+    </button>
     <div id="hydrograph-daily-avg"><!-- Hydrograph of daily averages will be drawn inside this DIV --></div>
 
     <h3>Scatter Plot</h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
     <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
-
+    <img id="jpg-export"><!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
+    <div id="plotly_div" style="display: none;"></div>
     <h3>Scatter Plot with Log-Log Scale</h3>
 
-    <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log Scale</button>
+    <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log
+        Scale
+    </button>
     <div id="scatter-log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
 
     <br>
 
-    <h2>Table</h2><hr>
+    <h2>Table</h2>
+    <hr>
 
     <h3>Remove Negative Values?&nbsp;</h3>
     <input type="checkbox" name="remove_neg_bool" data-toggle="toggle" data-on="Yes" data-off="No"
@@ -344,7 +352,8 @@
     <div id="table"><!-- The table or errors go here --></div>
 </div>
 
-<h2>Volume</h2><hr>
+<h2>Volume</h2>
+<hr>
 
 <button class="btn btn-success" id="make_volume_table">Compare Volumes</button>
 

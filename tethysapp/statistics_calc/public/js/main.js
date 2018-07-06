@@ -260,8 +260,8 @@ $(document).ready(function() {
     if (number === 0) {
       $("#date_range_container").hide();
     } else {
-      var form_inputs = ""
-      for (i=1; i<=number; i++) {
+      var form_inputs = "";
+        for (i=1; i<=number; i++) {
         var html = `<h3>Date Range ${i}</h3>\
                   <div class="form-row">\
                       <div class="form-group col-md-3">\
@@ -428,43 +428,69 @@ function createHydrographDailyAvg() {
 
 //AJAX for Scatter Plot
 function createScatter() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    const formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
-        type : "POST", // http method
-        data : formData, // data sent with the post request, the form data from above
-        processData : false,
-        contentType : false,
+        url: "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        type: "POST", // http method
+        data: formData, // data sent with the post request, the form data from above
+        processData: false,
+        contentType: false,
 
         // handle a successful response
-        success : function(resp) {
-            var trace1 = {
-                x: resp["simulated"],
-                y: resp["observed"],
-                mode: 'markers',
-                type: 'scatter'
-            };
+        success: function (resp) {
 
-            var data = [trace1];
+            if (resp['simulated'].length <= 1000) {
+                const trace1 = {
+                    x: resp["simulated"],
+                    y: resp["observed"],
+                    mode: 'markers',
+                    type: 'scatter'
+                };
 
-            var layout = {
-                title: 'Scatter Plot',
-             };
+                const data = [trace1];
 
-            Plotly.newPlot('scatter', data, layout);
+                const layout = {
+                    title: 'Scatter Plot',
+                };
 
-            console.log("successfully plotted the scatter plot!"); // another sanity check
+                Plotly.newPlot('scatter', data, layout);
+
+                console.log("successfully plotted the interactive scatter plot!"); // another sanity check
+            } else {
+                const tester = document.getElementById('scatter');
+                const trace1 = {
+                    x: resp["simulated"],
+                    y: resp["observed"],
+                    "type": 'scattergl',
+                    "mode": 'markers',
+                    "marker": {
+                        "size": 20,
+                        color: "#006400"
+                    }
+                };
+
+                const data = [trace1];
+
+                const layout = {
+                    title: 'Scatter Plot',
+                };
+
+                Plotly.plot(tester, data, layout);
+
+                console.log("successfully plotted the scattergl plot!"); // another sanity check
+            }
+
         },
 
         // handle a non-successful response
-        error : function(xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+        error: function (xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
 
 //AJAX for Scatter Plot
 function createScatterLog() {
@@ -472,47 +498,78 @@ function createScatterLog() {
     console.log(formData) // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
-        type : "POST", // http method
-        data : formData, // data sent with the post request, the form data from above
-        processData : false,
-        contentType : false,
+        url: "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        type: "POST", // http method
+        data: formData, // data sent with the post request, the form data from above
+        processData: false,
+        contentType: false,
 
         // handle a successful response
-        success : function(resp) {
-            var trace1 = {
-                x: resp["simulated"],
-                y: resp["observed"],
-                mode: 'markers',
-                type: 'scatter'
-            };
+        success: function (resp) {
 
-            var data = [trace1];
+            if (resp['simulated'].length <= 1000) {
 
-            var layout = {
-                title: 'Scatter Plot',
-                xaxis: {
-                    type: 'log',
-                    autorange: true
-                },
-                yaxis: {
-                    type: 'log',
-                    autorange: true
-                },
-             };
+                const trace1 = {
+                    x: resp["simulated"],
+                    y: resp["observed"],
+                    mode: 'markers',
+                    type: 'scatter'
+                };
 
-            Plotly.newPlot('scatter-log', data, layout);
+                const data = [trace1];
 
-            console.log("successfully plotted the scatter plot!"); // another sanity check
+                const layout = {
+                    title: 'Scatter Plot',
+                    xaxis: {
+                        type: 'log',
+                        autorange: true
+                    },
+                    yaxis: {
+                        type: 'log',
+                        autorange: true
+                    },
+                };
+
+                Plotly.newPlot('scatter-log', data, layout);
+
+                console.log("successfully plotted the scatter plot!"); // another sanity check
+
+            } else {
+
+                const tester = document.getElementById('scatter-log');
+                const trace1 = {
+                    x: resp["simulated"],
+                    y: resp["observed"],
+                    type: 'scattergl',
+                };
+
+                const data = [trace1];
+
+                const layout = {
+                    title: 'Scatter Plot',
+                    xaxis: {
+                        type: 'log',
+                        autorange: true
+                    },
+                    yaxis: {
+                        type: 'log',
+                        autorange: true
+                    },
+                };
+
+                Plotly.plot(tester, data, layout);
+
+                console.log("successfully plotted the scattergl plot!"); // another sanity check
+            }
         },
 
         // handle a non-successful response
-        error : function(xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+        error: function (xhr, errmsg, err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
 
 // AJAX for table
 function createTable() {
@@ -540,12 +597,12 @@ function createTable() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
 
 // Ajax for Volume Table
 function createVolumeTable() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    let formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     $.ajax({
         url : "/apps/statistics-calc/volume_table_ajax/", // the endpoint
@@ -557,8 +614,8 @@ function createVolumeTable() {
         // handle a successful response
         success : function(resp) {
             console.log(resp)
-            sim_volume = resp["sim_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-            obs_volume = resp["obs_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            let sim_volume = resp["sim_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            let obs_volume = resp["obs_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             $("#volume_table_div").show();
             $("#volume_table").html(`<table class="table table-hover table-striped">\
                                         <thead>\
@@ -582,4 +639,33 @@ function createVolumeTable() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
+
+function plotlyStatic() {
+    let d3 = Plotly.d3;
+    let img_jpg = d3.select('#jpg-export');
+
+// Ploting the Graph
+
+    let trace = {x: [3, 9, 8, 10, 4, 6, 5], y: [5, 7, 6, 7, 8, 9, 8], type: "scatter"};
+    let trace1 = {x: [3, 4, 1, 6, 8, 9, 5], y: [4, 2, 5, 2, 1, 7, 3], type: "scatter"};
+    let data = [trace, trace1];
+    let layout = {title: "Simple Javascript Graph"};
+    Plotly.plot(
+        'plotly_div',
+        data,
+        layout)
+
+    // static image in jpg format
+
+        .then(
+            function (gd) {
+                Plotly.toImage(gd, {height: 300, width: 300})
+                    .then(
+                        function (url) {
+                            img_jpg.attr("src", url);
+                            return Plotly.toImage(gd, {format: 'jpeg', height: 400, width: 400});
+                        }
+                    )
+            });
+}

@@ -3,71 +3,90 @@
 {% load tethys_gizmos staticfiles %}
 
 {% block styles %}
-{{ block.super }}
-<link href="{% static 'statistics_calc/css/calculate_single.css' %}"
-      rel="stylesheet"/>
+    {{ block.super }}
+    <link href="{% static 'statistics_calc/css/calculate_single.css' %}"
+          rel="stylesheet"/>
 {% endblock %}
 
 {% block app_content %}
 
-<div class="jumbotron jumbotron-fluid">
-  <h1>Process a Dataset</h1>
-  <p>
-      This page is for preprocessing a single dataset before merging it. You can view, interpolate, time scale, and
-      download the preprocessed data here so that it can be used in the merge data page.
-  </p>
-</div>
-
-<form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <h2>Timeseries Data</h2><hr>
-
-    <div class="row">
-        <div class="col-md-3">
-            <h4>File Upload (CSV)</h4>
-        </div>
-        <div class="col-md-3">
-            <h4>Test Interpolation Methods</h4>
-        </div>
-        <div class="col-md-6">
-            <h4>Interpolation Frequency</h4>
-        </div>
+    <div class="jumbotron jumbotron-fluid">
+        <h1>Process a Dataset</h1>
+        <p>
+            This page is for preprocessing a single dataset before merging it. You can view, interpolate, time scale,
+            and download the preprocessed data here so that it can be used in the merge data page.
+        </p>
     </div>
-    <div class="row">
-        <div class="col-md-3">
-            <label class="btn btn-default btn-file btn-md">
-                <input type="file" name="pps_csv" id="pps_csv">
-            </label>
-        </div>
-        <div class="col-md-3">
-            <div class="btn-group-vertical" id="pps_interpolation_types">
-                <button type="button" class="btn btn-success" id="pps_no_interp">
-                    No Interpolation
-                </button>
-                <button type="button" class="btn btn-success" id="pps_linear">
-                    Linear Interpolation
-                </button>
-                <button type="button" class="btn btn-success" id="pps_pchip">
-                    Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)
-                </button>
-                <button type="button" class="btn btn-success" id="pps_cubic">
-                    Cubic Spline Interpolation
-                </button>
+
+    <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h2>Timeseries Data</h2>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-3">
+                <h4>File Upload (CSV)</h4>
+
+
+            </div>
+            <div class="col-md-3">
+
+            </div>
+            <div class="col-md-6">
+                <h4>Interpolation Frequency</h4>
             </div>
         </div>
-        <div class="col-md-3">
-            <input type="number" min="0" name="pps_interp_hours" step="1" placeholder="Hours">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="btn btn-default btn-file">
+                    CSV File Upload<input type="file" name="pps_csv" id="pps_csv" style="display: none;">
+                </label>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default form-check-label waves-effect waves-light">
+                        <input class="form-check-input" type="radio" autocomplete="off"
+                               value="pps_no_interp">
+                        <h4>No Interpolation</h4>
+                    </label>
+                    <label class="btn btn-default form-check-label waves-effect waves-light">
+                        <input class="form-check-input" type="radio" autocomplete="off"
+                               value="pps_linear">
+                        <h4>Linear Interpolation</h4>
+                    </label>
+                    <label class="btn btn-default form-check-label waves-effect waves-light">
+                        <input class="form-check-input" type="radio" autocomplete="off"
+                               value="pps_pchip">
+                        <h4>PCHIP Interpolation</h4>
+                    </label>
+                    <label class="btn btn-default form-check-label waves-effect waves-light">
+                        <input class="form-check-input" type="radio" autocomplete="off"
+                               value="pps_cubic">
+                        <h4>Cubic Interpolation</h4>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <input type="number" min="0" name="pps_interp_hours" step="1" placeholder="Hours">
+            </div>
+            <div class="col-md-3">
+                <input type="number" min="0" name="pps_interp_minutes" step="15" placeholder="Minutes">
+            </div>
         </div>
-        <div class="col-md-3">
-            <input type="number" min="0" name="pps_interp_minutes" step="15" placeholder="Minutes">
-        </div>
+
+
+        <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
+
+    </form>
+
+    <div class="input-group">
+        <label class="input-group-btn">
+                    <span class="btn btn-primary">
+                        Browse… <input type="file" style="display: none;" multiple="">
+                    </span>
+        </label>
+        <input type="text" class="form-control" readonly="">
     </div>
-
-
-
-    <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
-
-</form>
 
 {% endblock %}

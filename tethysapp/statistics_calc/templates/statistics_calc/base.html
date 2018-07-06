@@ -5,25 +5,47 @@
 {% block title %}{{ tethys_app.name }}{% endblock %}
 
 {% block app_icon %}
-  {# The path you provided in your app.py is accessible through the tethys_app.icon context variable #}
-  <img src="{% static tethys_app.icon %}">
+    {# The path you provided in your app.py is accessible through the tethys_app.icon context variable #}
+    <img src="{% static tethys_app.icon %}">
 {% endblock %}
 
 {# The name you provided in your app.py is accessible through the tethys_app.name context variable #}
 {% block app_title %}{{ tethys_app.name }}{% endblock %}
 
 {% block app_navigation_items %}
-  <li class="title">Navigation</li>
-  <!--Defining Variable Here-->
-  {% url 'statistics_calc:home' as home_url %}
-  {% url 'statistics_calc:calculate_single' as calculate_single_url %}
-  {% url 'statistics_calc:validate_multiple_streams' as validate_multiple_streams %}
-  {% url 'statistics_calc:preprocessing' as preprocessing %}
 
-  <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{ home_url }}">Home</a></li>
-  <li class="{% if request.path == preprocessing %}active{% endif %}"><a href="{{ preprocessing }}">Process a Dataset</a></li>
-  <li class="{% if request.path == calculate_single_url %}active{% endif %}"><a href="{{ calculate_single_url }}">Calculate Single Country</a></li>
-  <li class="{% if request.path == validate_multiple_streams %}active{% endif %}"><a href="{{ validate_multiple_streams }}">Validate Multiple Streams</a></li>
+    <li class="title">Navigation</li>
+
+    {# Defining Variables Here #}
+    {% url 'statistics_calc:home' as home_url %}
+    {% url 'statistics_calc:calculate_single' as calculate_single_url %}
+    {% url 'statistics_calc:validate_multiple_streams' as validate_multiple_streams %}
+    {% url 'statistics_calc:preprocessing' as preprocessing %}
+
+    <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{ home_url }}">Home</a></li>
+    <li class="{% if request.path == preprocessing %}active{% endif %}"><a href="{{ preprocessing }}">Process a
+        Dataset</a>
+    </li>
+    <li class="{% if request.path == calculate_single_url %}active{% endif %}"><a href="{{ calculate_single_url }}">Calculate
+        Single Country</a></li>
+    <li class="{% if request.path == validate_multiple_streams %}active{% endif %}"><a
+            href="{{ validate_multiple_streams }}">Validate Multiple Streams</a></li>
+
+    {% if request.path == preprocessing %}
+
+        <li class="title">Preprocessing Options</li>
+
+
+
+
+        <li><h4>Interpolation Methods</h4></li>
+        <li>
+
+        </li>
+
+
+
+    {% endif %}
 
 {% endblock %}
 
@@ -34,16 +56,16 @@
 {% endblock %}
 
 {% block content_dependent_styles %}
-  {{ block.super }}
-  <link href="{% static 'statistics_calc/css/main.css' %}" rel="stylesheet"/>
+    {{ block.super }}
+    <link href="{% static 'statistics_calc/css/main.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
-  {{ block.super }}
-  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <!--Bootstrap toggle library-->
-  <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
-  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-  <script src="{% static 'statistics_calc/js/main.js' %}" type="text/javascript"></script>
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!--Bootstrap toggle library-->
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="{% static 'statistics_calc/js/main.js' %}" type="text/javascript"></script>
 {% endblock %}
