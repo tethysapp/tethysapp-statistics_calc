@@ -5,12 +5,20 @@
 
 // >>>>>>>>jQuery Functions<<<<<<<<
 
+$(document).ready(function() {
+    $("#pps_csv").change(function () {
+        const label = $("#pps_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
+        $("#pps_csv_name").val(label);
+        console.log(label)
+    });
+});
+
 // Creating a plot with no interpolation applied
 $(document).ready(function() {
     $("#pps_no_interp").click( function() {
-        console.log('No Interpolation Event Triggered') // sanity check
-        name = "interp_method";
-        value = "no_interp";
+        console.log('No Interpolation Event Triggered'); // sanity check
+        const name = "interp_method";
+        const value = "no_interp";
         ppsPlotHydrograph(name, value);
     });
 });
@@ -18,8 +26,8 @@ $(document).ready(function() {
 $(document).ready(function() {
     $("#pps_linear").click( function() {
         console.log('Linear Interpolation Event Triggered') // sanity check
-        name = "interp_method";
-        value = "linear";
+        const name = "interp_method";
+        const value = "linear";
         ppsPlotHydrograph(name, value);
     });
 });
@@ -27,8 +35,8 @@ $(document).ready(function() {
 $(document).ready(function() {
     $("#pps_cubic").click( function() {
         console.log('Cubic Spline Interpolation Event Triggered') // sanity check
-        name = "interp_method";
-        value = "cubic";
+        const name = "interp_method";
+        const value = "cubic";
         ppsPlotHydrograph(name, value);
     });
 });
@@ -36,8 +44,8 @@ $(document).ready(function() {
 $(document).ready(function() {
     $("#pps_pchip").click( function() {
         console.log('PCHIP Interpolation Event Triggered') // sanity check
-        name = "interp_method";
-        value = "pchip";
+        const name = "interp_method";
+        const value = "pchip";
         ppsPlotHydrograph(name, value);
     });
 });
@@ -63,7 +71,7 @@ function ppsPlotHydrograph(name, value) {
                 x: resp["dates"],
                 y: resp["data"],
                 line: {color: '#17BECF'}
-            }
+            };
 
             var data = [trace];
             var layout = {
@@ -81,7 +89,7 @@ function ppsPlotHydrograph(name, value) {
             $("#pps_hydrograph").html(xhr.responseText);
         }
     });
-};
+}
 
 // ####################################################################################################################
 // Calculate Single Stream Functions
@@ -155,11 +163,11 @@ function myFunction() {
      lm_index_label.style.display = "none";
   }
 
-  if (d1_p.checked == true){
+    if (d1_p.checked) {
     d1_p_label.style.display = "block";
-  } else {
-     d1_p_label.style.display = "none";
-  }
+} else {
+    d1_p_label.style.display = "none";
+}
 }
 
 
