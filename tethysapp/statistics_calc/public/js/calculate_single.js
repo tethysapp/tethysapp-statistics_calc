@@ -1,97 +1,4 @@
 // ####################################################################################################################
-// Preprocesing Functions
-// ####################################################################################################################
-
-
-// >>>>>>>>jQuery Functions<<<<<<<<
-
-$(document).ready(function() {
-    $("#pps_csv").change(function () {
-        const label = $("#pps_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
-        $("#pps_csv_name").val(label);
-        console.log(label)
-    });
-});
-
-// Creating a plot with no interpolation applied
-$(document).ready(function() {
-    $("#pps_no_interp").click( function() {
-        console.log('No Interpolation Event Triggered'); // sanity check
-        const name = "interp_method";
-        const value = "no_interp";
-        ppsPlotHydrograph(name, value);
-    });
-});
-
-$(document).ready(function() {
-    $("#pps_linear").click( function() {
-        console.log('Linear Interpolation Event Triggered') // sanity check
-        const name = "interp_method";
-        const value = "linear";
-        ppsPlotHydrograph(name, value);
-    });
-});
-
-$(document).ready(function() {
-    $("#pps_cubic").click( function() {
-        console.log('Cubic Spline Interpolation Event Triggered') // sanity check
-        const name = "interp_method";
-        const value = "cubic";
-        ppsPlotHydrograph(name, value);
-    });
-});
-
-$(document).ready(function() {
-    $("#pps_pchip").click( function() {
-        console.log('PCHIP Interpolation Event Triggered') // sanity check
-        const name = "interp_method";
-        const value = "pchip";
-        ppsPlotHydrograph(name, value);
-    });
-});
-
-function ppsPlotHydrograph(name, value) {
-    var formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
-    formData.append(name, value); // appending the name and value based on the button clicked
-    console.log(formData) // another sanity check
-
-    $.ajax({
-        url : "/apps/statistics-calc/pps_hydrograph_ajax/", // the endpoint
-        type : "POST", // http method
-        data : formData, // data sent with the post request, the form data from above
-        processData : false,
-        contentType : false,
-
-        // handle a successful response
-        success : function(resp) {
-            var trace = {
-                type: "scatter",
-                mode: "lines",
-                name: "Simulated Data",
-                x: resp["dates"],
-                y: resp["data"],
-                line: {color: '#17BECF'}
-            };
-
-            var data = [trace];
-            var layout = {
-                title: 'Hydrograph',
-            };
-
-            Plotly.newPlot('pps_hydrograph', data, layout);
-
-        },
-
-        // handle a non-successful response
-        error : function(xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-//            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            $("#pps_hydrograph").html(xhr.responseText);
-        }
-    });
-}
-
-// ####################################################################################################################
 // Calculate Single Stream Functions
 // ####################################################################################################################
 
@@ -99,65 +6,63 @@ function ppsPlotHydrograph(name, value) {
 function myFunction() {
   console.log('myFunction is Running!') // sanity check
   // Get the checkbox
-  var mase = document.getElementById('MASE');
-  var dmod = document.getElementById('d (Mod.)');
-  var nse_mod = document.getElementById('NSE (Mod.)');
-  var h6_mean = document.getElementById('H6 (MHE)');
-  var h6_abs = document.getElementById('H6 (AHE)');
-  var h6_rmshe = document.getElementById('H6 (RMSHE)');
-  var lm_index = document.getElementById("E1'");
-  var d1_p = document.getElementById("D1'");
-  var lag_analysis_bool = document.getElementById("lag_analysis_bool");
+  const mase = document.getElementById('MASE');
+  const dmod = document.getElementById('d (Mod.)');
+  const nse_mod = document.getElementById('NSE (Mod.)');
+  const h6_mean = document.getElementById('H6 (MHE)');
+  const h6_abs = document.getElementById('H6 (AHE)');
+  const h6_rmshe = document.getElementById('H6 (RMSHE)');
+  const lm_index = document.getElementById("E1'");
+  const d1_p = document.getElementById("D1'");
 
   // Get the output text
-  var mase_label = document.getElementById('MASE_label');
-  var dmod_label = document.getElementById('d (Mod.)_label');
-  var nse_mod_label = document.getElementById('NSE (Mod.)_label');
-  var h6_mean_label = document.getElementById('H6 (MHE)_label');
-  var h6_abs_label = document.getElementById('H6 (AHE)_label');
-  var h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
-  var lm_index_label = document.getElementById("E1'_label");
-  var d1_p_label = document.getElementById("D1'_label");
-  var lag_analysis_form = document.getElementById("lag_analysis_form");
+  const mase_label = document.getElementById('MASE_label');
+  const dmod_label = document.getElementById('d (Mod.)_label');
+  const nse_mod_label = document.getElementById('NSE (Mod.)_label');
+  const h6_mean_label = document.getElementById('H6 (MHE)_label');
+  const h6_abs_label = document.getElementById('H6 (AHE)_label');
+  const h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
+  const lm_index_label = document.getElementById("E1'_label");
+  const d1_p_label = document.getElementById("D1'_label");
 
   // If the checkbox is checked, display the output text
-  if (mase.checked == true){
+  if (mase.checked){
     mase_label.style.display = "block";
   } else {
     mase_label.style.display = "none";
   }
 
-  if (dmod.checked == true){
+  if (dmod.checked){
     dmod_label.style.display = "block";
   } else {
     dmod_label.style.display = "none";
   }
 
-  if (nse_mod.checked == true){
+  if (nse_mod.checked){
     nse_mod_label.style.display = "block";
   } else {
     nse_mod_label.style.display = "none";
   }
 
-  if (h6_mean.checked == true){
+  if (h6_mean.checked){
     h6_mean_label.style.display = "block";
   } else {
     h6_mean_label.style.display = "none";
   }
 
-  if (h6_abs.checked == true){
+  if (h6_abs.checked){
     h6_abs_label.style.display = "block";
   } else {
     h6_abs_label.style.display = "none";
   }
 
-  if (h6_rmshe.checked == true){
+  if (h6_rmshe.checked){
     h6_rmshe_label.style.display = "block";
   } else {
      h6_rmshe_label.style.display = "none";
   }
 
-  if (lm_index.checked == true){
+  if (lm_index.checked){
     lm_index_label.style.display = "block";
   } else {
      lm_index_label.style.display = "none";
@@ -178,7 +83,7 @@ function myFunction() {
 $(document).ready(function() {
     $("input[name=predicted_radio]").on( "change", function() {
          console.log('Radio Checkbox function working!') // sanity check
-         var test = $(this).val();
+         const test = $(this).val();
          $(".sim_upload").hide();
          $("#"+test).show();
     });
@@ -268,32 +173,30 @@ $(document).ready(function() {
     if (number === 0) {
       $("#date_range_container").hide();
     } else {
-      var form_inputs = "";
+      let form_inputs = "";
         for (i=1; i<=number; i++) {
-        var html = `<h3>Date Range ${i}</h3>\
-                  <div class="form-row">\
-                      <div class="form-group col-md-3">\
-                        <label for="start_day_${i}">Start Day</label>\
-                        <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
-                      </div>\
-                    <div class="form-group col-md-3">\
-                        <label for="start_month_${i}">Start Month</label>\
-                        <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
-                      </div>\
-                    <div class="form-group col-md-3">\
-                      <label for="end_day_${i}">End Day</label>\
-                      <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
-                    </div>\
-                    <div class="form-group col-md-3">\
-                      <label for="end_month_${i}">End Month</label>\
-                      <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
-                    </div>\
-                  </div>`
-          form_inputs += html;
+            form_inputs += `<h3>Date Range ${i}</h3>\
+                              <div class="form-row">\
+                                  <div class="form-group col-md-3">\
+                                    <label for="start_day_${i}">Start Day</label>\
+                                    <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
+                                  </div>\
+                                <div class="form-group col-md-3">\
+                                    <label for="start_month_${i}">Start Month</label>\
+                                    <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
+                                  </div>\
+                                <div class="form-group col-md-3">\
+                                  <label for="end_day_${i}">End Day</label>\
+                                  <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
+                                </div>\
+                                <div class="form-group col-md-3">\
+                                  <label for="end_month_${i}">End Month</label>\
+                                  <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
+                                </div>\
+                              </div>`;
         }
-
       $( "#date-ranges" ).html( form_inputs );
-    };
+    }
   });
 });
 
@@ -467,16 +370,14 @@ function createScatter() {
 
                 console.log("successfully plotted the interactive scatter plot!"); // another sanity check
             } else {
-                const tester = document.getElementById('scatter');
+                const d3 = Plotly.d3;
+                const img_jpg= d3.select('#jpg-export');
+
                 const trace1 = {
                     x: resp["simulated"],
                     y: resp["observed"],
-                    "type": 'scattergl',
-                    "mode": 'markers',
-                    "marker": {
-                        "size": 20,
-                        color: "#006400"
-                    }
+                    mode: 'markers',
+                    type: 'scatter'
                 };
 
                 const data = [trace1];
@@ -485,9 +386,25 @@ function createScatter() {
                     title: 'Scatter Plot',
                 };
 
-                Plotly.plot(tester, data, layout);
+                Plotly.plot('scatter', data, layout)
 
-                console.log("successfully plotted the scattergl plot!"); // another sanity check
+                .then(
+                    function (gd) {
+                        Plotly.toImage(gd, {height: 1000, width: 2000})
+                            .then(
+                                function (url) {
+                                    img_jpg.attr("src", url);
+                                    return Plotly.toImage(gd, {format: 'jpeg', height: 1000, width: 2000});
+                                }
+                            )
+                    });
+
+                $( "#scatter" ).empty();
+
+                // document.getElementById("myImg").width = "100%";
+                // document.getElementById("myImg").height = "100%";
+
+                console.log("successfully plotted the static scatter plot!"); // another sanity check
             }
 
         },

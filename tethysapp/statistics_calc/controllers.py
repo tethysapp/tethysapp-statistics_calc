@@ -9,7 +9,6 @@ from __future__ import division, print_function
 # Django Imports
 from django.shortcuts import render, reverse, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
-# from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse
 from django.core import serializers
 
@@ -41,6 +40,7 @@ import shutil
 import datetime
 from StringIO import StringIO
 from pytz import all_timezones
+import datetime
 
 # Setting the Matplotlib Backend
 matplotlib_use('Agg')
@@ -81,9 +81,65 @@ def preprocessing(request):
         "first_name": first_name,
     }
 
-    print(first_name)
+    now = datetime.datetime.now()
+
+    begin_date = DatePicker(
+        name='begin_date',
+        display_text='Begin Date',
+        autoclose=True,
+        format='MM d, yyyy',
+        start_date='1/1/1960',
+        start_view='decade',
+        today_button=True,
+        initial=''
+    )
+
+    end_date = DatePicker(
+        name='end_date',
+        display_text='End Date',
+        autoclose=True,
+        format='MM d, yyyy',
+        start_date='1/1/1960',
+        start_view='decade',
+        today_button=True,
+        initial=''
+    )
+
+    context['begin_date'] = begin_date
+    context['end_date'] = end_date
 
     return render(request, 'statistics_calc/preprocessing.html', context)
+
+
+@login_required()
+def pps_hydrograph_raw_data_ajax(request):
+    """AJAX Controller for the preprocessing page. Creates a Hydrograph given the Interpolation method selected"""
+
+    print("In the raw data ajax controller!")
+
+    if request.method == "POST":
+
+        csv_file = request.FILES.get('pps_csv', None)
+
+        print(csv_file)
+
+        df = pd.read_csv(csv_file, index_col=0, names=['Data'])
+
+        # Changing index to datetime type
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+        df = df[df.index.notnull()]  # Dropping bad time values if necessary
+
+        date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = date_list.tolist()
+
+        data_list = df.iloc[:, 0].tolist()
+
+        resp = {'dates': date_list,
+                'data': data_list,
+                }
+
+        return JsonResponse(resp)
 
 
 @login_required()
@@ -102,8 +158,6 @@ def pps_hydrograph_ajax(request):
             print("No Interpolation")  # Sanity Check
             # try:
             df = pd.read_csv(csv_file, index_col=0, names=['Data'])
-
-            print(df.dtypes)
 
             # Changing index to datetime type
             df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')

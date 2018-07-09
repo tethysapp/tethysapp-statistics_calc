@@ -115,14 +115,14 @@
         </div>
     </div>
 
-    <!--{% if not watershed_error %}-->
-    <!--<label id="reach_id" style="display:none">Reach ID: <input ></label>-->
-    <!--<select id="select_watershed" name="watershed" style="display:none">-->
-    <!--</select>-->
-    <!--{% else %}-->
-    <!--<label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for-->
-    <!--the watershed names, we are working to fix this. Please come back later.</p></label>-->
-    <!--{% endif %}-->
+{#    {% if not watershed_error %}#}
+{#        <label id="reach_id" style="display:none">Reach ID: <input></label>#}
+{#        <select id="select_watershed" name="watershed" style="display:none">#}
+{#        </select>#}
+{#    {% else %}#}
+{#        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for#}
+{#            the watershed names, we are working to fix this. Please come back later.</p></label>#}
+{#    {% endif %}#}
 
     <h2>Preprocessing</h2>
     <hr>
@@ -220,8 +220,7 @@
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
     <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
-    <img id="jpg-export"><!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
-    <div id="plotly_div" style="display: none;"></div>
+    <img id="jpg-export" height="100%" width="100%"><!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
     <h3>Scatter Plot with Log-Log Scale</h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log

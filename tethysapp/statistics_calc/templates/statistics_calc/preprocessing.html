@@ -29,21 +29,25 @@
         {# File Input Button#}
         <div class="input-group">
             <label class="input-group-btn">
-            <span class="btn btn-primary">
+            <span class="btn btn-default waves-effect waves-light">
             CSV File Upload<input type="file" name="pps_csv" id="pps_csv" style="display: none;">
             </span>
             </label>
             <input type="text" id="pps_csv_name" class="form-control" readonly="">
         </div>
 
+        <br>
+
+        <button class="btn btn-success waves-effect waves-light" id="raw_data_plot_button">Generate Raw Data Plot</button>
+
+        <div id="raw_data_plot"><!-- The Hydrograph goes here --></div>
+        <div id="raw_data_results"><!-- The Error messages go here --></div>
+
+        <br>
+
         <h3>Interpolation Type</h3>
 
         <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       value="pps_no_interp">
-                <h4>No Interpolation</h4>
-            </label>
             <label class="btn btn-default form-check-label waves-effect waves-light">
                 <input class="form-check-input" type="radio" autocomplete="off"
                        value="pps_linear">
@@ -61,13 +65,24 @@
             </label>
         </div>
 
+        <br><br>
+
         <h3>Interpolation Frequency</h3>
 
-        <input type="number" min="0" name="pps_interp_hours" step="1" placeholder="Hours">
+        <input type="number" min="0" name="pps_interp_hours" step="1" placeholder="Hours" class="form-control">
+        <input type="number" min="0" name="pps_interp_minutes" step="15" placeholder="Minutes" class="form-control">
 
-        <input type="number" min="0" name="pps_interp_minutes" step="15" placeholder="Minutes">
+        <br>
 
+        <h3>Time Range</h3>
 
+        {% gizmo begin_date %}
+        {% gizmo end_date %}
+
+        <br>
+
+        <button class="btn btn-success waves-effect waves-light">Generate Plot</button>
+        <button class="btn btn-success waves-effect waves-light">Download CSV</button>
 
         <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
 
