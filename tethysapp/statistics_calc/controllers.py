@@ -34,11 +34,14 @@ import hydrostats.visual as hv
 import hydrostats.data as hd
 
 # Various Python Standard Library Imports
+import sys
 import requests
 import os
 import shutil
-import datetime
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from pytz import all_timezones
 import datetime
 
@@ -81,8 +84,6 @@ def preprocessing(request):
         "first_name": first_name,
     }
 
-    now = datetime.datetime.now()
-
     begin_date = DatePicker(
         name='begin_date',
         display_text='Begin Date',
@@ -98,7 +99,7 @@ def preprocessing(request):
         name='end_date',
         display_text='End Date',
         autoclose=True,
-        format='MM d, yyyy',
+        format='MM d, yyyy ',
         start_date='1/1/1960',
         start_view='decade',
         today_button=True,
@@ -132,12 +133,30 @@ def pps_hydrograph_raw_data_ajax(request):
 
         date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
         date_list = date_list.tolist()
-
         data_list = df.iloc[:, 0].tolist()
 
         resp = {'dates': date_list,
                 'data': data_list,
                 }
+
+        # Getting basic info from the data
+        time_values = df.index
+        len_time_values = len(time_values)
+
+        time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
+        time_delta_freq = time_delta.value_counts()
+
+        common_time_delta = str(time_delta_freq.index[0])
+
+        if time_delta_freq.values.size > 1:
+            message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
+            </strong> The most common timedelta in the time series is {}.</div>"""
+
+            resp['information'] = message.format(common_time_delta)
+        else:
+            message = """<div class="alert alert-success" role="alert">The timeseries data is <strong> consistent
+            </strong> with a timedelta of {}.</div>"""
+            resp['information'] = message.format(common_time_delta)
 
         return JsonResponse(resp)
 
@@ -150,66 +169,107 @@ def pps_hydrograph_ajax(request):
 
         interp_method = request.POST.get('interp_method', None)
         csv_file = request.FILES.get('pps_csv', None)
+        interp_hours = request.POST.get('interp_hours', None)
+        interp_minutes = request.POST.get('interp_minutes', None)
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+
+        begin_date = pd.to_datetime(begin_date)
+        end_date = pd.to_datetime(end_date)
 
         print("Csv file is: {}".format(csv_file))
+        print(interp_method)
+        print(interp_hours, interp_minutes)
+        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
+        print(type(begin_date))
+        # Reading CSV and ensuring that the data column is the correct type
+        df = pd.read_csv(csv_file, index_col=0)
+        df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+        # Changing index to datetime type
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
 
-        if interp_method == "no_interp":
+        # Dropping bad time values if necessary
+        df = df[df.index.notnull()]
 
-            print("No Interpolation")  # Sanity Check
-            # try:
-            df = pd.read_csv(csv_file, index_col=0, names=['Data'])
-
-            # Changing index to datetime type
-            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
-
-            df = df[df.index.notnull()]  # Dropping bad time values if necessary
-
-            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
-            date_list = date_list.tolist()
-
-            data_list = df.iloc[:, 0].tolist()
-
-            resp = {'dates': date_list,
-                    'data': data_list,
-                    }
-
-            return JsonResponse(resp)
-
+        # Stripping time if the user requests for it
+        if pd.isna(begin_date) and pd.isnull(end_date):
+            pass
         else:
-            print("Other Interpolation Type")  # Sanity Check
-            print(interp_method)
-            df = pd.read_csv(csv_file, index_col=0)
-            df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
-            # Changing index to datetime type
-            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+            df = df.loc[begin_date: end_date]
 
-            # Dropping bad time values if necessary
-            df = df[df.index.notnull()]
+        new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
-            # Interpolating the time series
-            hours = request.POST.get("pps_interp_hours", None)
-            minutes = request.POST.get("pps_interp_minutes", None)
+        df = df.reindex(new_index)
+        df = df.interpolate(interp_method)
 
-            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(hours, minutes))
+        print(df)
 
-            df = df.reindex(new_index)
-            print(df)
-            print(interp_method)
-            df = df.interpolate(interp_method)
+        date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = date_list.tolist()
 
-            print(df)
+        data_list = df.iloc[:, 0].tolist()
 
-            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
-            date_list = date_list.tolist()
+        resp = {
+            'dates': date_list,
+            'data': data_list,
+        }
 
-            data_list = df.iloc[:, 0].tolist()
+        return JsonResponse(resp)
 
-            resp = {
-                'dates': date_list,
-                'data': data_list,
-                    }
 
-            return JsonResponse(resp)
+@login_required()
+def pps_csv(request):
+    if request.method == "POST":
+
+        interp_method = request.POST.get('interp_method', None)
+        csv_file = request.FILES.get('pps_csv', None)
+        interp_hours = request.POST.get('interp_hours', None)
+        interp_minutes = request.POST.get('interp_minutes', None)
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+
+        begin_date = pd.to_datetime(begin_date)
+        end_date = pd.to_datetime(end_date)
+
+        print("Csv file is: {}".format(csv_file))
+        print(interp_method)
+        print(interp_hours, interp_minutes)
+        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
+
+        # Reading CSV and ensuring that the data column is the correct type
+        df = pd.read_csv(csv_file, index_col=0)
+        df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+        # Changing index to datetime type
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+        # Dropping bad time values if necessary
+        df = df[df.index.notnull()]
+
+        # Stripping time if the user requests for it
+        df = df.loc[begin_date: end_date]
+
+        new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
+
+        df = df.reindex(new_index)
+        df = df.interpolate(interp_method)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
+
+        df.to_csv(path_or_buf=response)
+
+        return response
+
+
+@login_required()
+def merge_two_datasets(request):
+    """
+    Controller for the app home page.
+    """
+
+    context = {}
+
+    return render(request, 'statistics_calc/merge_two_datasets.html', context)
 
 
 @login_required()

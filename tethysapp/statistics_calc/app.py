@@ -45,6 +45,16 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.pps_hydrograph_raw_data_ajax'
             ),
             UrlMap(
+                name='pps_csv',
+                url='pps_csv',
+                controller='statistics_calc.controllers.pps_csv'
+            ),
+            UrlMap(
+                name='merge_two_datasets',
+                url='merge_two_datasets',
+                controller='statistics_calc.controllers.merge_two_datasets'
+            ),
+            UrlMap(
                 name='calculate_single',
                 url='calculate_single',
                 controller='statistics_calc.controllers.calculate_single'

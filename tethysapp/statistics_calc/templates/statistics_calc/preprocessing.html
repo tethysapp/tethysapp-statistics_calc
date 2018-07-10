@@ -18,10 +18,10 @@
         </p>
     </div>
 
-    <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data">
+    <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/pps_csv/">
         {% csrf_token %}
 
-        <h2>Timeseries Data</h2>
+        <h2>Raw Data Checks</h2>
         <hr>
 
         <h3>File Upload (CSV)</h3>
@@ -38,29 +38,34 @@
 
         <br>
 
-        <button class="btn btn-success waves-effect waves-light" id="raw_data_plot_button">Generate Raw Data Plot</button>
+        <button class="btn btn-success waves-effect waves-light" id="raw_data_plot_button">Analyze Raw Data</button>
 
-        <div id="raw_data_plot"><!-- The Hydrograph goes here --></div>
-        <div id="raw_data_results"><!-- The Error messages go here --></div>
+        <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
+        <div id="raw_data_results">{# The Error messages go here #}</div>
+
+        <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
 
         <br>
+
+        <h2>Preprocessing</h2>
+        <hr>
 
         <h3>Interpolation Type</h3>
 
         <div class="btn-group" data-toggle="buttons">
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       value="pps_linear">
+                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
+                       value="linear">
                 <h4>Linear Interpolation</h4>
             </label>
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       value="pps_pchip">
+                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
+                       value="pchip">
                 <h4>PCHIP Interpolation</h4>
             </label>
             <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       value="pps_cubic">
+                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
+                       value="cubic">
                 <h4>Cubic Interpolation</h4>
             </label>
         </div>
@@ -69,20 +74,25 @@
 
         <h3>Interpolation Frequency</h3>
 
-        <input type="number" min="0" name="pps_interp_hours" step="1" placeholder="Hours" class="form-control">
-        <input type="number" min="0" name="pps_interp_minutes" step="15" placeholder="Minutes" class="form-control">
+        <input type="number" min="0" name="interp_hours" step="1" placeholder="Hours" class="form-control">
+        <input type="number" min="0" name="interp_minutes" step="15" placeholder="Minutes" class="form-control">
 
         <br>
 
         <h3>Time Range</h3>
 
-        {% gizmo begin_date %}
-        {% gizmo end_date %}
+        <input type="checkbox" id="time_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+           data-onstyle="success" data-offstyle="danger" data-size="mini">
+
+        <div id="time_range_inputs" style="display: none">
+            {% gizmo begin_date %}
+            {% gizmo end_date %}
+        </div>
 
         <br>
 
-        <button class="btn btn-success waves-effect waves-light">Generate Plot</button>
-        <button class="btn btn-success waves-effect waves-light">Download CSV</button>
+        <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
+        <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
 
         <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
 

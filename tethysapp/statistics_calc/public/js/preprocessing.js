@@ -1,8 +1,3 @@
-// ####################################################################################################################
-// Preprocesing Functions
-// ####################################################################################################################
-
-
 // >>>>>>>>jQuery Functions<<<<<<<<
 
 // Function for the file upload
@@ -22,31 +17,33 @@ $(document).ready(function() {
     });
 });
 
+// Function to show the begin and end date inputs if the user wants them
+$(document).ready( function() {
+    $("#time_range_bool").change( function(evt) {
+        evt.preventDefault();
+        if($(this).is(":checked")) {
+            console.log('Checkbox Checked!')
+        }
+        console.log('Time Range Slider Clicked.'); // sanity check
 
+    });
+});
+
+// Creating a plot with the preprocessed data
 $(document).ready(function() {
-    $("#pps_linear").click( function() {
-        console.log('Linear Interpolation Event Triggered'); // sanity check
-        const name = "interp_method";
-        const value = "linear";
-        ppsPlotHydrograph(name, value);
+    $("#generate_plot").click( function(evt) {
+        evt.preventDefault();
+        console.log('Plot preprocessed data Event Triggered'); // sanity check
+        console.log($('#begin_date').val());
+        ppsPlotHydrograph();
     });
 });
 
 $(document).ready(function() {
-    $("#pps_cubic").click( function() {
-        console.log('Cubic Spline Interpolation Event Triggered') // sanity check
-        const name = "interp_method";
-        const value = "cubic";
-        ppsPlotHydrograph(name, value);
-    });
-});
-
-$(document).ready(function() {
-    $("#pps_pchip").click( function() {
-        console.log('PCHIP Interpolation Event Triggered') // sanity check
-        const name = "interp_method";
-        const value = "pchip";
-        ppsPlotHydrograph(name, value);
+    $("#csv_button").click( function(evt) {
+        evt.preventDefault();
+        $( "#pps_form" ).submit();
+        console.log('CSV response Event Triggered'); // sanity check
     });
 });
 
@@ -76,9 +73,34 @@ function plotRawData() {
 
             let layout = {
                 title: 'Hydrograph',
+                titlefont: {
+                    family: 'Arial',
+                    size: 24,
+                    color: '#000000'
+                },
+
+                xaxis: {
+                    title: "Datetime",
+                    titlefont: {
+                        family: 'Arial',
+                        size: 18,
+                        color: '#000000'
+                    },
+                },
+                yaxis: {
+                    title: 'Streamflow (cms)',
+                    titlefont: {
+                        family: 'Arial',
+                        size: 18,
+                        color: '#000000'
+                    },
+                },
             };
 
             Plotly.newPlot('raw_data_plot', data, layout);
+
+            console.log(resp['information']);
+            $('#raw_data_results').html(resp['information']);
 
         },
 
@@ -90,10 +112,10 @@ function plotRawData() {
     });
 }
 
-function ppsPlotHydrograph(name, value) {
-    var formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
-    formData.append(name, value); // appending the name and value based on the button clicked
+function ppsPlotHydrograph() {
+    let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
     console.log(formData); // another sanity check
+    $('#pps_hydrograph').empty();
 
     $.ajax({
         url : "/apps/statistics-calc/pps_hydrograph_ajax/", // the endpoint
@@ -104,7 +126,7 @@ function ppsPlotHydrograph(name, value) {
 
         // handle a successful response
         success : function(resp) {
-            var trace = {
+            let trace = {
                 type: "scatter",
                 mode: "lines",
                 name: "Simulated Data",
@@ -113,8 +135,8 @@ function ppsPlotHydrograph(name, value) {
                 line: {color: '#17BECF'}
             };
 
-            var data = [trace];
-            var layout = {
+            let data = [trace];
+            let layout = {
                 title: 'Hydrograph',
             };
 
@@ -124,9 +146,8 @@ function ppsPlotHydrograph(name, value) {
 
         // handle a non-successful response
         error : function(xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-//            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            $("#pps_hydrograph").html(xhr.responseText);
+            $('#pps_hydrograph').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+           console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
 }
