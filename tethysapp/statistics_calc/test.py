@@ -6,6 +6,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 import hydrostats.visual as hv
 import hydrostats.data as hd
+import requests
+from helper_functions import parse_api_request
+from ast import literal_eval
+
+request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+
+print("About to request headers")
+
+res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
+                   headers=request_headers)
+print('The API response for headers is:')
+print(res)
+print(res.content)
+
+watershed_list = literal_eval(res.content)
+print(type(watershed_list))
+# Formatting the watershed name to fit the API if necessary
+
+# for i in range(len(watershed_list)):
+#     watershed_raw = watershed_list[i][0].replace(" ", '_')
+#     subbasin = watershed_raw[watershed_raw.find('(') + 1:-1]
+#     watershed = watershed_raw[:watershed_raw.find('(')-1]
+#     print(watershed)
+#     print(subbasin)
+#
+    # try:
+    #     print(parse_api_request(watershed=watershed, subbasin=subbasin, reach=2))
+    # except:
+    #     print("Failed on {}".format(watershed_list[i][0]))
+
+file = parse_api_request(watershed=watershed_list[0][0], reach=136415)
 
 
 

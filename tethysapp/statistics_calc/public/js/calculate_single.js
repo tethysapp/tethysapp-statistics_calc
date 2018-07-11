@@ -2,7 +2,6 @@
 // Calculate Single Stream Functions
 // ####################################################################################################################
 
-
 function myFunction() {
     console.log('myFunction is Running!'); // sanity check
     // Get the checkbox
@@ -432,7 +431,7 @@ function createTable() {
 
 // Ajax for Volume Table
 function createVolumeTable() {
-    let formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
     $.ajax({
@@ -444,7 +443,7 @@ function createVolumeTable() {
 
         // handle a successful response
         success : function(resp) {
-            console.log(resp)
+            console.log(resp);
             let sim_volume = resp["sim_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             let obs_volume = resp["obs_volume"].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             $("#volume_table_div").show();

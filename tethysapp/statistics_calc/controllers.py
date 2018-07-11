@@ -26,11 +26,12 @@ from matplotlib import use as matplotlib_use
 import matplotlib.pyplot as plt
 from scipy import integrate
 
-# Hydrostats Imports
+# Hydrostats Imports and helper functions
 import hydrostats as hs
 from hydrostats.metrics import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
+from helper_functions import parse_api_request
 
 # Various Python Standard Library Imports
 import sys
@@ -44,7 +45,7 @@ except ImportError:
 from io import BytesIO
 from pytz import all_timezones
 import datetime
-import base64
+from ast import literal_eval
 
 # Setting the Matplotlib Backend
 matplotlib_use('Agg')
@@ -295,6 +296,21 @@ def merge_two_datasets(request):
     """
     Controller for the merge_two_datasets page.
     """
+    # Getting the watershed names
+    watershed_error = False
+
+    context = {}
+
+    try:
+        request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+        res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
+                           headers=request_headers)
+        watersheds = literal_eval(res.content)
+        watersheds = [i[0] for i in watersheds]
+        context["watersheds"] = watersheds
+    except:
+        print("Watershed API request failed!")
+        watershed_error = True
 
     obs_tz_select = SelectInput(
         display_text='Observed Data Timezone',
@@ -316,10 +332,8 @@ def merge_two_datasets(request):
                          'allowClear': True}
     )
 
-    context = {
-        "obs_tz_select": obs_tz_select,
-        "sim_tz_select": sim_tz_select
-    }
+    context["obs_tz_select"] = obs_tz_select
+    context["sim_tz_select"] = sim_tz_select
 
     return render(request, 'statistics_calc/merge_two_datasets.html', context)
 
@@ -331,11 +345,22 @@ def merged_hydrograph(request):
     """
     if request.method == 'POST':
 
-        print(request.POST)
-        print(request.FILES)
-
-        sim = request.FILES.get('sim_csv', None)
+        # getting the observed and simulated data
         obs = request.FILES.get('obs_csv', None)
+
+        if request.POST.get("predicted_radio", None) == "upload":
+            sim = request.FILES.get('sim_csv', None)
+
+        elif request.POST.get("predicted_radio", None) == "sfpt":
+            reach_id = request.POST.get("reach_id", None)
+            watershed = request.POST.get("watershed", None)
+            sim = parse_api_request(watershed=watershed, reach=reach_id)
+            obs = pd.read_csv(obs, index_col=0)
+            obs.index = pd.to_datetime(obs.index, errors="coerce")
+
+        else:
+            sim = None
+
         timezone_boolean = request.POST.get('time_zone_bool', None)
 
         print(sim, obs, timezone_boolean)
@@ -350,23 +375,34 @@ def merged_hydrograph(request):
             observed_tz = None
             interpolate = None
 
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
+        if request.POST.get("predicted_radio", None) == "upload":
+            merged_df = hd.merge_data(
+                sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+            )
+        elif request.POST.get("predicted_radio", None) == "sfpt":
+            merged_df = hd.merge_data(
+                sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+            )
+        else:
+            merged_df = None
 
-        date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
-        date_list = date_list.tolist()
-        print(type(date_list))
-        print(date_list)
+        if merged_df is not None:
+            date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+            print(type(date_list))
+            print(date_list)
 
-        sim_list = merged_df.iloc[:, 0].tolist()
-        print(type(sim_list))
-        obs_list = merged_df.iloc[:, 1].tolist()
+            sim_list = merged_df.iloc[:, 0].tolist()
+            print(type(sim_list))
+            obs_list = merged_df.iloc[:, 1].tolist()
 
-        resp = {'dates': date_list,
-                'simulated': sim_list,
-                'observed': obs_list}
+            resp = {'dates': date_list,
+                    'simulated': sim_list,
+                    'observed': obs_list}
+        else:
+            resp = None
 
         return JsonResponse(resp)
 
@@ -721,28 +757,9 @@ def volume_table_ajax(request):
     """Calculates the volumes of two streams"""
 
     if request.method == 'POST':
-        sim = request.FILES.get('simulated-csv', None)
-        obs = request.FILES.get('observed-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
+        merged_csv = request.FILES.get('merged_csv', None)
 
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
+        merged_df = pd.read_csv(merged_csv, index_col=0)
 
         sim_array = merged_df.iloc[:, 0].values
         obs_array = merged_df.iloc[:, 1].values
@@ -1794,6 +1811,8 @@ def test_template(request):
     """
 
     context = {}
+
+    print(request.user)
 
     return render(request, 'statistics_calc/test_template.html', context)
 

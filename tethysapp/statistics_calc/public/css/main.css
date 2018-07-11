@@ -54,3 +54,15 @@ div.metric-table {
     height: 270px;
     overflow: scroll;
 }
+
+input.form-fixer {
+    padding: 1px;
+}
+
+.form-horizontal .form-group input,
+.form-horizontal .form-group select,
+.form-horizontal .form-group label
+ {
+    height: 14px;
+    line-height: 14px;
+}

@@ -4,194 +4,197 @@
 {% load tethys_gizmos staticfiles %}
 
 {% block styles %}
-{{ block.super }}
-<link href="{% static 'statistics_calc/css/calculate_single.css' %}"
-      rel="stylesheet"/>
+    {{ block.super }}
+    <link href="{% static 'statistics_calc/css/calculate_single.css' %}"
+          rel="stylesheet"/>
 {% endblock %}
 
 {% block app_content %}
 
-<div class="jumbotron jumbotron-fluid">
-    <h1>Single Stream Analyzer</h1>
-</div>
+    <div class="jumbotron jumbotron-fluid">
+        <h1>Single Stream Analyzer</h1>
+    </div>
 
-<!-- data form-->
-<form id="validate_stream" name="validate_stream" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+    <!-- data form-->
+    <form id="validate_stream" name="validate_stream" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
-    <h2>Merged Data Upload</h2>
-    <hr>
+        <h2>Merged Data Upload</h2>
+        <hr>
 
-    <div class="input-group">
-        <label class="input-group-btn">
+        <div class="input-group">
+            <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
             CSV File Upload<input type="file" name="merged_csv" id="merged_csv" style="display: none;">
             </span>
-        </label>
-        <input type="text" id="merged_csv_name" class="form-control" readonly="">
+            </label>
+            <input type="text" id="merged_csv_name" class="form-control" readonly="">
+        </div>
+
+        <br><br>
+
+        <h2>Visualization</h2>
+        <hr>
+
+        <h3>Hydrograph of Entire Time Series</h3>
+
+        <button type="button" class="btn btn-default btn-block" id="create-hydrograph">Create Hydrograph</button>
+        <div id="hydrograph"><!-- Hydrograph will be drawn inside this DIV --></div>
+
+        <h3>Hydrograph of Daily Averages</h3>
+
+        <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">Create Hydrograph of
+            Daily
+            Averages
+        </button>
+        <div id="hydrograph-daily-avg"><!-- Hydrograph of daily averages will be drawn inside this DIV --></div>
+
+        <h3>Scatter Plot</h3>
+
+        <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
+        <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
+        <img id="jpg-export" height="100%" width="100%">
+        <!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
+        <h3>Scatter Plot with Log-Log Scale</h3>
+
+        <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log
+            Scale
+        </button>
+        <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
+
+        <br>
+
+        <h2>Table</h2>
+        <hr>
+
+        <h3>Remove Negative Values?&nbsp;</h3>
+        <input type="checkbox" name="remove_neg_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+               data-onstyle="success" data-offstyle="danger" data-size="mini">
+
+        <h3>Remove Zero Values?&nbsp;</h3>
+        <input type="checkbox" name="remove_zero_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+               data-onstyle="success" data-offstyle="danger" data-size="mini">
+
+        <!--Optional: Date Range-->
+        <h3>Include Analysis of Date Range(s) in Table?</h3>
+        <input type="checkbox" name="date_range_bool" id="date_range_bool" data-toggle="toggle" data-on="Yes"
+               data-off="No"
+               data-onstyle="success" data-offstyle="danger" data-size="mini">
+
+        <!--begin date-->
+        <div id="date_range_form" style="display:none">
+            <h4>How many Date Ranges Would You Like to Analyze?
+                <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
+                       step="1" value="0">
+            </h4>
+        </div>
+
+        <div id="date-ranges"></div>
+        <br><br>
+
+
+        <h3>Select the Metrics to Include in the Table:</h3>
+
+        <!--Displaying all of the metrics for the user to select-->
+        <div class="ex1">
+            {% for name_abbr in metric_loop_list %} {% if forloop.counter0 == 7 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    M = <input type="number" name="mase_m" min="0" max="100" step=".1" value="1"> (Non-Seasonal = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 18 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    J = <input type="number" name="dmod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 22 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    J = <input type="number" name="nse_mod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 24 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    x&#772;' = <input type="number" name="lm_x_bar"
+                                      min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
+                </label>
+                <br> {% elif forloop.counter0 == 44 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    k = <input type="number" name="h6_k_MHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 45 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    k = <input type="number" name="h6_k_AHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 46 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    k = <input type="number" name="h6_k_RMSHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+                </label>
+                <br> {% elif forloop.counter0 == 65 %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
+                </label>
+
+                <label id="{{ name_abbr.1 }}_label" style="display:none">
+                    x&#772;' = <input type="number" name="d1_p_x_bar"
+                                      min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
+                </label>
+                <br> {% else %}
+                <label>
+                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}" name="{{ name_abbr.1 }}"></label>
+                <br> {% endif %} {% endfor %}
+
+        </div>
+        <br>
+    </form>
+
+    <button type="button" class="btn btn-success" id="make-table">Make Table</button><br><br>
+
+    <div class="metric-table" id="metric-table" style="display:none">
+        <div id="table"><!-- The table or errors go here --></div>
     </div>
 
-    <br><br>
-
-    <h2>Visualization</h2>
+    <h2>Volume</h2>
     <hr>
 
-    <h3>Hydrograph of Entire Time Series</h3>
-
-    <button type="button" class="btn btn-default btn-block" id="create-hydrograph">Create Hydrograph</button>
-    <div id="hydrograph"><!-- Hydrograph will be drawn inside this DIV --></div>
-
-    <h3>Hydrograph of Daily Averages</h3>
-
-    <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">Create Hydrograph of Daily
-        Averages
-    </button>
-    <div id="hydrograph-daily-avg"><!-- Hydrograph of daily averages will be drawn inside this DIV --></div>
-
-    <h3>Scatter Plot</h3>
-
-    <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
-    <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
-    <img id="jpg-export" height="100%" width="100%"><!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
-    <h3>Scatter Plot with Log-Log Scale</h3>
-
-    <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log
-        Scale
-    </button>
-    <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
+    <button class="btn btn-success" id="make_volume_table">Compare Volumes</button>
 
     <br>
 
-    <h2>Table</h2>
-    <hr>
-
-    <h3>Remove Negative Values?&nbsp;</h3>
-    <input type="checkbox" name="remove_neg_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="mini">
-
-    <h3>Remove Zero Values?&nbsp;</h3>
-    <input type="checkbox" name="remove_zero_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="mini">
-
-    <!--Optional: Date Range-->
-    <h3>Include Analysis of Date Range(s) in Table?</h3>
-    <input type="checkbox" name="date_range_bool" id="date_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="mini">
-
-    <!--begin date-->
-    <div id="date_range_form" style="display:none">
-        <h4>How many Date Ranges Would You Like to Analyze?
-            <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
-                   step="1" value="0">
-        </h4>
+    <div class="metric-table" id="volume_table_div" style="display:none">
+        <div id="volume_table"><!-- The table or errors go here --></div>
     </div>
-
-    <div id="date-ranges"></div>
-    <br><br>
-
-
-    <h3>Select the Metrics to Include in the Table:</h3>
-
-    <!--Displaying all of the metrics for the user to select-->
-    <div class="ex1">
-        {% for name_abbr in metric_loop_list %} {% if forloop.counter0 == 7 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            M = <input type="number" name="mase_m" min="0" max="100" step=".1" value="1"> (Non-Seasonal = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 18 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            J = <input type="number" name="dmod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 22 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            J = <input type="number" name="nse_mod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 24 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            x&#772;' = <input type="number" name="lm_x_bar"
-                              min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
-        </label>
-        <br> {% elif forloop.counter0 == 44 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            k = <input type="number" name="h6_k_MHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 45 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            k = <input type="number" name="h6_k_AHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 46 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            k = <input type="number" name="h6_k_RMSHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-        </label>
-        <br> {% elif forloop.counter0 == 65 %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
-        </label>
-
-        <label id="{{ name_abbr.1 }}_label" style="display:none">
-            x&#772;' = <input type="number" name="d1_p_x_bar"
-                              min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
-        </label>
-        <br> {% else %}
-        <label>
-            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}" name="{{ name_abbr.1 }}"></label>
-        <br> {% endif %} {% endfor %}
-
-    </div>
-    <br>
-</form>
-
-<button type="button" class="btn btn-success" id="make-table">Make Table</button><br><br>
-
-<div class="metric-table" id="metric-table" style="display:none">
-    <div id="table"><!-- The table or errors go here --></div>
-</div>
-
-<h2>Volume</h2>
-<hr>
-
-<button class="btn btn-success" id="make_volume_table">Compare Volumes</button>
-
-<br>
-
-<div class="metric-table" id="volume_table_div" style="display:none">
-    <div id="volume_table"><!-- The table or errors go here --></div>
-</div>
 
 {% endblock %}

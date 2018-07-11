@@ -8,6 +8,24 @@ $(document).ready(function() {
     });
 });
 
+// Function to validate the File Upload
+$(document).ready(function() {
+    $("#pps_csv").change(function () {
+        let theFile = document.getElementById("pps_csv").files[0];
+        let reader = new FileReader();
+        reader.addEventListener('load', readFile);
+        reader.readAsText(theFile);
+
+        function readFile(event) {
+            let csvText = event.target.result;
+            let firstLine = csvText.split('\n').shift(); // First Line
+            let firstLineArray = $.csv.toArray(firstLine);
+
+            console.log(firstLineArray.length)
+        }
+    });
+});
+
 // Creating a raw data plot
 $(document).ready(function() {
     $("#raw_data_plot_button").click( function(evt) {
