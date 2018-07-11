@@ -2,12 +2,6 @@
 {% load tethys_gizmos %}
 {% load tethys_gizmos staticfiles %}
 
-{% block styles %}
-    {{ block.super }}
-    <link href="{% static 'statistics_calc/css/calculate_single.css' %}"
-          rel="stylesheet"/>
-{% endblock %}
-
 {% block app_content %}
 
     <div class="jumbotron jumbotron-fluid">
@@ -74,15 +68,30 @@
 
         <h3>Interpolation Frequency</h3>
 
-        <input type="number" min="0" name="interp_hours" step="1" placeholder="Hours" class="form-control">
-        <input type="number" min="0" name="interp_minutes" step="15" placeholder="Minutes" class="form-control">
+        {% gizmo hour_slider %}
+
+        <div class="alert alert-secondary" id="interp_hour_value" role="alert">
+            0 Hours
+        </div>
+
+        {% gizmo minute_slider %}
+
+        <div class="alert alert-secondary" id="interp_minute_value" role="alert">
+            0 Minutes
+        </div>
 
         <br>
 
         <h3>Time Range</h3>
 
+        <h4>
+            Do you want to timescale this data?
+        </h4>
+
         <input type="checkbox" id="time_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="mini">
+           data-onstyle="success" data-offstyle="danger" data-size="small">
+
+        <br><br>
 
         <div id="time_range_inputs" style="display: none">
             {% gizmo begin_date %}

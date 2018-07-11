@@ -16,190 +16,22 @@
 </div>
 
 <!-- data form-->
-<form id="csv-upload" name="post-form" method="post" enctype="multipart/form-data">
+<form id="validate_stream" name="validate_stream" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <h2>Data Upload</h2>
+    <h2>Merged Data Upload</h2>
     <hr>
 
-    <h3>Observed Data</h3>
-
-    <div class="row">
-        <div class="col-md-3">
-            <h4>Units</h4>
-        </div>
-        <div class="col-md-9">
-            <h4>File Upload (CSV)</h4>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-3">
-            <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
-                   data-onstyle="success" data-offstyle="primary" data-size="normal" id="observed-units" checked>
-        </div>
-        <div class="col-md-9"><label class="btn btn-default btn-file btn-sm">
-            <input type="file" name="observed-csv" id="observed-csv" multiple>
-        </label></div>
-
-    </div>
-    <h3>Simulated Data</h3>
-
-    <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
-    <div class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default form-check-label waves-effect waves-light">
-            <input class="form-check-input" type="radio" autocomplete="off"
-                   name="predicted_radio" value="upload">
-            <h4>Upload Predicted Data (CSV):</h4>
+    <div class="input-group">
+        <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="merged_csv" id="merged_csv" style="display: none;">
+            </span>
         </label>
-        <label class="btn btn-default form-check-label waves-effect waves-light">
-            <input class="form-check-input" type="radio" autocomplete="off"
-                   name="predicted_radio" value="sfpt">
-            <h4>Use Streamflow Prediction Tool Historical Data:</h4>
-        </label>
+        <input type="text" id="merged_csv_name" class="form-control" readonly="">
     </div>
 
     <br><br>
-    <!--Form for uploading simulated data-->
-    <div class="sim_upload" id="upload" style="display:none">
-        <div class="row">
-            <div class="col-md-3">
-                <h4>Units</h4>
-            </div>
-            <div class="col-md-9">
-                <h4>File Upload (CSV)</h4>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <input type="checkbox" name="simulated-units-upload" id="simulated-units-upload" data-toggle="toggle"
-                       data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="normal"
-                       class="form-control" checked>
-            </div>
-            <div class="col-md-9">
-                <label class="btn btn-default btn-file btn-sm">
-                    <input type="file" name="simulated-csv" id="simulated-csv">
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <!--Form for using the streamflow prediction tool data-->
-    <div class="sim_upload" id="sfpt" style="display:none">
-        <div class="row">
-            <div class="col-md-2">
-                <h4>Units</h4>
-            </div>
-            <div class="col-md-3">
-                <h4>Reach ID</h4>
-            </div>
-            <div class="col-md-7">
-                <h4>Watershed</h4>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-2">
-                <input type="checkbox" name="simulated_units_sfpt" id="simulated_units_sfpt" data-toggle="toggle"
-                       data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="small"
-                       class="form-control" checked>
-            </div>
-            <div class="col-md-3">
-                <input type="number" value=1 name="reach_id" id="reach_id" min="0">
-            </div>
-            <div class="col-md-7">
-                <select id="select_watershed" name="watershed" id="simulated_watershed" class="selectpicker">
-                    {% for choice in watersheds %}
-                    <option value="{{ choice }}">{{ choice }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-    </div>
-
-{#    {% if not watershed_error %}#}
-{#        <label id="reach_id" style="display:none">Reach ID: <input></label>#}
-{#        <select id="select_watershed" name="watershed" style="display:none">#}
-{#        </select>#}
-{#    {% else %}#}
-{#        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for#}
-{#            the watershed names, we are working to fix this. Please come back later.</p></label>#}
-{#    {% endif %}#}
-
-    <h2>Preprocessing</h2>
-    <hr>
-
-    <div class="row">
-        <div class="col-md-4">
-            <h5>Timeseries Have Equal Spacing</h5>
-        </div>
-
-        <div class="col-md-4">
-            <h5>Timeseries Have Unequal Spacing</h5>
-        </div>
-
-        <div class="col-md-4">
-            <h5>Timeseries have Different Timezones</h5>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="radio" name="preprocessing" value="equal-time" checked>
-            </label>
-        </div>
-        <div class="col-md-4">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="radio" name="preprocessing" value="unequal-time" id="unequal_time">
-            </label>
-        </div>
-        <div class="col-md-4">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input type="checkbox" name="timezone" id="timezone">
-            </label>
-        </div>
-    </div>
-
-    <br>
-
-    <!--Interpolation Choice Form-->
-    <div id="preprocessing_form" style="display:none">
-        <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       name="interpolate_radio" value="simulated">
-                <h4>Interpolate Simulated Data</h4>
-            </label>
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off"
-                       name="interpolate_radio" value="observed">
-                <h4>Interpolate Observed Data</h4>
-            </label>
-        </div>
-    </div>
-
-    <br>
-
-    <!--Timezone Form-->
-    <div id="timezone_form" style="display:none">
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="sim_timezone">Simulated Data Timezone</label>
-                <select class="form-control" id="sim_timezone" name="sim_timezone" data-live-search="true">
-                    {% for choice in timezones %}
-                    <option value="{{ choice }}">{{ choice }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group col-md-6">
-                <label for="obs_timezone">Observed Data Timezone</label>
-                <select class="form-control" id="obs_timezone" name="obs_timezone" data-live-search="true">
-                    {% for choice in timezones %}
-                    <option value="{{ choice }}">{{ choice }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-    </div>
 
     <h2>Visualization</h2>
     <hr>
@@ -226,7 +58,7 @@
     <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log
         Scale
     </button>
-    <div id="scatter-log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
+    <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
 
     <br>
 

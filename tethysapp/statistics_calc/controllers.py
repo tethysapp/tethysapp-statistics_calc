@@ -13,8 +13,7 @@ from django.http.response import JsonResponse
 from django.core import serializers
 
 # Tethys Imports
-from tethys_sdk.gizmos import Button, TableView, PlotlyView, TextInput, \
-    SelectInput, ToggleSwitch, DatePicker, TextInput
+from tethys_sdk.gizmos import SelectInput, DatePicker, RangeSlider
 from .app import StatisticsCalc as app
 
 # Data Management and Plotting imports
@@ -42,8 +41,10 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+from io import BytesIO
 from pytz import all_timezones
 import datetime
+import base64
 
 # Setting the Matplotlib Backend
 matplotlib_use('Agg')
@@ -57,14 +58,14 @@ def home(request):
 
     first_name = request.user.get_short_name()
 
+    print(first_name)
+
     if first_name == "":
         first_name = "there"
 
     context = {
         "first_name": first_name,
     }
-
-    print(first_name)
 
     return render(request, 'statistics_calc/home.html', context)
 
@@ -83,6 +84,27 @@ def preprocessing(request):
     context = {
         "first_name": first_name,
     }
+
+    hour_slider = RangeSlider(
+        display_text='Hours',
+        name='interp_hours',
+        min=0,
+        max=24,
+        initial=0,
+        step=1,
+    )
+
+    minute_slider = RangeSlider(
+        display_text='Minutes',
+        name='interp_minutes',
+        min=0,
+        max=45,
+        initial=0,
+        step=15
+    )
+
+    context["hour_slider"] = hour_slider
+    context["minute_slider"] = minute_slider
 
     begin_date = DatePicker(
         name='begin_date',
@@ -193,9 +215,11 @@ def pps_hydrograph_ajax(request):
 
         # Stripping time if the user requests for it
         if pd.isna(begin_date) and pd.isnull(end_date):
-            pass
+            print('The User did not want to time scale.')
         else:
             df = df.loc[begin_date: end_date]
+
+        print(df)
 
         new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
@@ -246,7 +270,12 @@ def pps_csv(request):
         df = df[df.index.notnull()]
 
         # Stripping time if the user requests for it
-        df = df.loc[begin_date: end_date]
+        if pd.isna(begin_date) and pd.isnull(end_date):
+            print('The User did not want to time scale.')
+        else:
+            df = df.loc[begin_date: end_date]
+
+        print(df)
 
         new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
@@ -264,12 +293,118 @@ def pps_csv(request):
 @login_required()
 def merge_two_datasets(request):
     """
-    Controller for the app home page.
+    Controller for the merge_two_datasets page.
     """
 
-    context = {}
+    obs_tz_select = SelectInput(
+        display_text='Observed Data Timezone',
+        name='obs_tz',
+        multiple=False,
+        options=list(zip(all_timezones, all_timezones)),
+        initial=[all_timezones[0]],
+        select2_options={'placeholder': '',
+                         'allowClear': True}
+    )
+
+    sim_tz_select = SelectInput(
+        display_text='Simulated Data Timezone',
+        name='sim_tz',
+        multiple=False,
+        options=list(zip(all_timezones, all_timezones)),
+        initial=[all_timezones[0]],
+        select2_options={'placeholder': '',
+                         'allowClear': True}
+    )
+
+    context = {
+        "obs_tz_select": obs_tz_select,
+        "sim_tz_select": sim_tz_select
+    }
 
     return render(request, 'statistics_calc/merge_two_datasets.html', context)
+
+
+@login_required()
+def merged_hydrograph(request):
+    """
+    AJAX Controller for the merge_two_datasets page to plot a hydrograph of the datasets when merged.
+    """
+    if request.method == 'POST':
+
+        print(request.POST)
+        print(request.FILES)
+
+        sim = request.FILES.get('sim_csv', None)
+        obs = request.FILES.get('obs_csv', None)
+        timezone_boolean = request.POST.get('time_zone_bool', None)
+
+        print(sim, obs, timezone_boolean)
+
+        if timezone_boolean == 'on':
+            simulated_tz = request.POST.get('sim_tz', None)
+            observed_tz = request.POST.get('obs_tz', None)
+            interpolate = request.POST.get('interpolate_radio')
+            print(simulated_tz, observed_tz, interpolate)
+        else:
+            simulated_tz = None
+            observed_tz = None
+            interpolate = None
+
+        merged_df = hd.merge_data(
+            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+        )
+
+        date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = date_list.tolist()
+        print(type(date_list))
+        print(date_list)
+
+        sim_list = merged_df.iloc[:, 0].tolist()
+        print(type(sim_list))
+        obs_list = merged_df.iloc[:, 1].tolist()
+
+        resp = {'dates': date_list,
+                'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp)
+
+
+@login_required()
+def merged_csv_download(request):
+    """
+    AJAX Controller for the merge_two_datasets page to plot a hydrograph of the datasets when merged.
+    """
+    if request.method == 'POST':
+
+        sim = request.FILES.get('sim_csv', None)
+        obs = request.FILES.get('obs_csv', None)
+        timezone_boolean = request.POST.get('time_zone_bool', None)
+
+        print(sim, obs, timezone_boolean)
+
+        if timezone_boolean == 'on':
+            simulated_tz = request.POST.get('sim_tz', None)
+            observed_tz = request.POST.get('obs_tz', None)
+            interpolate = request.POST.get('interpolate_radio')
+            print(simulated_tz, observed_tz, interpolate)
+        else:
+            simulated_tz = None
+            observed_tz = None
+            interpolate = None
+
+        merged_df = hd.merge_data(
+            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=merged_data.csv'
+
+        merged_df.to_csv(path_or_buf=response, index_label="Datetime", header=["Simulated Data", "Observed Data"])
+
+        return response
 
 
 @login_required()
@@ -326,6 +461,301 @@ def calculate_single(request):
     context['timezones'] = all_timezones
 
     return render(request, 'statistics_calc/calculate_single.html', context)
+
+
+@login_required()
+def hydrograph_ajax_plotly(request):
+    if request.method == 'POST':
+
+        print("In the hydrograph controller!")
+
+        print(request.FILES)
+
+        merged_csv = request.FILES.get('merged_csv', None)
+
+        print(merged_csv)
+
+        merged_df = pd.read_csv(merged_csv, index_col=0)
+
+        date_list = merged_df.index.tolist()  # strftime("%Y-%m-%d %H:%M:%S")
+        # date_list = date_list.tolist()
+
+        sim_list = merged_df.iloc[:, 0].tolist()
+
+        obs_list = merged_df.iloc[:, 1].tolist()
+
+        resp = {'dates': date_list,
+                'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp)
+
+
+@login_required()
+def hydrograph_daily_avg_ajax_plotly(request):
+    if request.method == 'POST':
+
+        merged_csv = request.FILES.get('merged_csv', None)
+
+        merged_df = pd.read_csv(merged_csv, index_col=0)
+
+        merged_df.index = pd.to_datetime(merged_df.index, errors="coerce")
+
+        daily_avg_df = hd.daily_average(merged_df)
+
+        date_list = daily_avg_df.index.tolist()
+        sim_list = daily_avg_df.iloc[:, 0].tolist()
+        obs_list = daily_avg_df.iloc[:, 1].tolist()
+
+        resp = {'dates': date_list,
+                'simulated': sim_list,
+                'observed': obs_list}
+
+        return JsonResponse(resp, safe=False)
+
+
+@login_required()
+def scatter_ajax_plotly(request):
+    """
+    :param request: request from the client side
+    :return: JSON response with the simulated and observed data
+    """
+    if request.method == 'POST':
+
+        merged_csv = request.FILES.get('merged_csv', None)
+
+        merged_df = pd.read_csv(merged_csv, index_col=0)
+
+        sim_list = merged_df.iloc[:, 0].tolist()
+        obs_list = merged_df.iloc[:, 1].tolist()
+
+        resp = {
+            'simulated': sim_list,
+            'observed': obs_list
+        }
+
+        return JsonResponse(resp, safe=True)
+
+
+@login_required()
+def make_table_ajax(request):
+    """AJAX controller to make a table and display the html for the user."""
+
+    print('In the make table AJAX controller!')  # Sanity check
+
+    if request.method == 'POST':
+
+        print(request.POST)
+        print(request.FILES)
+
+        merged_csv = request.FILES.get('merged_csv', None)
+
+        merged_df = pd.read_csv(merged_csv, index_col=0)
+        merged_df.index = pd.to_datetime(merged_df.index)
+
+        # Retrieving the extra optional parameters
+        extra_param_dict = {}
+
+        if request.POST.get('mase_m', None) is not None:
+            mase_m = float(request.POST.get('mase_m', None))
+            extra_param_dict['mase_m'] = mase_m
+        else:
+            mase_m = 1
+            extra_param_dict['mase_m'] = mase_m
+
+        if request.POST.get('dmod_j', None) is not None:
+            dmod_j = float(request.POST.get('dmod_j', None))
+            extra_param_dict['dmod_j'] = dmod_j
+        else:
+            dmod_j = 1
+            extra_param_dict['dmod_j'] = dmod_j
+
+        if request.POST.get('nse_mod_j', None) is not None:
+            nse_mod_j = float(request.POST.get('nse_mod_j', None))
+            extra_param_dict['nse_mod_j'] = nse_mod_j
+        else:
+            nse_mod_j = 1
+            extra_param_dict['nse_mod_j'] = nse_mod_j
+
+        if request.POST.get('h6_k_MHE', None) is not None:
+            h6_mhe_k = float(request.POST.get('h6_k_MHE', None))
+            extra_param_dict['h6_mhe_k'] = h6_mhe_k
+        else:
+            h6_mhe_k = 1
+            extra_param_dict['h6_mhe_k'] = h6_mhe_k
+
+        if request.POST.get('h6_k_AHE', None) is not None:
+            h6_ahe_k = float(request.POST.get('h6_k_AHE', None))
+            extra_param_dict['h6_ahe_k'] = h6_ahe_k
+        else:
+            h6_ahe_k = 1
+            extra_param_dict['h6_ahe_k'] = h6_ahe_k
+
+        if request.POST.get('h6_k_RMSHE', None) is not None:
+            h6_rmshe_k = float(request.POST.get('h6_k_RMSHE', None))
+            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+        else:
+            h6_rmshe_k = 1
+            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+
+        if float(request.POST.get('lm_x_bar', None)) != 1:
+            lm_x_bar_p = float(request.POST.get('lm_x_bar', None))
+            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+        else:
+            lm_x_bar_p = None
+            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+
+        if float(request.POST.get('d1_p_x_bar', None)) != 1:
+            d1_p_x_bar_p = float(request.POST.get('d1_p_x_bar', None))
+            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+        else:
+            d1_p_x_bar_p = None
+            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+
+        # Indexing the metrics to get the abbreviations
+        selected_metric_abbr = []
+
+        for abbr in metric_abbr:
+            metric_post_boolean = request.POST.get(abbr, None)
+            if metric_post_boolean == 'on':
+                selected_metric_abbr.append(abbr)
+
+        # Getting the Units of the Simulated and Observed Data and Converting if Necessary
+        obs_units = request.POST.get('observed-units')
+        sim_radio = request.POST.get('predicted_radio')
+
+        if sim_radio == 'upload':
+            sim_units = request.POST.get('simulated-units-upload')
+        else:
+            sim_units = request.POST.get('simulated_units_sfpt')
+
+        if obs_units is None and sim_units is None:
+            pass
+        elif obs_units == 'on' and sim_units == 'on':
+            pass
+        elif sim_units is None and obs_units == 'on':
+            merged_df.iloc[:, 0] *= 35.314666212661
+        else:
+            merged_df.iloc[:, 1] *= 35.314666212661
+
+        # Getting the form data to see of the user wants to remove zeros and negatives
+        remove_neg_bool = request.POST.get('remove_neg_bool')
+
+        if remove_neg_bool == 'on':
+            remove_neg = True
+        else:
+            remove_neg = False
+
+        remove_zero_bool = request.POST.get('remove_zero_bool')
+
+        if remove_zero_bool == 'on':
+            remove_zero = True
+        else:
+            remove_zero = False
+
+        # Retrieving any date ranges the user wishes to analyze
+        date_range_bool = request.POST.get('date_range_bool')
+
+        if date_range_bool == 'on':
+            all_date_range_list = []
+            date_counter = 1
+
+            while True:
+                date_list = []
+
+                begin_day = str(request.POST.get('start_day_{}'.format(date_counter), None))
+                if len(begin_day) == 1:
+                    begin_day = '0' + begin_day
+
+                begin_month = str(request.POST.get('start_month_{}'.format(date_counter), None))
+                if len(begin_month) == 1:
+                    begin_month = '0' + begin_month
+
+                end_day = str(request.POST.get('end_day_{}'.format(date_counter), None))
+                if len(end_day) == 1:
+                    end_day = '0' + end_day
+
+                end_month = str(request.POST.get('end_month_{}'.format(date_counter), None))
+                if len(end_month) == 1:
+                    end_month = '0' + end_month
+
+                if begin_day == 'None':
+                    break
+
+                begin_date = '{}-{}'.format(begin_month, begin_day)
+                end_date = '{}-{}'.format(end_month, end_day)
+                date_list.append(begin_date)
+                date_list.append(end_date)
+
+                all_date_range_list.append(date_list)
+
+                date_counter += 1
+
+        else:
+            all_date_range_list = None
+
+        # Creating the Table Based on User Input
+        table = hs.make_table(
+            merged_dataframe=merged_df,
+            metrics=selected_metric_abbr,
+            remove_neg=remove_neg,
+            remove_zero=remove_zero,
+            mase_m=extra_param_dict['mase_m'],
+            dmod_j=extra_param_dict['dmod_j'],
+            nse_mod_j=extra_param_dict['nse_mod_j'],
+            h6_mhe_k=extra_param_dict['h6_mhe_k'],
+            h6_ahe_k=extra_param_dict['h6_ahe_k'],
+            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
+            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
+            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
+            seasonal_periods=all_date_range_list
+        )
+
+        table_html = table.transpose()
+        table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+
+        return HttpResponse(table_html)
+
+
+def volume_table_ajax(request):
+    """Calculates the volumes of two streams"""
+
+    if request.method == 'POST':
+        sim = request.FILES.get('simulated-csv', None)
+        obs = request.FILES.get('observed-csv', None)
+        preprocessing_radio = request.POST.get('preprocessing', None)
+        timezone_boolean = request.POST.get('timezone', None)
+
+        if preprocessing_radio == "unequal-time":
+            interpolate = request.POST.get('interpolate_radio')
+        else:
+            interpolate = None
+
+        if timezone_boolean == 'on':
+            simulated_tz = request.POST.get('sim_timezone', None)
+            observed_tz = request.POST.get('obs_timezone', None)
+            print(simulated_tz, observed_tz)
+        else:
+            simulated_tz = None
+            observed_tz = None
+
+        merged_df = hd.merge_data(
+            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+        )
+
+        sim_array = merged_df.iloc[:, 0].values
+        obs_array = merged_df.iloc[:, 1].values
+
+        sim_volume = round(integrate.simps(sim_array), 3)
+        obs_volume = round(integrate.simps(obs_array), 3)
+
+        resp = {
+            "sim_volume": sim_volume,
+            "obs_volume": obs_volume,
+        }
+
+        return JsonResponse(resp)
 
 
 # @login_required()
@@ -1358,354 +1788,13 @@ def some_view(request):
     return response
 
 
-@login_required()
-def make_table_ajax(request):
-    """AJAX controller to make a table and display the html for the user."""
+def test_template(request):
+    """
+    Controller for the app home page.
+    """
 
-    print('In the make table AJAX controller!')  # Sanity check
+    context = {}
 
-    if request.method == 'POST':
+    return render(request, 'statistics_calc/test_template.html', context)
 
-        # Getting the CSV data and parameters and Merging it
-        obs = request.FILES.get('observed-csv', None)
-        sim = request.FILES.get('simulated-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
 
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
-
-        # Retrieving the extra optional parameters
-        extra_param_dict = {}
-
-        if request.POST.get('mase_m', None) is not None:
-            mase_m = float(request.POST.get('mase_m', None))
-            extra_param_dict['mase_m'] = mase_m
-        else:
-            mase_m = 1
-            extra_param_dict['mase_m'] = mase_m
-
-        if request.POST.get('dmod_j', None) is not None:
-            dmod_j = float(request.POST.get('dmod_j', None))
-            extra_param_dict['dmod_j'] = dmod_j
-        else:
-            dmod_j = 1
-            extra_param_dict['dmod_j'] = dmod_j
-
-        if request.POST.get('nse_mod_j', None) is not None:
-            nse_mod_j = float(request.POST.get('nse_mod_j', None))
-            extra_param_dict['nse_mod_j'] = nse_mod_j
-        else:
-            nse_mod_j = 1
-            extra_param_dict['nse_mod_j'] = nse_mod_j
-
-        if request.POST.get('h6_k_MHE', None) is not None:
-            h6_mhe_k = float(request.POST.get('h6_k_MHE', None))
-            extra_param_dict['h6_mhe_k'] = h6_mhe_k
-        else:
-            h6_mhe_k = 1
-            extra_param_dict['h6_mhe_k'] = h6_mhe_k
-
-        if request.POST.get('h6_k_AHE', None) is not None:
-            h6_ahe_k = float(request.POST.get('h6_k_AHE', None))
-            extra_param_dict['h6_ahe_k'] = h6_ahe_k
-        else:
-            h6_ahe_k = 1
-            extra_param_dict['h6_ahe_k'] = h6_ahe_k
-
-        if request.POST.get('h6_k_RMSHE', None) is not None:
-            h6_rmshe_k = float(request.POST.get('h6_k_RMSHE', None))
-            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
-        else:
-            h6_rmshe_k = 1
-            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
-
-        if float(request.POST.get('lm_x_bar', None)) != 1:
-            lm_x_bar_p = float(request.POST.get('lm_x_bar', None))
-            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
-        else:
-            lm_x_bar_p = None
-            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
-
-        if float(request.POST.get('d1_p_x_bar', None)) != 1:
-            d1_p_x_bar_p = float(request.POST.get('d1_p_x_bar', None))
-            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
-        else:
-            d1_p_x_bar_p = None
-            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
-
-        # Indexing the metrics to get the abbreviations
-        selected_metric_abbr = []
-
-        for abbr in metric_abbr:
-            metric_post_boolean = request.POST.get(abbr, None)
-            if metric_post_boolean == 'on':
-                selected_metric_abbr.append(abbr)
-
-        # Getting the Units of the Simulated and Observed Data and Converting if Necessary
-        obs_units = request.POST.get('observed-units')
-        sim_radio = request.POST.get('predicted_radio')
-
-        if sim_radio == 'upload':
-            sim_units = request.POST.get('simulated-units-upload')
-        else:
-            sim_units = request.POST.get('simulated_units_sfpt')
-
-        if obs_units is None and sim_units is None:
-            pass
-        elif obs_units == 'on' and sim_units == 'on':
-            pass
-        elif sim_units is None and obs_units == 'on':
-            merged_df.iloc[:, 0] *= 35.314666212661
-        else:
-            merged_df.iloc[:, 1] *= 35.314666212661
-
-        # Getting the form data to see of the user wants to remove zeros and negatives
-        remove_neg_bool = request.POST.get('remove_neg_bool')
-
-        if remove_neg_bool == 'on':
-            remove_neg = True
-        else:
-            remove_neg = False
-
-        remove_zero_bool = request.POST.get('remove_zero_bool')
-
-        if remove_zero_bool == 'on':
-            remove_zero = True
-        else:
-            remove_zero = False
-
-        # Retrieving any date ranges the user wishes to analyze
-        date_range_bool = request.POST.get('date_range_bool')
-
-        if date_range_bool == 'on':
-            all_date_range_list = []
-            date_counter = 1
-
-            while True:
-                date_list = []
-
-                begin_day = str(request.POST.get('start_day_{}'.format(date_counter), None))
-                if len(begin_day) == 1:
-                    begin_day = '0' + begin_day
-
-                begin_month = str(request.POST.get('start_month_{}'.format(date_counter), None))
-                if len(begin_month) == 1:
-                    begin_month = '0' + begin_month
-
-                end_day = str(request.POST.get('end_day_{}'.format(date_counter), None))
-                if len(end_day) == 1:
-                    end_day = '0' + end_day
-
-                end_month = str(request.POST.get('end_month_{}'.format(date_counter), None))
-                if len(end_month) == 1:
-                    end_month = '0' + end_month
-
-                if begin_day == 'None':
-                    break
-
-                begin_date = '{}-{}'.format(begin_month, begin_day)
-                end_date = '{}-{}'.format(end_month, end_day)
-                date_list.append(begin_date)
-                date_list.append(end_date)
-
-                all_date_range_list.append(date_list)
-
-                date_counter += 1
-
-        else:
-            all_date_range_list = None
-
-        # Creating the Table Based on User Input
-        table = hs.make_table(
-            merged_dataframe=merged_df,
-            metrics=selected_metric_abbr,
-            remove_neg=remove_neg,
-            remove_zero=remove_zero,
-            mase_m=extra_param_dict['mase_m'],
-            dmod_j=extra_param_dict['dmod_j'],
-            nse_mod_j=extra_param_dict['nse_mod_j'],
-            h6_mhe_k=extra_param_dict['h6_mhe_k'],
-            h6_ahe_k=extra_param_dict['h6_ahe_k'],
-            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
-            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
-            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
-            seasonal_periods=all_date_range_list
-        )
-
-        table_html = table.transpose()
-        table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
-
-        return HttpResponse(table_html)
-
-
-@login_required()
-def hydrograph_ajax_plotly(request):
-    if request.method == 'POST':
-        sim = request.FILES.get('simulated-csv', None)
-        obs = request.FILES.get('observed-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
-
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
-
-        date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
-        date_list = date_list.tolist()
-        print(type(date_list))
-        print(date_list)
-
-        sim_list = merged_df.iloc[:, 0].tolist()
-        print(type(sim_list))
-        obs_list = merged_df.iloc[:, 1].tolist()
-
-        resp = {'dates': date_list,
-                'simulated': sim_list,
-                'observed': obs_list}
-
-        return JsonResponse(resp, safe=False)
-
-
-@login_required()
-def hydrograph_daily_avg_ajax_plotly(request):
-    if request.method == 'POST':
-        sim = request.FILES.get('simulated-csv', None)
-        obs = request.FILES.get('observed-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
-
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
-
-        daily_avg_df = hd.daily_average(merged_df)
-
-        date_list = daily_avg_df.index.tolist()
-        sim_list = daily_avg_df.iloc[:, 0].tolist()
-        obs_list = daily_avg_df.iloc[:, 1].tolist()
-
-        resp = {'dates': date_list,
-                'simulated': sim_list,
-                'observed': obs_list}
-
-        return JsonResponse(resp, safe=False)
-
-
-@login_required()
-def scatter_ajax_plotly(request):
-    if request.method == 'POST':
-        sim = request.FILES.get('simulated-csv', None)
-        obs = request.FILES.get('observed-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
-
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
-
-        sim_list = merged_df.iloc[:, 0].tolist()
-        obs_list = merged_df.iloc[:, 1].tolist()
-
-        resp = {'simulated': sim_list,
-                'observed': obs_list}
-
-        return JsonResponse(resp, safe=False)
-
-
-def volume_table_ajax(request):
-    """Calculates the volumes of two streams"""
-
-    if request.method == 'POST':
-        sim = request.FILES.get('simulated-csv', None)
-        obs = request.FILES.get('observed-csv', None)
-        preprocessing_radio = request.POST.get('preprocessing', None)
-        timezone_boolean = request.POST.get('timezone', None)
-
-        if preprocessing_radio == "unequal-time":
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            interpolate = None
-
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_timezone', None)
-            observed_tz = request.POST.get('obs_timezone', None)
-            print(simulated_tz, observed_tz)
-        else:
-            simulated_tz = None
-            observed_tz = None
-
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
-
-        sim_array = merged_df.iloc[:, 0].values
-        obs_array = merged_df.iloc[:, 1].values
-
-        sim_volume = round(integrate.simps(sim_array), 3)
-        obs_volume = round(integrate.simps(obs_array), 3)
-
-        resp = {
-            "sim_volume": sim_volume,
-            "obs_volume": obs_volume,
-        }
-
-        return JsonResponse(resp)

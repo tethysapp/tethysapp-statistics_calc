@@ -1,7 +1,159 @@
 {% extends "statistics_calc/base.html" %}
+{% load tethys_gizmos %}
+{% load tethys_gizmos staticfiles %}
 
 {% block app_content %}
 
-    Hello
+    <div class="jumbotron jumbotron-fluid">
+        <h1>Merge Two Datasets</h1>
+        <p>
+            Use this tool to merge two datasets based on their datetime value. Timezones can be applied to the
+            timeseries if necessary. If timezones are applied to the timeseries data then interpolation will sometimes
+            be required, so you will need to pick which timeseries you would like to interpolate (simulated or
+            observed).
+        </p>
+    </div>
+
+    <h2>Data Upload</h2>
+    <hr>
+
+    <h3>Observed Data</h3>
+    <form name="merge_form" id="merge_form" method="post" enctype="multipart/form-data"
+          action="/apps/statistics-calc/merged_csv_download/">
+        {% csrf_token %}
+
+        <div class="input-group">
+            <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="obs_csv" id="obs_csv" style="display: none;">
+            </span>
+            </label>
+            <input type="text" id="obs_csv_name" class="form-control" readonly="">
+        </div>
+
+        <br>
+
+        <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
+               data-onstyle="success" data-offstyle="primary" data-size="normal" id="observed-units" checked>
+
+        <br><br>
+
+        <h3>Simulated Data</h3>
+
+        <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
+        <div class="btn-group btn-group-md" data-toggle="buttons">
+            <label class="btn btn-default form-check-label waves-effect waves-light">
+                <input class="form-check-input" type="radio" autocomplete="off"
+                       name="predicted_radio" value="upload">
+                Upload Predicted Data (CSV)
+            </label>
+            <label class="btn btn-default form-check-label waves-effect waves-light">
+                <input class="form-check-input" type="radio" autocomplete="off"
+                       name="predicted_radio" value="sfpt">
+                Use Streamflow Prediction Tool Historical Data
+            </label>
+        </div>
+
+        <br><br>
+        <!--Form for uploading simulated data-->
+        <div class="sim_upload" id="upload" style="display:none">
+            <div class="input-group">
+                <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="sim_csv" id="sim_csv" style="display: none;">
+            </span>
+                </label>
+                <input type="text" id="sim_csv_name" class="form-control" readonly="">
+            </div>
+
+            <br>
+
+            <input type="checkbox" name="simulated-units" id="simulated-units" data-toggle="toggle" data-on="SI"
+                   data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="normal" checked>
+        </div>
+
+        <!--Form for using the streamflow prediction tool data-->
+        <div class="sim_upload" id="sfpt" style="display:none">
+            <div class="row">
+                <div class="col-md-2">
+                    <h4>Units</h4>
+                </div>
+                <div class="col-md-3">
+                    <h4>Reach ID</h4>
+                </div>
+                <div class="col-md-7">
+                    <h4>Watershed</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <input type="checkbox" name="simulated_units_sfpt" id="simulated_units_sfpt" data-toggle="toggle"
+                           data-on="SI" data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="small"
+                           class="form-control" checked>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" value=1 name="reach_id" id="reach_id" min="0">
+                </div>
+                <div class="col-md-7">
+                    <select id="select_watershed" name="watershed" id="simulated_watershed" class="selectpicker">
+                        {% for choice in watersheds %}
+                            <option value="{{ choice }}">{{ choice }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {#    {% if not watershed_error %}#}
+        {#        <label id="reach_id" style="display:none">Reach ID: <input></label>#}
+        {#        <select id="select_watershed" name="watershed" style="display:none">#}
+        {#        </select>#}
+        {#    {% else %}#}
+        {#        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for#}
+        {#            the watershed names, we are working to fix this. Please come back later.</p></label>#}
+        {#    {% endif %}#}
+
+        <h2>Timezones</h2>
+        <hr>
+
+        <h4>
+            Do the timeseries have different timezones?
+        </h4>
+
+        <input type="checkbox" id="time_zone_bool" name="time_zone_bool" data-toggle="toggle" data-on="Yes"
+               data-off="No"
+               data-onstyle="success" data-offstyle="danger" data-size="small">
+
+        <br><br>
+
+        <!--Timezone Form-->
+        <div id="timezone_form" style="display:none">
+
+            {% gizmo obs_tz_select %}
+            {% gizmo sim_tz_select %}
+
+            <div class="btn-group btn-group-md" data-toggle="buttons">
+                <label class="btn btn-default form-check-label waves-effect waves-light">
+                    <input class="form-check-input" type="radio" autocomplete="off"
+                           name="interpolate_radio" value="simulated">
+                    Interpolate Simulated Data
+                </label>
+                <label class="btn btn-default form-check-label waves-effect waves-light">
+                    <input class="form-check-input" type="radio" autocomplete="off"
+                           name="interpolate_radio" value="observed">
+                    Interpolate Observed Data
+                </label>
+            </div>
+
+        </div>
+
+        <br><br>
+
+    </form>
+
+    <button id="plot_merged" class="btn btn-success">Plot Merged Data</button>
+    <button id="download_merged" class="btn btn-success">Download Merged Data</button>
+
+    <div id="merged_hydrograph">{# Plot Goes Here #}</div>
 
 {% endblock %}

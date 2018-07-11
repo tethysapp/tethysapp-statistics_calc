@@ -4,112 +4,85 @@
 
 
 function myFunction() {
-  console.log('myFunction is Running!') // sanity check
-  // Get the checkbox
-  const mase = document.getElementById('MASE');
-  const dmod = document.getElementById('d (Mod.)');
-  const nse_mod = document.getElementById('NSE (Mod.)');
-  const h6_mean = document.getElementById('H6 (MHE)');
-  const h6_abs = document.getElementById('H6 (AHE)');
-  const h6_rmshe = document.getElementById('H6 (RMSHE)');
-  const lm_index = document.getElementById("E1'");
-  const d1_p = document.getElementById("D1'");
+    console.log('myFunction is Running!'); // sanity check
+    // Get the checkbox
+    const mase = document.getElementById('MASE');
+    const dmod = document.getElementById('d (Mod.)');
+    const nse_mod = document.getElementById('NSE (Mod.)');
+    const h6_mean = document.getElementById('H6 (MHE)');
+    const h6_abs = document.getElementById('H6 (AHE)');
+    const h6_rmshe = document.getElementById('H6 (RMSHE)');
+    const lm_index = document.getElementById("E1'");
+    const d1_p = document.getElementById("D1'");
 
-  // Get the output text
-  const mase_label = document.getElementById('MASE_label');
-  const dmod_label = document.getElementById('d (Mod.)_label');
-  const nse_mod_label = document.getElementById('NSE (Mod.)_label');
-  const h6_mean_label = document.getElementById('H6 (MHE)_label');
-  const h6_abs_label = document.getElementById('H6 (AHE)_label');
-  const h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
-  const lm_index_label = document.getElementById("E1'_label");
-  const d1_p_label = document.getElementById("D1'_label");
+    // Get the output text
+    const mase_label = document.getElementById('MASE_label');
+    const dmod_label = document.getElementById('d (Mod.)_label');
+    const nse_mod_label = document.getElementById('NSE (Mod.)_label');
+    const h6_mean_label = document.getElementById('H6 (MHE)_label');
+    const h6_abs_label = document.getElementById('H6 (AHE)_label');
+    const h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
+    const lm_index_label = document.getElementById("E1'_label");
+    const d1_p_label = document.getElementById("D1'_label");
 
-  // If the checkbox is checked, display the output text
-  if (mase.checked){
-    mase_label.style.display = "block";
-  } else {
-    mase_label.style.display = "none";
-  }
+    // If the checkbox is checked, display the output text
+    if (mase.checked) {
+        mase_label.style.display = "block";
+    } else {
+        mase_label.style.display = "none";
+    }
 
-  if (dmod.checked){
-    dmod_label.style.display = "block";
-  } else {
-    dmod_label.style.display = "none";
-  }
+    if (dmod.checked) {
+        dmod_label.style.display = "block";
+    } else {
+        dmod_label.style.display = "none";
+    }
 
-  if (nse_mod.checked){
-    nse_mod_label.style.display = "block";
-  } else {
-    nse_mod_label.style.display = "none";
-  }
+    if (nse_mod.checked) {
+        nse_mod_label.style.display = "block";
+    } else {
+        nse_mod_label.style.display = "none";
+    }
 
-  if (h6_mean.checked){
-    h6_mean_label.style.display = "block";
-  } else {
-    h6_mean_label.style.display = "none";
-  }
+    if (h6_mean.checked) {
+        h6_mean_label.style.display = "block";
+    } else {
+        h6_mean_label.style.display = "none";
+    }
 
-  if (h6_abs.checked){
-    h6_abs_label.style.display = "block";
-  } else {
-    h6_abs_label.style.display = "none";
-  }
+    if (h6_abs.checked) {
+        h6_abs_label.style.display = "block";
+    } else {
+        h6_abs_label.style.display = "none";
+    }
 
-  if (h6_rmshe.checked){
-    h6_rmshe_label.style.display = "block";
-  } else {
-     h6_rmshe_label.style.display = "none";
-  }
+    if (h6_rmshe.checked) {
+        h6_rmshe_label.style.display = "block";
+    } else {
+        h6_rmshe_label.style.display = "none";
+    }
 
-  if (lm_index.checked){
-    lm_index_label.style.display = "block";
-  } else {
-     lm_index_label.style.display = "none";
-  }
+    if (lm_index.checked) {
+        lm_index_label.style.display = "block";
+    } else {
+        lm_index_label.style.display = "none";
+    }
 
     if (d1_p.checked) {
-    d1_p_label.style.display = "block";
-} else {
-    d1_p_label.style.display = "none";
-}
+        d1_p_label.style.display = "block";
+    } else {
+        d1_p_label.style.display = "none";
+    }
 }
 
 
 // >>>>>>>jQuery Functions<<<<<<<
 
-
-// Function to Hide and Show Values based on the radio box for the simulated data
+// Function for the file upload
 $(document).ready(function() {
-    $("input[name=predicted_radio]").on( "change", function() {
-         console.log('Radio Checkbox function working!') // sanity check
-         const test = $(this).val();
-         $(".sim_upload").hide();
-         $("#"+test).show();
-    });
-});
-
-// Function to hide and show divs based on the preprocessing input
-$(document).ready(function() {
-    $('input[name=preprocessing]').on( "change", function() {
-        console.log("Preprocessing Checkbox Function Working!")
-        if(document.getElementById('unequal_time').checked) {
-            $("#preprocessing_form").show();
-        } else {
-            $("#preprocessing_form").hide();
-        }
-    });
-});
-
-// Function to hide and show timezones based on the user input
-$(document).ready(function() {
-    $('#timezone').on( "change", function() {
-        console.log("Timezone Checkbox Function Working!")
-        if(document.getElementById('timezone').checked) {
-            $("#timezone_form").show();
-        } else {
-            $("#timezone_form").hide();
-        }
+    $("#merged_csv").change(function () {
+        const label = $("#merged_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
+        $("#merged_csv_name").val(label);
     });
 });
 
@@ -169,7 +142,7 @@ $(document).ready(function() {
 // Create a variable amount of date ranges for the user
 $(document).ready(function() {
   $("#date_range_form").on("change", function() {
-    var number = $("#Num_of_Date_Ranges").val();
+    let number = $("#Num_of_Date_Ranges").val();
     if (number === 0) {
       $("#date_range_container").hide();
     } else {
@@ -218,7 +191,7 @@ $(document).ready(function(){
 // >>>>>>>Ajax Functions<<<<<<<
 
 // Getting the csrf token
-var csrftoken = Cookies.get('csrftoken');
+let csrftoken = Cookies.get('csrftoken');
 
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -236,8 +209,8 @@ $.ajaxSetup({
 
 // AJAX for Hydrograph
 function createHydrograph() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     $.ajax({
         url : "/apps/statistics-calc/hydrograph_ajax_plotly/", // the endpoint
@@ -248,24 +221,24 @@ function createHydrograph() {
 
         // handle a successful response
         success : function(resp) {
-            var trace1 = {
+            let trace1 = {
                 type: "scatter",
                 mode: "lines",
                 name: "Simulated Data",
                 x: resp["dates"],
                 y: resp["simulated"],
                 line: {color: '#17BECF'}
-            }
-            var trace2 = {
+            };
+            let trace2 = {
                 type: "scatter",
                 mode: "lines",
                 name: 'Observed Data',
                 x: resp["dates"],
                 y: resp["observed"],
                 line: {color: '#7F7F7F'}
-            }
-            var data = [trace1,trace2];
-            var layout = {
+            };
+            let data = [trace1,trace2];
+            let layout = {
                 title: 'Hydrograph',
             };
 
@@ -280,12 +253,12 @@ function createHydrograph() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
 
 // AJAX for Hydrograph of Daily Averages
 function createHydrographDailyAvg() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     $.ajax({
         url : "/apps/statistics-calc/hydrograph_daily_avg_ajax_plotly/", // the endpoint
@@ -296,24 +269,24 @@ function createHydrographDailyAvg() {
 
         // handle a successful response
         success : function(resp) {
-            var trace1 = {
+            let trace1 = {
                 type: "scatter",
                 mode: "lines",
                 name: "Simulated Data",
                 x: resp["dates"],
                 y: resp["simulated"],
                 line: {color: '#17BECF'}
-            }
-            var trace2 = {
+            };
+            let trace2 = {
                 type: "scatter",
                 mode: "lines",
                 name: 'Observed Data',
                 x: resp["dates"],
                 y: resp["observed"],
                 line: {color: '#7F7F7F'}
-            }
-            var data = [trace1,trace2];
-            var layout = {
+            };
+            let data = [trace1,trace2];
+            let layout = {
                 title: 'Hydrograph of Daily Averages',
 
                 xaxis: {
@@ -335,11 +308,11 @@ function createHydrographDailyAvg() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-};
+}
 
 //AJAX for Scatter Plot
 function createScatter() {
-    const formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
     $.ajax({
@@ -352,66 +325,28 @@ function createScatter() {
         // handle a successful response
         success: function (resp) {
 
-            if (resp['simulated'].length <= 1000) {
-                const trace1 = {
-                    x: resp["simulated"],
-                    y: resp["observed"],
-                    mode: 'markers',
-                    type: 'scatter'
-                };
+            $("#scatter").empty();
 
-                const data = [trace1];
+            const trace1 = {
+                x: resp["simulated"],
+                y: resp["observed"],
+                mode: 'markers',
+                type: 'scatter'
+            };
 
-                const layout = {
-                    title: 'Scatter Plot',
-                };
+            const data = [trace1];
 
-                Plotly.newPlot('scatter', data, layout);
+            const layout = {
+                title: 'Scatter Plot',
+            };
 
-                console.log("successfully plotted the interactive scatter plot!"); // another sanity check
-            } else {
-                const d3 = Plotly.d3;
-                const img_jpg= d3.select('#jpg-export');
+            Plotly.newPlot('scatter', data, layout);
 
-                const trace1 = {
-                    x: resp["simulated"],
-                    y: resp["observed"],
-                    mode: 'markers',
-                    type: 'scatter'
-                };
-
-                const data = [trace1];
-
-                const layout = {
-                    title: 'Scatter Plot',
-                };
-
-                Plotly.plot('scatter', data, layout)
-
-                .then(
-                    function (gd) {
-                        Plotly.toImage(gd, {height: 1000, width: 2000})
-                            .then(
-                                function (url) {
-                                    img_jpg.attr("src", url);
-                                    return Plotly.toImage(gd, {format: 'jpeg', height: 1000, width: 2000});
-                                }
-                            )
-                    });
-
-                $( "#scatter" ).empty();
-
-                // document.getElementById("myImg").width = "100%";
-                // document.getElementById("myImg").height = "100%";
-
-                console.log("successfully plotted the static scatter plot!"); // another sanity check
-            }
-
+            console.log("successfully plotted the interactive scatter plot!"); // another sanity check
         },
-
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+            $('#scatter').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
@@ -419,8 +354,8 @@ function createScatter() {
 
 //AJAX for Scatter Plot
 function createScatterLog() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     $.ajax({
         url: "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
@@ -432,18 +367,18 @@ function createScatterLog() {
         // handle a successful response
         success: function (resp) {
 
-            if (resp['simulated'].length <= 1000) {
+            $("#scatter_log").empty(); // In case there is an error message from before or something like that.
 
-                const trace1 = {
-                    x: resp["simulated"],
-                    y: resp["observed"],
-                    mode: 'markers',
-                    type: 'scatter'
-                };
+            const trace1 = {
+                x: resp["simulated"],
+                y: resp["observed"],
+                mode: 'markers',
+                type: 'scatter'
+            };
 
-                const data = [trace1];
+            const data = [trace1];
 
-                const layout = {
+            const layout = {
                     title: 'Scatter Plot',
                     xaxis: {
                         type: 'log',
@@ -455,42 +390,13 @@ function createScatterLog() {
                     },
                 };
 
-                Plotly.newPlot('scatter-log', data, layout);
+            Plotly.newPlot('scatter_log', data, layout);
 
-                console.log("successfully plotted the scatter plot!"); // another sanity check
-
-            } else {
-
-                const tester = document.getElementById('scatter-log');
-                const trace1 = {
-                    x: resp["simulated"],
-                    y: resp["observed"],
-                    type: 'scattergl',
-                };
-
-                const data = [trace1];
-
-                const layout = {
-                    title: 'Scatter Plot',
-                    xaxis: {
-                        type: 'log',
-                        autorange: true
-                    },
-                    yaxis: {
-                        type: 'log',
-                        autorange: true
-                    },
-                };
-
-                Plotly.plot(tester, data, layout);
-
-                console.log("successfully plotted the scattergl plot!"); // another sanity check
-            }
+            console.log("successfully plotted the interactive scatter plot!"); // another sanity check
         },
-
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+            $('#scatter_log').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
@@ -498,8 +404,8 @@ function createScatterLog() {
 
 // AJAX for table
 function createTable() {
-    var formData = new FormData(document.getElementsByName('post-form')[0]);// getting the data from the form
-    console.log(formData) // another sanity check
+    let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
 
     // Creating the table
     $.ajax({
@@ -564,33 +470,4 @@ function createVolumeTable() {
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     });
-}
-
-function plotlyStatic() {
-    let d3 = Plotly.d3;
-    let img_jpg = d3.select('#jpg-export');
-
-// Ploting the Graph
-
-    let trace = {x: [3, 9, 8, 10, 4, 6, 5], y: [5, 7, 6, 7, 8, 9, 8], type: "scatter"};
-    let trace1 = {x: [3, 4, 1, 6, 8, 9, 5], y: [4, 2, 5, 2, 1, 7, 3], type: "scatter"};
-    let data = [trace, trace1];
-    let layout = {title: "Simple Javascript Graph"};
-    Plotly.plot(
-        'plotly_div',
-        data,
-        layout)
-
-    // static image in jpg format
-
-        .then(
-            function (gd) {
-                Plotly.toImage(gd, {height: 300, width: 300})
-                    .then(
-                        function (url) {
-                            img_jpg.attr("src", url);
-                            return Plotly.toImage(gd, {format: 'jpeg', height: 400, width: 400});
-                        }
-                    )
-            });
 }

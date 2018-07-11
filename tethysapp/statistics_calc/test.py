@@ -5,30 +5,9 @@ import io
 import matplotlib.pyplot as plt
 import numpy as np
 import hydrostats.visual as hv
+import hydrostats.data as hd
 
-df = pd.read_csv(r'/home/wade/Documents/Nepal_Recorded_Data/asaraghat_karnali_recorded_data.csv', index_col=0)
 
-x = pd.to_datetime(df.index)
-# y = np.sin(np.arange(50) / 2)
-# 
-# df = pd.DataFrame(y, index=x, columns=["Data"])
-# 
-# new_index = pd.date_range(df.index[0], df.index[-1], freq="1H 0min")
-# 
-# df = df.reindex(new_index)
-# 
-# df = df.interpolate('linear')
-
-len_x = len(x)
-
-time_delta = x[1:len_x] - x[0:len_x - 1]
-
-frequencies = time_delta.value_counts()
-
-print(str(frequencies.index[0]))
-
-if frequencies.values.size >= 1:
-    print('timeseries does not have consistent time steps')
 
 """Testing my plotting function"""
 # df_index = pd.date_range('1980-01-01', periods=1000, freq='D')

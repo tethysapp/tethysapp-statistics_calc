@@ -23,7 +23,9 @@
     {% url 'statistics_calc:preprocessing' as preprocessing %}
     {% url 'statistics_calc:merge_two_datasets' as merge_two_datasets %}
 
-    <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{ home_url }}">Home</a></li>
+    <li class="{% if request.path == home_url %}active{% endif %}">
+        <a href="{{ home_url }}">Home</a>
+    </li>
 
     <li class="{% if request.path == preprocessing %}active{% endif %}">
         <a href="{{ preprocessing }}">Process a Dataset</a>
@@ -33,10 +35,13 @@
         <a href="{{ merge_two_datasets }}">Merge Two Datasets</a>
     </li>
 
-    <li class="{% if request.path == calculate_single_url %}active{% endif %}"><a href="{{ calculate_single_url }}">Calculate
-        Single Country</a></li>
-    <li class="{% if request.path == validate_multiple_streams %}active{% endif %}"><a
-            href="{{ validate_multiple_streams }}">Validate Multiple Streams</a></li>
+    <li class="{% if request.path == calculate_single_url %}active{% endif %}">
+        <a href="{{ calculate_single_url }}">Validate Single Streamreach</a>
+    </li>
+
+    <li class="{% if request.path == validate_multiple_streams %}active{% endif %}">
+        <a href="{{ validate_multiple_streams }}">Validate Multiple Streams</a>
+    </li>
 
 {% endblock %}
 

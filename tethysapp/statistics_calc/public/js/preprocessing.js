@@ -17,12 +17,32 @@ $(document).ready(function() {
     });
 });
 
+// Function to Display the current value of the hour slider
+function updateSliderDisplayValue(element_id, element) {
+    if (element_id === "interp_hours") {
+        $("#interp_hour_value").html($("#interp_hours").val()+' Hours');
+    } else if (element_id === "interp_minutes") {
+        $("#interp_minute_value").html($("#interp_minutes").val()+' Minutes');
+    }
+}
+
+// Function to Display the current value of the minute slider
+$(document).ready( function() {
+    $("#interp_minutes").change( function(evt) {
+        evt.preventDefault();
+        console.log($(this).val()); // sanity check
+
+    });
+});
+
 // Function to show the begin and end date inputs if the user wants them
 $(document).ready( function() {
     $("#time_range_bool").change( function(evt) {
         evt.preventDefault();
         if($(this).is(":checked")) {
-            console.log('Checkbox Checked!')
+            $("#time_range_inputs").show();
+        } else {
+            $("#time_range_inputs").hide();
         }
         console.log('Time Range Slider Clicked.'); // sanity check
 

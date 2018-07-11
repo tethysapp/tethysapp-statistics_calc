@@ -55,6 +55,16 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.merge_two_datasets'
             ),
             UrlMap(
+                name='merged_hydrograph',
+                url='merged_hydrograph',
+                controller='statistics_calc.controllers.merged_hydrograph'
+            ),
+            UrlMap(
+                name='merged_csv_download',
+                url='merged_csv_download',
+                controller='statistics_calc.controllers.merged_csv_download'
+            ),
+            UrlMap(
                 name='calculate_single',
                 url='calculate_single',
                 controller='statistics_calc.controllers.calculate_single'
@@ -98,6 +108,11 @@ class StatisticsCalc(TethysAppBase):
                 name='volume_table_ajax',
                 url='volume_table_ajax',
                 controller='statistics_calc.controllers.volume_table_ajax'
+            ),
+            UrlMap(
+                name='test_template',
+                url='test_template',
+                controller='statistics_calc.controllers.test_template'
             ),
         )
 
