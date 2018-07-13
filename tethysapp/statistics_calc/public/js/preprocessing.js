@@ -9,20 +9,59 @@ $(document).ready(function() {
 });
 
 // Function to validate the File Upload
-$(document).ready(function() {
+$(document).ready(function () {
     $("#pps_csv").change(function () {
+        // Clear all of the current plots
+        $('#raw_data_plot').empty();
+        $('#raw_data_results').empty();
+        $('#pps_hydrograph').empty();
+
+
         let theFile = document.getElementById("pps_csv").files[0];
-        let reader = new FileReader();
-        reader.addEventListener('load', readFile);
-        reader.readAsText(theFile);
 
-        function readFile(event) {
-            let csvText = event.target.result;
-            let firstLine = csvText.split('\n').shift(); // First Line
-            let firstLineArray = $.csv.toArray(firstLine);
+        // Parsing the CSV to check for errors
+        Papa.parse(
+            theFile,
+            {
+                preview: 50,
+                complete: function (results) {
+                    let error = false;
+                    for (let i = 0; i < results.data.length; i++) {
+                        let row = results.data[i];
+                        if (row.length >= 3) {
+                            console.log("There was an error when parsing column " + i);
+                            error = true;
+                            break;
+                        }
+                    }
+                    if (error) {
+                        console.log("Error Protocol Running");
+                        $('#validate_csv').show();
+                        $('#validate_csv').html(`There was an error while parsing the first 50 lines of your csv. 
+                                                 Please make sure that you have only two columns in the csv.`);
 
-            console.log(firstLineArray.length)
-        }
+                        $('#validate_csv_break').show();
+                        $('#validate_csv_break').html("<br>");
+
+                        // Disable all the Buttons
+                        $('#raw_data_plot_button').prop("disabled", true);
+                        $('#generate_plot').prop("disabled", true);
+                        $('#csv_button').prop("disabled", true);
+
+
+                    } else {
+                        $('#raw_data_plot').show();
+                        $('#raw_data_results').show();
+                        $('#validate_csv').hide();
+                        $('#validate_csv_break').hide();
+
+                        // Enable all of the Buttons
+                        $('#raw_data_plot_button').prop("disabled", false);
+                        $('#generate_plot').prop("disabled", false);
+                        $('#csv_button').prop("disabled", false);
+                    }
+                }
+            });
     });
 });
 
@@ -44,15 +83,6 @@ function updateSliderDisplayValue(element_id, element) {
     }
 }
 
-// Function to Display the current value of the minute slider
-$(document).ready( function() {
-    $("#interp_minutes").change( function(evt) {
-        evt.preventDefault();
-        console.log($(this).val()); // sanity check
-
-    });
-});
-
 // Function to show the begin and end date inputs if the user wants them
 $(document).ready( function() {
     $("#time_range_bool").change( function(evt) {
@@ -72,8 +102,51 @@ $(document).ready(function() {
     $("#generate_plot").click( function(evt) {
         evt.preventDefault();
         console.log('Plot preprocessed data Event Triggered'); // sanity check
-        console.log($('#begin_date').val());
-        ppsPlotHydrograph();
+        // Validating the inerpolation frequencies
+
+        let validation_error = false;
+
+        // Emptying the error divs
+        $('#validation_error_interp').empty();
+        $('#validation_error_time').empty();
+
+        // Getting the form data
+        let interp_hours = $('#interp_hours').val();
+        let interp_minutes = $('#interp_minutes').val();
+        let begin_date = $('#begin_date').val();
+        let end_date = $('#end_date').val();
+
+        // Checking to make sure the interpolation frequency is ok
+        if (interp_hours === "0" && interp_minutes === "0") {
+            $('#validation_error_interp').html('<br><div class="alert alert-danger" role="alert">You cannot set both the hours and the minutes to equal zero.</div><br>');
+            validation_error = true;
+        }
+
+        // Checking to make sure that the dates make sense
+        let begin_date_int = new Date(begin_date).getTime();
+        let end_date_int = new Date(end_date).getTime();
+
+        if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
+            console.log("No Begin Date Supplied!");
+            validation_error = true;
+            $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
+        } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
+            console.log("No End date supplied!");
+            validation_error = true;
+            $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
+        } else if (!isNaN(begin_date_int) && !isNaN(end_date_int)) {
+            if (begin_date_int > end_date_int) {
+                validation_error = true;
+                console.log("Begin date cannot be after end date!");
+                $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
+            }
+        }
+
+        if (!validation_error) {
+            ppsPlotHydrograph();
+        } else {
+            window.location.href="#h2_preprocessing";
+        }
     });
 });
 

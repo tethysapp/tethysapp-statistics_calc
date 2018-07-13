@@ -1,5 +1,17 @@
 // >>>>>>>>>>>>>>>>>>> Merge Two Datasets JS Functions <<<<<<<<<<<<<<<<<<<<<
 
+function checkVisible() {
+    let obs_error_mesage_bool = $('#obs_csv_error_message').is(':visible');
+    console.log("Is the obs csv error msg visible? " + obs_error_mesage_bool)
+    let file_exists = (document.getElementById("obs_csv").files.length == 0)
+    console.log("Is there not a file in the obs input? " + file_exists)
+    let radio_value = $('[name="predicted_radio"]').val();
+    console.log("The radio value is " + radio_value)
+    // if (!$('#obs_csv_error_message').is(':visible')) {
+    //     console.log("ERROR MESSAGE VISIBLE")
+    // }
+}
+
 // Getting the csrf token
 let csrftoken = Cookies.get('csrftoken');
 
@@ -16,11 +28,54 @@ $.ajaxSetup({
     }
 });
 
-// Function for the observed file upload
+// Function for the observed file upload display name
 $(document).ready(function() {
     $("#obs_csv").change(function () {
         const label = $("#obs_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
         $("#obs_csv_name").val(label);
+    });
+});
+
+// Function to validate the observed data csv
+$(document).ready(function () {
+    $("#obs_csv").change(function () {
+        // Hide any previous error messages
+        $("#obs_csv_error_message").hide();
+
+        let theFile = document.getElementById("obs_csv").files[0];
+
+        // Parsing the CSV to check for errors
+        Papa.parse(
+            theFile,
+            {
+                // preview: 50,
+                complete: function (results) {
+                    let error = false;
+                    for (let i = 0; i < results.data.length; i++) {
+                        let row = results.data[i];
+
+                        if (row.length >= 3) {
+                            console.log("There was an error when parsing column " + i);
+                            error = true;
+                            break;
+                        }
+                    }
+                    if (error) {
+                        console.log("Error Protocol Running");
+                        $('#obs_csv_error_message').show();
+                        $('#obs_csv_error_message').html('<br><div class="alert alert-danger" role="alert">There was an error while parsing the first 50 lines of your CSV. Please make sure that it only has 2 columns.</div>');
+
+                        // Disable all the Buttons
+                        // $('#raw_data_plot_button').prop("disabled", true);
+                        // $('#generate_plot').prop("disabled", true);
+                        // $('#csv_button').prop("disabled", true);
+
+
+                    } else {
+
+                    }
+                }
+            });
     });
 });
 
@@ -69,8 +124,10 @@ $(document).ready(function() {
 
 function plotMergedData() {
     let formData = new FormData(document.getElementsByName('merge_form')[0]); // getting the data from the form
-    console.log(formData); // another sanity check
     $('#merged_hydrograph').empty();
+
+    // Validate the data to make sure no errors exist
+    let obs_file_exists =
 
     $.ajax({
         url : "/apps/statistics-calc/merged_hydrograph/", // the endpoint
@@ -96,7 +153,7 @@ function plotMergedData() {
                 name: "Observed Data",
                 x: resp["dates"],
                 y: resp["observed"],
-                line: {color: '#4ecf4f'}
+                line: {color: '#7F7F7F'}
             };
 
             let data = [trace1, trace2];

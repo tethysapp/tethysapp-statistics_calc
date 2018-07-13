@@ -30,24 +30,25 @@
             <input type="text" id="pps_csv_name" class="form-control" readonly="">
         </div>
 
+        <div id="validate_csv_break" style="display: none"></div>
+        <div class="alert alert-danger" id="validate_csv" role="alert" style="display: none;"></div>
+
         <br>
 
         <button class="btn btn-success waves-effect waves-light" id="raw_data_plot_button" disabled>Analyze Raw Data</button>
 
         <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
-        <div id="raw_data_results">{# The Error messages go here #}</div>
-
         <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
 
         <br>
 
-        <h2>Preprocessing</h2>
+        <h2 id="h2_preprocessing">Preprocessing</h2>
         <hr>
 
         <h3>Interpolation Type</h3>
 
         <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
+            <label class="btn btn-default form-check-label waves-effect waves-light active">
                 <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
                        value="linear">
                 <h4>Linear Interpolation</h4>
@@ -67,6 +68,8 @@
         <br><br>
 
         <h3>Interpolation Frequency</h3>
+
+        <div id="validation_error_interp"></div>
 
         {% gizmo hour_slider %}
 
@@ -93,6 +96,8 @@
 
         <br><br>
 
+        <div id="validation_error_time"></div>
+
         <div id="time_range_inputs" style="display: none">
             {% gizmo begin_date %}
             {% gizmo end_date %}
@@ -100,8 +105,8 @@
 
         <br>
 
-        <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
-        <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
+        <button class="btn btn-success waves-effect waves-light" id="generate_plot" disabled>Generate Plot</button>
+        <button class="btn btn-success waves-effect waves-light" id="csv_button" disabled>Download CSV</button>
 
         <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
 

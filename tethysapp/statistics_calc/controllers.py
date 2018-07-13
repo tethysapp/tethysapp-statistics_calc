@@ -9,6 +9,7 @@ from __future__ import division, print_function
 # Django Imports
 from django.shortcuts import render, reverse, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 from django.http.response import JsonResponse
 from django.core import serializers
 
@@ -71,12 +72,12 @@ def home(request):
     return render(request, 'statistics_calc/home.html', context)
 
 
+@never_cache
 @login_required()
 def preprocessing(request):
     """
     Controller for the app home page.
     """
-
     first_name = request.user.get_short_name()
 
     if first_name == "":
@@ -131,6 +132,8 @@ def preprocessing(request):
 
     context['begin_date'] = begin_date
     context['end_date'] = end_date
+
+    print(request.META)
 
     return render(request, 'statistics_calc/preprocessing.html', context)
 
@@ -278,17 +281,21 @@ def pps_csv(request):
 
         print(df)
 
-        new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
+        try:
+            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
-        df = df.reindex(new_index)
-        df = df.interpolate(interp_method)
+            df = df.reindex(new_index)
+            df = df.interpolate(interp_method)
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
 
-        df.to_csv(path_or_buf=response)
+            df.to_csv(path_or_buf=response, index_label="Datetime")
 
-        return response
+            return response
+
+        except IndexError:
+            raise Http404("Time Range Does not fit into the timeseries data supplied.")
 
 
 @login_required()
@@ -347,7 +354,7 @@ def merged_hydrograph(request):
 
         # getting the observed and simulated data
         obs = request.FILES.get('obs_csv', None)
-
+        print(request.POST.get("predicted_radio", None))
         if request.POST.get("predicted_radio", None) == "upload":
             sim = request.FILES.get('sim_csv', None)
 
@@ -1810,9 +1817,18 @@ def test_template(request):
     Controller for the app home page.
     """
 
-    context = {}
+    slider2 = RangeSlider(display_text='Slider 2',
+                          name='slider2',
+                          min=0,
+                          max=1,
+                          initial=0.5,
+                          step=0.1,
+                          disabled=True,
+                          error='Incorrect, please choose another value.')
 
-    print(request.user)
+    context = {
+        "slider2": slider2
+    }
 
     return render(request, 'statistics_calc/test_template.html', context)
 

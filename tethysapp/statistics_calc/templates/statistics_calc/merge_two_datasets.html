@@ -14,6 +14,8 @@
         </p>
     </div>
 
+    <button onclick="checkVisible()">Check Visibility</button>
+
     <h2>Data Upload</h2>
     <hr>
 
@@ -31,6 +33,8 @@
             <input type="text" id="obs_csv_name" class="form-control" readonly="">
         </div>
 
+        <div id="obs_csv_error_message" style="display: none;"></div>
+
         <br>
 
         <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
@@ -42,7 +46,7 @@
 
         <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
         <div class="btn-group btn-group-md" data-toggle="buttons">
-            <label class="btn btn-default form-check-label waves-effect waves-light">
+            <label class="btn btn-default form-check-label waves-effect waves-light active">
                 <input class="form-check-input" type="radio" autocomplete="off"
                        name="predicted_radio" value="upload">
                 Upload Predicted Data (CSV)
@@ -56,7 +60,7 @@
 
         <br><br>
         <!--Form for uploading simulated data-->
-        <div class="sim_upload" id="upload" style="display:none">
+        <div class="sim_upload" id="upload" style="display:block">
             <div class="input-group">
                 <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
@@ -80,7 +84,7 @@
                     <input type="number" class="form-control form-fixer" id="reach_id">
                 </div>
                 <div class="form-group col-md-6">
-                    <label for="watershed">State</label>
+                    <label for="watershed">Watershed</label>
                     <select id="watershed" name="watershed" class="form-control form-fixer">
                         {% for watershed in watersheds %}
                             <option value="{{ watershed }}">{{ watershed }}</option>

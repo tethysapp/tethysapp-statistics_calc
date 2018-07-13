@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html>
-<body>
+<header>
+    {% load tethys_gizmos %}
+    {% load tethys_gizmos staticfiles %}
+    <script src="/static/statistics_calc/js/papaparse.min.js" type="text/javascript"></script>
+    <script src="/static/statistics_calc/js/test_template.js" type="text/javascript"></script>
+</header>
 
-<button type="submit" id="testButton">Click Me!</button>
+<body>
+<input type="file" id="myfile" onchange="parseCSV()">Upload file here
+
+{% gizmo slider2 %}
 
 </body>
 
