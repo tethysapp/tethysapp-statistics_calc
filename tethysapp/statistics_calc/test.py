@@ -9,19 +9,32 @@ import hydrostats.data as hd
 import requests
 from helper_functions import parse_api_request
 from ast import literal_eval
+import json
 
-request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+request_headers = dict(Authorization='Token')
 
-print("About to request headers")
+sim = np.random.rand(10).tolist()
+obs = np.random.rand(10).tolist()
 
-res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
-                   headers=request_headers)
-print('The API response for headers is:')
-print(res)
-print(res.content)
+print(sim)
+print(obs)
 
-watershed_list = literal_eval(res.content)
-print(type(watershed_list))
+request_params = {
+    "simulated": sim,
+    "observed": obs
+}
+
+json_data = json.dumps(request_params)
+
+res = requests.post('http://127.0.0.1:8000/apps/statistics-calc/api/get_metrics/',
+                    headers=request_headers, data=json_data)
+
+response = json.loads(res)
+
+print(response['kge_2012'])
+
+print()
+
 # Formatting the watershed name to fit the API if necessary
 
 # for i in range(len(watershed_list)):
@@ -35,10 +48,6 @@ print(type(watershed_list))
     #     print(parse_api_request(watershed=watershed, subbasin=subbasin, reach=2))
     # except:
     #     print("Failed on {}".format(watershed_list[i][0]))
-
-file = parse_api_request(watershed=watershed_list[0][0], reach=136415)
-
-
 
 """Testing my plotting function"""
 # df_index = pd.date_range('1980-01-01', periods=1000, freq='D')

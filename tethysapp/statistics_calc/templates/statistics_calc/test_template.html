@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
 <header>
-    {% load tethys_gizmos %}
-    {% load tethys_gizmos staticfiles %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="/static/statistics_calc/js/papaparse.min.js" type="text/javascript"></script>
     <script src="/static/statistics_calc/js/test_template.js" type="text/javascript"></script>
 </header>
 
 <body>
-<input type="file" id="myfile" onchange="parseCSV()">Upload file here
 
-{% gizmo slider2 %}
+<input type="file" id="myfile">
+
+<button onclick="parseCSV()">Click For Ajax!</button>
+
+<div id="log"></div>
 
 </body>
 

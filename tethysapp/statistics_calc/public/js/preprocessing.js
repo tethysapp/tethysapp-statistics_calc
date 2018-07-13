@@ -16,7 +16,6 @@ $(document).ready(function () {
         $('#raw_data_results').empty();
         $('#pps_hydrograph').empty();
 
-
         let theFile = document.getElementById("pps_csv").files[0];
 
         // Parsing the CSV to check for errors
@@ -37,28 +36,13 @@ $(document).ready(function () {
                     if (error) {
                         console.log("Error Protocol Running");
                         $('#validate_csv').show();
-                        $('#validate_csv').html(`There was an error while parsing the first 50 lines of your csv. 
-                                                 Please make sure that you have only two columns in the csv.`);
-
-                        $('#validate_csv_break').show();
-                        $('#validate_csv_break').html("<br>");
-
-                        // Disable all the Buttons
-                        $('#raw_data_plot_button').prop("disabled", true);
-                        $('#generate_plot').prop("disabled", true);
-                        $('#csv_button').prop("disabled", true);
-
+                        $('#validate_csv').html('<br><div class="alert alert-danger" role="alert">There was an error parsing the first 50 lines of the csv, please make sure that there are only two columns throughout the csv.</div>');
 
                     } else {
                         $('#raw_data_plot').show();
                         $('#raw_data_results').show();
                         $('#validate_csv').hide();
-                        $('#validate_csv_break').hide();
 
-                        // Enable all of the Buttons
-                        $('#raw_data_plot_button').prop("disabled", false);
-                        $('#generate_plot').prop("disabled", false);
-                        $('#csv_button').prop("disabled", false);
                     }
                 }
             });
@@ -69,8 +53,18 @@ $(document).ready(function () {
 $(document).ready(function() {
     $("#raw_data_plot_button").click( function(evt) {
         evt.preventDefault();
+
         console.log('Plot Raw Data Event Triggered'); // sanity check
-        plotRawData();
+
+        // Validate
+        let csv_file_bool = typeof document.getElementById("pps_csv").files[0] === "object";
+
+        if (csv_file_bool) {
+            plotRawData();
+        } else {
+            console.log("You did not supply a file")
+        }
+
     });
 });
 

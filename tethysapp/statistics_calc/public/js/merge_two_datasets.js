@@ -120,8 +120,6 @@ $(document).ready(function() {
 });
 
 // Function for the Merge Data Button
-
-
 function plotMergedData() {
     let formData = new FormData(document.getElementsByName('merge_form')[0]); // getting the data from the form
     $('#merged_hydrograph').empty();

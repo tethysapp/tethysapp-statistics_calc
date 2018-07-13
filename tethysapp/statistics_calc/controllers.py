@@ -146,9 +146,9 @@ def pps_hydrograph_raw_data_ajax(request):
 
     if request.method == "POST":
 
-        csv_file = request.FILES.get('pps_csv', None)
+        print(app.get_custom_setting('spt_token'))
 
-        print(csv_file)
+        csv_file = request.FILES.get('pps_csv', None)
 
         df = pd.read_csv(csv_file, index_col=0, names=['Data'])
 

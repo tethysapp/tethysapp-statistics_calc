@@ -2,80 +2,81 @@
 // Calculate Single Stream Functions
 // ####################################################################################################################
 
-function myFunction() {
-    console.log('myFunction is Running!'); // sanity check
-    // Get the checkbox
-    const mase = document.getElementById('MASE');
-    const dmod = document.getElementById('d (Mod.)');
-    const nse_mod = document.getElementById('NSE (Mod.)');
-    const h6_mean = document.getElementById('H6 (MHE)');
-    const h6_abs = document.getElementById('H6 (AHE)');
-    const h6_rmshe = document.getElementById('H6 (RMSHE)');
-    const lm_index = document.getElementById("E1'");
-    const d1_p = document.getElementById("D1'");
-
-    // Get the output text
-    const mase_label = document.getElementById('MASE_label');
-    const dmod_label = document.getElementById('d (Mod.)_label');
-    const nse_mod_label = document.getElementById('NSE (Mod.)_label');
-    const h6_mean_label = document.getElementById('H6 (MHE)_label');
-    const h6_abs_label = document.getElementById('H6 (AHE)_label');
-    const h6_rmshe_label = document.getElementById('H6 (RMSHE)_label');
-    const lm_index_label = document.getElementById("E1'_label");
-    const d1_p_label = document.getElementById("D1'_label");
-
-    // If the checkbox is checked, display the output text
-    if (mase.checked) {
-        mase_label.style.display = "block";
-    } else {
-        mase_label.style.display = "none";
-    }
-
-    if (dmod.checked) {
-        dmod_label.style.display = "block";
-    } else {
-        dmod_label.style.display = "none";
-    }
-
-    if (nse_mod.checked) {
-        nse_mod_label.style.display = "block";
-    } else {
-        nse_mod_label.style.display = "none";
-    }
-
-    if (h6_mean.checked) {
-        h6_mean_label.style.display = "block";
-    } else {
-        h6_mean_label.style.display = "none";
-    }
-
-    if (h6_abs.checked) {
-        h6_abs_label.style.display = "block";
-    } else {
-        h6_abs_label.style.display = "none";
-    }
-
-    if (h6_rmshe.checked) {
-        h6_rmshe_label.style.display = "block";
-    } else {
-        h6_rmshe_label.style.display = "none";
-    }
-
-    if (lm_index.checked) {
-        lm_index_label.style.display = "block";
-    } else {
-        lm_index_label.style.display = "none";
-    }
-
-    if (d1_p.checked) {
-        d1_p_label.style.display = "block";
-    } else {
-        d1_p_label.style.display = "none";
-    }
-}
-
-
 // >>>>>>>jQuery Functions<<<<<<<
+
+// Functions to hide and show the extra parameters for the metrics
+$(document).ready(function() {
+    $("#MASE").change(function () {
+        if (this.checked) {
+            $('#MASE_label').show();
+        } else {
+            $('#MASE_label').hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $("input[id='d (Mod.)']").change(function () {
+        if (this.checked) {
+            $("div[id='d (Mod.)_label']").show();
+        } else {
+            $("div[id='d (Mod.)_label']").hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $("input[id='NSE (Mod.)']").change(function () {
+        if (this.checked) {
+            $("div[id='NSE (Mod.)_label']").show();
+        } else {
+            $("div[id='NSE (Mod.)_label']").hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $("input[id='H6 (MHE)']").change(function () {
+        if (this.checked) {
+            $("div[id='H6 (MHE)_label']").show();
+        } else {
+            $("div[id='H6 (MHE)_label']").hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $("input[id='H6 (AHE)']").change(function () {
+        if (this.checked) {
+            $("div[id='H6 (AHE)_label']").show();
+        } else {
+            $("div[id='H6 (AHE)_label']").hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $("input[id='H6 (RMSHE)']").change(function () {
+        if (this.checked) {
+            $("div[id='H6 (RMSHE)_label']").show();
+        } else {
+            $("div[id='H6 (RMSHE)_label']").hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $(`input[id="E1'"]`).change(function () {
+        if (this.checked) {
+            $(`div[id="E1'_label"]`).show();
+        } else {
+            $(`div[id="E1'_label"]`).hide();
+        }
+    });
+});
+$(document).ready(function() {
+    $(`input[id="D1'"]`).change(function () {
+        if (this.checked) {
+            $(`div[id="D1'_label"]`).show();
+        } else {
+            $(`div[id="D1'_label"]`).hide();
+        }
+    });
+});
 
 // Function for the file upload
 $(document).ready(function() {
