@@ -16,37 +16,45 @@ $(document).ready(function () {
         $('#raw_data_results').empty();
         $('#pps_hydrograph').empty();
 
-        let theFile = document.getElementById("pps_csv").files[0];
+        // Clear the error message div
+        $('#validate_csv').hide();
 
-        // Parsing the CSV to check for errors
-        Papa.parse(
-            theFile,
-            {
-                preview: 50,
-                complete: function (results) {
-                    let error = false;
-                    for (let i = 0; i < results.data.length; i++) {
-                        let row = results.data[i];
-                        if (row.length >= 3) {
-                            console.log("There was an error when parsing column " + i);
-                            error = true;
-                            break;
+        // Hide Error border if it exists
+        $('#pps_csv_name').css({ "border": 'hidden'});
+
+
+        if (typeof document.getElementById("pps_csv").files[0] === "object") {
+            let theFile = document.getElementById("pps_csv").files[0];
+
+            // Parsing the CSV to check for errors
+            Papa.parse(
+                theFile,
+                {
+                    preview: 50,
+                    complete: function (results) {
+                        let error = false;
+                        for (let i = 0; i < results.data.length; i++) {
+                            let row = results.data[i];
+                            if (row.length >= 3) {
+                                console.log("There was an error when parsing column " + i);
+                                error = true;
+                                break;
+                            }
+                        }
+                        if (error) {
+                            console.log("Error Protocol Running");
+                            $('#validate_csv').show();
+                            $('#validate_csv').html('<br><div class="alert alert-danger" role="alert">There was an error parsing the first 50 lines of the csv, please make sure that there are only two columns throughout the csv.</div>');
+                            $('#pps_csv_name').css({ "border": '#FF0000 1px solid'});
+                        } else {
+                            $('#raw_data_plot').show();
+                            $('#raw_data_results').show();
                         }
                     }
-                    if (error) {
-                        console.log("Error Protocol Running");
-                        $('#validate_csv').show();
-                        $('#validate_csv').html('<br><div class="alert alert-danger" role="alert">There was an error parsing the first 50 lines of the csv, please make sure that there are only two columns throughout the csv.</div>');
-
-                    } else {
-                        $('#raw_data_plot').show();
-                        $('#raw_data_results').show();
-                        $('#validate_csv').hide();
-
-                    }
-                }
-            });
+                });
+        }
     });
+
 });
 
 // Creating a raw data plot
@@ -58,13 +66,20 @@ $(document).ready(function() {
 
         // Validate
         let csv_file_bool = typeof document.getElementById("pps_csv").files[0] === "object";
+        let csv_error_bool = $('#validate_csv').is(":hidden");
 
-        if (csv_file_bool) {
-            plotRawData();
-        } else {
-            console.log("You did not supply a file")
+        if (!csv_file_bool) {
+            $('#pps_csv_name').css({ "border": '#FF0000 1px solid'});
+            window.location.assign("#h2_raw_data_checks")
         }
 
+        if (!csv_error_bool) {
+            window.location.assign("#h2_raw_data_checks")
+        }
+
+        if (csv_file_bool && csv_error_bool) {
+            plotRawData();
+        }
     });
 });
 
@@ -91,56 +106,67 @@ $(document).ready( function() {
     });
 });
 
-// Creating a plot with the preprocessed data
-$(document).ready(function() {
-    $("#generate_plot").click( function(evt) {
+// Validating form input and then triggering the create plot function
+$(document).ready(function () {
+    $("#generate_plot").click(function (evt) {
         evt.preventDefault();
         console.log('Plot preprocessed data Event Triggered'); // sanity check
-        // Validating the inerpolation frequencies
 
-        let validation_error = false;
+        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
 
-        // Emptying the error divs
-        $('#validation_error_interp').empty();
-        $('#validation_error_time').empty();
+        $.ajax({
+            url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
+            type: "POST", // http method
+            data: formData, // data sent with the post request, the form data from above
+            processData: false,
+            contentType: false,
 
-        // Getting the form data
-        let interp_hours = $('#interp_hours').val();
-        let interp_minutes = $('#interp_minutes').val();
-        let begin_date = $('#begin_date').val();
-        let end_date = $('#end_date').val();
+            // handle a successful response
+            success: function (resp) {
+                // Validating the inerpolation frequencies
 
-        // Checking to make sure the interpolation frequency is ok
-        if (interp_hours === "0" && interp_minutes === "0") {
-            $('#validation_error_interp').html('<br><div class="alert alert-danger" role="alert">You cannot set both the hours and the minutes to equal zero.</div><br>');
-            validation_error = true;
-        }
+                let validation_error = resp["error"];
 
-        // Checking to make sure that the dates make sense
-        let begin_date_int = new Date(begin_date).getTime();
-        let end_date_int = new Date(end_date).getTime();
+                // Emptying the error divs
+                $('#validation_error_time').empty();
 
-        if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
-            console.log("No Begin Date Supplied!");
-            validation_error = true;
-            $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
-        } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
-            console.log("No End date supplied!");
-            validation_error = true;
-            $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
-        } else if (!isNaN(begin_date_int) && !isNaN(end_date_int)) {
-            if (begin_date_int > end_date_int) {
-                validation_error = true;
-                console.log("Begin date cannot be after end date!");
-                $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
+                // Getting the form data
+                let begin_date = $('#begin_date').val();
+                let end_date = $('#end_date').val();
+
+                // Checking to make sure that the dates make sense
+                let begin_date_int = new Date(begin_date).getTime();
+                let end_date_int = new Date(end_date).getTime();
+
+                if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
+                    console.log("No Begin Date Supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
+                    console.log("No End date supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && !isNaN(end_date_int)) {
+                    if (begin_date_int > end_date_int) {
+                        validation_error = true;
+                        console.log("Begin date cannot be after end date!");
+                        $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
+                    }
+                }
+
+                if (!validation_error) {
+                    ppsPlotHydrograph();
+                } else {
+                    window.location.href = "#h2_preprocessing";
+                }
+            },
+
+            // handle a non-successful response
+            error: function (xhr, errmsg, err) {
+                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
             }
-        }
-
-        if (!validation_error) {
-            ppsPlotHydrograph();
-        } else {
-            window.location.href="#h2_preprocessing";
-        }
+        });
     });
 });
 

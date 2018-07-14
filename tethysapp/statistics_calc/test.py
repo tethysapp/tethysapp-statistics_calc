@@ -9,31 +9,39 @@ import hydrostats.data as hd
 import requests
 from helper_functions import parse_api_request
 from ast import literal_eval
-import json
+# import json
 
-request_headers = dict(Authorization='Token')
+daterange = pd.date_range('1980-01-01', '2000-01-01')
 
-sim = np.random.rand(10).tolist()
-obs = np.random.rand(10).tolist()
+begin_time = pd.to_datetime("1998-01-01")
+end_time = pd.to_datetime("2001-01-01")
 
-print(sim)
-print(obs)
+print(daterange[0] < end_time < daterange[-1])
 
-request_params = {
-    "simulated": sim,
-    "observed": obs
-}
-
-json_data = json.dumps(request_params)
-
-res = requests.post('http://127.0.0.1:8000/apps/statistics-calc/api/get_metrics/',
-                    headers=request_headers, data=json_data)
-
-response = json.loads(res)
-
-print(response['kge_2012'])
-
-print()
+"""Calling the api to get a metric value"""
+# request_headers = dict(Authorization='Token')
+#
+# sim = np.random.rand(10).tolist()
+# obs = np.random.rand(10).tolist()
+#
+# print(sim)
+# print(obs)
+#
+# request_params = {
+#     "simulated": sim,
+#     "observed": obs
+# }
+#
+# json_data = json.dumps(request_params)
+#
+# res = requests.post('http://127.0.0.1:8000/apps/statistics-calc/api/get_metrics/',
+#                     headers=request_headers, data=json_data)
+#
+# response = json.loads(res)
+#
+# print(response['kge_2012'])
+#
+# print()
 
 # Formatting the watershed name to fit the API if necessary
 

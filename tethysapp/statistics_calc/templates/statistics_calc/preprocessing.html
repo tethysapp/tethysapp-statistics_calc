@@ -15,26 +15,26 @@
     <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/pps_csv/">
         {% csrf_token %}
 
-        <h2>Raw Data Checks</h2>
+        <h2 id="h2_raw_data_checks">Raw Data Checks</h2>
         <hr>
 
         <h3>File Upload (CSV)</h3>
 
-        {# File Input Button#}
+        {# File Input Button #}
         <div class="input-group">
             <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
             CSV File Upload<input type="file" name="pps_csv" id="pps_csv" style="display: none;">
             </span>
             </label>
-            <input type="text" id="pps_csv_name" class="form-control" readonly="">
+            <input type="text" id="pps_csv_name" class="form-control is-invalid" readonly="">
         </div>
 
         <div id="validate_csv" style="display: none;"></div>
 
         <br>
 
-        <button class="btn btn-success waves-effect waves-light" id="raw_data_plot_button">Analyze Raw Data</button>
+        <button class="btn btn-success" id="raw_data_plot_button">Analyze Raw Data</button>
 
         <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
         <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
@@ -46,23 +46,45 @@
 
         <h3>Interpolation Type</h3>
 
-        <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default form-check-label waves-effect waves-light active">
-                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
-                       value="linear">
-                <h4>Linear Interpolation</h4>
-            </label>
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
-                       value="pchip">
-                <h4>PCHIP Interpolation</h4>
-            </label>
-            <label class="btn btn-default form-check-label waves-effect waves-light">
-                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"
-                       value="cubic">
-                <h4>Cubic Interpolation</h4>
-            </label>
+        <div class="pretty p-default p-curve p-smooth">
+            <input type="radio" name="interp_method" value="linear" checked>
+            <div class="state p-success">
+                <label>Linear Interpolation</label>
+            </div>
         </div>
+
+        <div class="pretty p-default p-curve p-smooth">
+            <input type="radio" name="interp_method" value="pchip">
+            <div class="state p-success">
+                <label>PCHIP Interpolation</label>
+            </div>
+        </div>
+
+        <div class="pretty p-default p-curve p-smooth">
+            <input type="radio" name="interp_method" value="cubic">
+            <div class="state p-success">
+                <label>Cubic Interpolation</label>
+            </div>
+        </div>
+
+
+{#        <div class="btn-group" data-toggle="buttons">#}
+{#            <label class="btn btn-default form-check-label waves-effect waves-light active">#}
+{#                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"#}
+{#                       value="linear">#}
+{#                <h4>Linear Interpolation</h4>#}
+{#            </label>#}
+{#            <label class="btn btn-default form-check-label waves-effect waves-light">#}
+{#                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"#}
+{#                       value="pchip">#}
+{#                <h4>PCHIP Interpolation</h4>#}
+{#            </label>#}
+{#            <label class="btn btn-default form-check-label waves-effect waves-light">#}
+{#                <input class="form-check-input" type="radio" autocomplete="off" name="interp_method"#}
+{#                       value="cubic">#}
+{#                <h4>Cubic Interpolation</h4>#}
+{#            </label>#}
+{#        </div>#}
 
         <br><br>
 
@@ -110,5 +132,7 @@
         <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
 
     </form>
+
+    <br>
 
 {% endblock %}

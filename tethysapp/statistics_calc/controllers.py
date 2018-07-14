@@ -146,8 +146,6 @@ def pps_hydrograph_raw_data_ajax(request):
 
     if request.method == "POST":
 
-        print(app.get_custom_setting('spt_token'))
-
         csv_file = request.FILES.get('pps_csv', None)
 
         df = pd.read_csv(csv_file, index_col=0, names=['Data'])
@@ -188,6 +186,45 @@ def pps_hydrograph_raw_data_ajax(request):
 
 
 @login_required()
+def pps_check_dates_ajax(request):
+    """AJAX Controller for the preprocessing page. Checks if the user has made sure that the date range is included in
+    the timeseries data"""
+
+    if request.method == "POST":
+
+        # Getting the timeseries range
+        csv_file = request.FILES.get('pps_csv', None)
+        df = pd.read_csv(csv_file, index_col=0)
+        begin_timeseries = pd.to_datetime(df.index[0])
+        end_timeseries = pd.to_datetime(df.index[-1])
+
+        # Getting the beggining and ending date
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+
+        resp = {
+            "error": False
+        }
+
+        if pd.isna(begin_date) and pd.isna(end_date):
+            print('The User did not want to time scale.')
+
+        else:
+            begin_date = pd.to_datetime(begin_date, errors="coerce")
+            end_date = pd.to_datetime(end_date, errors="coerce")
+
+            if begin_timeseries < begin_date < end_timeseries and begin_timeseries < end_date < end_timeseries:
+                print("Timescale range is contained in the timeseries")
+            else:
+                resp = {
+                    "error": True
+                }
+
+        return JsonResponse(resp)
+
+
+
+@login_required()
 def pps_hydrograph_ajax(request):
     """AJAX Controller for the preprocessing page. Creates a Hydrograph given the Interpolation method selected"""
 
@@ -206,11 +243,14 @@ def pps_hydrograph_ajax(request):
         print("Csv file is: {}".format(csv_file))
         print(interp_method)
         print(interp_hours, interp_minutes)
+        print(type(interp_hours),type(interp_minutes))
         print("Begin date is {} and end date is {}.".format(begin_date, end_date))
         print(type(begin_date))
+
         # Reading CSV and ensuring that the data column is the correct type
         df = pd.read_csv(csv_file, index_col=0)
         df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+
         # Changing index to datetime type
         df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
 
@@ -218,17 +258,20 @@ def pps_hydrograph_ajax(request):
         df = df[df.index.notnull()]
 
         # Stripping time if the user requests for it
-        if pd.isna(begin_date) and pd.isnull(end_date):
+        if pd.isna(begin_date) and pd.isna(end_date):
             print('The User did not want to time scale.')
         else:
             df = df.loc[begin_date: end_date]
 
         print(df)
 
-        new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
+        if interp_hours == "0" and interp_minutes == "0":
+            print("The user did not want to interpolate")
+        else:
+            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
-        df = df.reindex(new_index)
-        df = df.interpolate(interp_method)
+            df = df.reindex(new_index)
+            df = df.interpolate(interp_method)
 
         print(df)
 
@@ -281,21 +324,23 @@ def pps_csv(request):
 
         print(df)
 
-        try:
+        if interp_hours == "0" and interp_minutes == "0":
+            print("The user did not want to interpolate")
+        else:
             new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
 
             df = df.reindex(new_index)
             df = df.interpolate(interp_method)
 
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
 
-            df.to_csv(path_or_buf=response, index_label="Datetime")
+        df.to_csv(path_or_buf=response, index_label="Datetime")
 
-            return response
+        return response
 
-        except IndexError:
-            raise Http404("Time Range Does not fit into the timeseries data supplied.")
+        # except IndexError:
+        #     raise Http404("Time Range Does not fit into the timeseries data supplied.")
 
 
 @login_required()
