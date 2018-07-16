@@ -1,13 +1,4 @@
 {% extends "statistics_calc/base.html" %}
-{% load staticfiles %}
-{% load tethys_gizmos %}
-{% load tethys_gizmos staticfiles %}
-
-{% block styles %}
-    {{ block.super }}
-    <link href="{% static 'statistics_calc/css/calculate_single.css' %}"
-          rel="stylesheet"/>
-{% endblock %}
 
 {% block app_content %}
 
@@ -22,7 +13,7 @@
         <h2>Merged Data Upload</h2>
         <hr>
 
-        <div class="input-group">
+        <div class="input-group" id="merged_csv_file_input">
             <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
             CSV File Upload<input type="file" name="merged_csv" id="merged_csv" style="display: none;">
@@ -31,7 +22,9 @@
             <input type="text" id="merged_csv_name" class="form-control" readonly="">
         </div>
 
-        <br><br>
+        <div id="merged_csv_error_message"></div>
+
+        <br>
 
         <h2>Visualization</h2>
         <hr>
@@ -96,7 +89,7 @@
         <h3>Select the Metrics to Include in the Table:</h3>
 
         <!--Displaying all of the metrics for the user to select-->
-        <div class="ex1" style="outline: #ff423a solid;">
+        <div class="ex1">
             {% for name_abbr in metric_loop_list %}
 
                 {% if forloop.counter0 == 7 %}

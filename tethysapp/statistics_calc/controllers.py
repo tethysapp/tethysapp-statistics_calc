@@ -133,8 +133,6 @@ def preprocessing(request):
     context['begin_date'] = begin_date
     context['end_date'] = end_date
 
-    print(request.META)
-
     return render(request, 'statistics_calc/preprocessing.html', context)
 
 
@@ -367,28 +365,7 @@ def merge_two_datasets(request):
         print("Watershed API request failed!")
         watershed_error = True
 
-    obs_tz_select = SelectInput(
-        display_text='Observed Data Timezone',
-        name='obs_tz',
-        multiple=False,
-        options=list(zip(all_timezones, all_timezones)),
-        initial=[all_timezones[0]],
-        select2_options={'placeholder': '',
-                         'allowClear': True}
-    )
-
-    sim_tz_select = SelectInput(
-        display_text='Simulated Data Timezone',
-        name='sim_tz',
-        multiple=False,
-        options=list(zip(all_timezones, all_timezones)),
-        initial=[all_timezones[0]],
-        select2_options={'placeholder': '',
-                         'allowClear': True}
-    )
-
-    context["obs_tz_select"] = obs_tz_select
-    context["sim_tz_select"] = sim_tz_select
+    context["all_timezones"] = all_timezones
 
     return render(request, 'statistics_calc/merge_two_datasets.html', context)
 
@@ -402,7 +379,6 @@ def merged_hydrograph(request):
 
         # getting the observed and simulated data
         obs = request.FILES.get('obs_csv', None)
-        print(request.POST.get("predicted_radio", None))
         if request.POST.get("predicted_radio", None) == "upload":
             sim = request.FILES.get('sim_csv', None)
 
@@ -418,8 +394,6 @@ def merged_hydrograph(request):
 
         timezone_boolean = request.POST.get('time_zone_bool', None)
 
-        print(sim, obs, timezone_boolean)
-
         if timezone_boolean == 'on':
             simulated_tz = request.POST.get('sim_tz', None)
             observed_tz = request.POST.get('obs_tz', None)
@@ -431,15 +405,18 @@ def merged_hydrograph(request):
             interpolate = None
 
         if request.POST.get("predicted_radio", None) == "upload":
+            print("Merging the two files!")
             merged_df = hd.merge_data(
                 sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
                 simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
             )
+            print(merged_df)
         elif request.POST.get("predicted_radio", None) == "sfpt":
-            merged_df = hd.merge_data(
-                sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-                simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-            )
+            pass  # Need to change this
+            # merged_df = hd.merge_data(
+            #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+            # )
         else:
             merged_df = None
 
@@ -808,6 +785,7 @@ def make_table_ajax(request):
         return HttpResponse(table_html)
 
 
+@login_required()
 def volume_table_ajax(request):
     """Calculates the volumes of two streams"""
 

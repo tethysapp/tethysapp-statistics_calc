@@ -12,17 +12,27 @@ from ast import literal_eval
 # import json
 import requests
 
-reach_id = 5
+merged_df = hd.merge_data(
+    sim_fpath='/home/wade/Documents/La_Plata/Simulated.csv',
+    obs_fpath='/home/wade/Documents/La_Plata/observed_processed.csv',
+    interpolate="observed", column_names=['Simulated', 'Observed'],
+    simulated_tz='UTC', observed_tz='Brazil/West', interp_type='pchip'
+)
 
-request_params = dict(watershed_name='Africa', subbasin_name='Continental', reach_id=reach_id)
-request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
-res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetHistoricData/', params=request_params, headers=request_headers)
+print(merged_df)
 
-print(res.content)
-print(type(res.content))
-
-if res.content == "Not found: ERA Interim river with ID {}.".format(reach_id):
-    print("This stream does not exist")
+"""SFPT api for historic data"""
+# reach_id = 5
+#
+# request_params = dict(watershed_name='Africa', subbasin_name='Continental', reach_id=reach_id)
+# request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+# res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetHistoricData/', params=request_params, headers=request_headers)
+#
+# print(res.content)
+# print(type(res.content))
+#
+# if res.content == "Not found: ERA Interim river with ID {}.".format(reach_id):
+#     print("This stream does not exist")
 
 """Calling the api to get a metric value"""
 # request_headers = dict(Authorization='Token')

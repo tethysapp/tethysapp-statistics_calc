@@ -1,8 +1,59 @@
-// ####################################################################################################################
-// Calculate Single Stream Functions
-// ####################################################################################################################
+// Getting the csrf token
+let csrftoken = Cookies.get('csrftoken');
 
-// >>>>>>>jQuery Functions<<<<<<<
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+
+// Function to validate the observed data csv
+$(document).ready(function () {
+    $("#merged_csv").change(function () {
+        // Hide any previous error messages
+        $("#merged_csv_error_message").empty();
+        $('#merged_csv_file_input').css({ "border": 'hidden'});
+
+        let obsCSV = document.getElementById("merged_csv").files[0];
+
+        // Parsing the CSV to check for errors
+        if (typeof document.getElementById("merged_csv").files[0] === "object") {
+            Papa.parse(
+                obsCSV,
+                {
+                    // preview: 50,
+                    complete: function (results) {
+                        let error = false;
+                        for (let i = 0; i < results.data.length; i++) {
+                            let row = results.data[i];
+
+                            if (row.length !== 4) {
+                                console.log("There was an error when parsing column " + i);
+                                error = true;
+                                break;
+                            }
+                        }
+                        if (error) {
+                            console.log("Error Protocol Running");
+                            $('#merged_csv_error_message').html('<p style="color: #FF0000"><small>Please make sure that your CSV has 3 columns.</small></p>');
+                            $('#merged_csv_file_input').css({ "border": '#FF0000 1px solid', "border-radius": '4px' });
+                        }
+                    }
+                });
+        } else {
+            $('#obs_file_upload_div').css({ "border": 'hidden'});
+        }
+    });
+});
+
 
 // Functions to hide and show the extra parameters for the metrics
 $(document).ready(function() {
@@ -78,6 +129,7 @@ $(document).ready(function() {
     });
 });
 
+
 // Function for the file upload
 $(document).ready(function() {
     $("#merged_csv").change(function () {
@@ -86,6 +138,7 @@ $(document).ready(function() {
     });
 });
 
+
 // Create hydrograph on Button Click
 $(document).ready(function(){
     $("#create-hydrograph").click(function(){
@@ -93,120 +146,6 @@ $(document).ready(function(){
         console.log('Hydrograph Button Event Triggered');
     });
 });
-
-// Create hydrograph of daily averages on button click
-$(document).ready(function(){
-    $("#create-hydrograph-daily-avg").click(function(){
-        createHydrographDailyAvg();
-        console.log('Hydrograph Daily Avg Button Event Triggered');
-    });
-});
-
-// Create scatterplot on button click
-$(document).ready(function(){
-    $("#create-hydrograph-daily-avg").click(function(){
-        createHydrographDailyAvg();
-        console.log('Hydrograph Daily Avg Button Event Triggered');
-    });
-});
-
-// Create scatterplot on button click
-$(document).ready(function(){
-    $("#create-scatter").click(function(){
-        createScatter();
-        console.log('Scatter Button Event Triggered');
-    });
-});
-
-// Create scatterplot log on button click
-$(document).ready(function(){
-    $("#create-scatter-log").click(function(){
-        createScatterLog();
-        console.log('Scatter Log-Log Button Event Triggered');
-    });
-});
-
-// Show the date range creator when the switch is on
-$(document).ready(function() {
-    $("#date_range_bool").on("change", function() {
-        if(document.getElementById('date_range_bool').checked) {
-            $("#date_range_form").show();
-            $("#date-ranges").show();
-        } else {
-            $("#date_range_form").hide();
-            $("#date-ranges").hide();
-        }
-    });
-});
-
-// Create a variable amount of date ranges for the user
-$(document).ready(function() {
-  $("#date_range_form").on("change", function() {
-    let number = $("#Num_of_Date_Ranges").val();
-    if (number === 0) {
-      $("#date_range_container").hide();
-    } else {
-      let form_inputs = "";
-        for (i=1; i<=number; i++) {
-            form_inputs += `<h3>Date Range ${i}</h3>\
-                              <div class="form-row">\
-                                  <div class="form-group col-md-3">\
-                                    <label for="start_day_${i}">Start Day</label>\
-                                    <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
-                                  </div>\
-                                <div class="form-group col-md-3">\
-                                    <label for="start_month_${i}">Start Month</label>\
-                                    <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
-                                  </div>\
-                                <div class="form-group col-md-3">\
-                                  <label for="end_day_${i}">End Day</label>\
-                                  <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
-                                </div>\
-                                <div class="form-group col-md-3">\
-                                  <label for="end_month_${i}">End Month</label>\
-                                  <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
-                                </div>\
-                              </div>`;
-        }
-      $( "#date-ranges" ).html( form_inputs );
-    }
-  });
-});
-
-// Event handler for the make table button
-$(document).ready(function(){
-    $("#make-table").click(function(){
-        createTable();
-        console.log('Make Table Event Triggered');
-    });
-});
-
-$(document).ready(function(){
-    $("#make_volume_table").click(function(){
-        createVolumeTable();
-        console.log('Make Volume Table Event Triggered');
-    });
-});
-
-// >>>>>>>Ajax Functions<<<<<<<
-
-// Getting the csrf token
-let csrftoken = Cookies.get('csrftoken');
-
-function csrfSafeMethod(method) {
-    // these HTTP methods do not require CSRF protection
-    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-}
-
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-        }
-    }
-});
-
-
 // AJAX for Hydrograph
 function createHydrograph() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
@@ -255,6 +194,14 @@ function createHydrograph() {
     });
 }
 
+
+// Create hydrograph of daily averages on button click
+$(document).ready(function(){
+    $("#create-hydrograph-daily-avg").click(function(){
+        createHydrographDailyAvg();
+        console.log('Hydrograph Daily Avg Button Event Triggered');
+    });
+});
 // AJAX for Hydrograph of Daily Averages
 function createHydrographDailyAvg() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
@@ -310,6 +257,14 @@ function createHydrographDailyAvg() {
     });
 }
 
+
+// Create scatterplot on button click
+$(document).ready(function(){
+    $("#create-scatter").click(function(){
+        createScatter();
+        console.log('Scatter Button Event Triggered');
+    });
+});
 //AJAX for Scatter Plot
 function createScatter() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
@@ -352,7 +307,15 @@ function createScatter() {
     });
 }
 
-//AJAX for Scatter Plot
+
+// Create scatterplot log on button click
+$(document).ready(function(){
+    $("#create-scatter-log").click(function(){
+        createScatterLog();
+        console.log('Scatter Log-Log Button Event Triggered');
+    });
+});
+//AJAX for Scatter Log Plot
 function createScatterLog() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
@@ -402,6 +365,63 @@ function createScatterLog() {
     });
 }
 
+
+// Show the date range creator when the switch is on
+$(document).ready(function() {
+    $("#date_range_bool").on("change", function() {
+        if(document.getElementById('date_range_bool').checked) {
+            $("#date_range_form").show();
+            $("#date-ranges").show();
+        } else {
+            $("#date_range_form").hide();
+            $("#date-ranges").hide();
+        }
+    });
+});
+
+
+// Create a variable amount of date ranges for the user
+$(document).ready(function() {
+  $("#date_range_form").on("input", function() {
+    let number = $("#Num_of_Date_Ranges").val();
+    if (number === 0) {
+      $("#date_range_container").hide();
+    } else {
+      let form_inputs = "";
+        for (i=1; i<=number; i++) {
+            form_inputs += `<h3>Date Range ${i}</h3>\
+                              <div class="form-row">\
+                                  <div class="form-group col-md-3">\
+                                    <label for="start_day_${i}">Start Day</label>\
+                                    <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
+                                  </div>\
+                                <div class="form-group col-md-3">\
+                                    <label for="start_month_${i}">Start Month</label>\
+                                    <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
+                                  </div>\
+                                <div class="form-group col-md-3">\
+                                  <label for="end_day_${i}">End Day</label>\
+                                  <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
+                                </div>\
+                                <div class="form-group col-md-3">\
+                                  <label for="end_month_${i}">End Month</label>\
+                                  <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
+                                </div>\
+                              </div>`;
+        }
+      $( "#date-ranges" ).html( form_inputs );
+    }
+  });
+});
+
+
+// Event handler for the make table button
+$(document).ready(function(){
+    $("#make-table").click(function(){
+        createTable();
+        console.log('Make Table Event Triggered');
+    });
+});
 // AJAX for table
 function createTable() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
@@ -430,6 +450,13 @@ function createTable() {
     });
 }
 
+
+$(document).ready(function(){
+    $("#make_volume_table").click(function(){
+        createVolumeTable();
+        console.log('Make Volume Table Event Triggered');
+    });
+});
 // Ajax for Volume Table
 function createVolumeTable() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form

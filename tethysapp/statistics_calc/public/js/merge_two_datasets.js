@@ -1,20 +1,9 @@
 // >>>>>>>>>>>>>>>>>>> Merge Two Datasets JS Functions <<<<<<<<<<<<<<<<<<<<<
 
-function checkVisible() {
-    let obs_error_mesage_bool = $('#obs_csv_error_message').is(':visible');
-    console.log("Is the obs csv error msg visible? " + obs_error_mesage_bool);
-    let file_exists = (document.getElementById("obs_csv").files.length == 0);
-    console.log("Is there not a file in the obs input? " + file_exists);
-    let radio_value = $( 'input[name=predicted_radio]:checked' ).val();
-    console.log("The radio value is " + radio_value);
-    console.log("The radio type is " + typeof radio_value);
-    let obs_data_tz = $('[name="obs_tz"]').val();
-    console.log("The observed TZ is: " + obs_data_tz);
-    console.log("The observed TZ type is: " + typeof obs_data_tz);
-    let sim_data_tz = $('[name="sim_tz"]').val();
-    console.log("The sim TZ is: " + sim_data_tz);
-    console.log("The sim TZ type is: " + typeof sim_data_tz);
-}
+// Select2 Test
+$(document).ready(function() {
+    $('.js-example-basic-single').select2();
+});
 
 // Getting the csrf token
 let csrftoken = Cookies.get('csrftoken');
@@ -40,6 +29,7 @@ $(document).ready(function() {
         $("#obs_csv_name").val(label);
     });
 });
+
 
 // Function to validate the observed data csv
 $(document).ready(function () {
@@ -151,11 +141,19 @@ $(document).ready( function() {
     });
 });
 
+// jQeury Functions for the select2 inputs
+$(document).ready(function() {
+    $('.all_the_observed_tz').select2();
+});
+$(document).ready(function() {
+    $('.all_the_simulated_tz').select2();
+});
+
 // Function for the Plot Data Button
 $(document).ready(function() {
     $("#plot_merged").click( function(evt) {
         evt.preventDefault();
-        console.log('CSV response Event Triggered'); // sanity check
+        console.log('Plot merged data Event Triggered'); // sanity check
 
         // Validation
         let validation_error = false;
@@ -193,23 +191,9 @@ $(document).ready(function() {
             }
         }
 
-        // Checking if the timezones are supplied if they are wanted
-        if ($('#time_zone_bool').is(':checked')) {
-            if ($('[name="obs_tz"]').val() === "") {
-
-            }
-            if ($('[name="sim_tz"]').val() === "") {
-
-            }
+        if (!validation_error) {
+            plotMergedData();
         }
-
-        // if (!(typeof document.getElementById("obs_csv").files[0] === "object"))
-
-        // let sim_data_tz = $('[name="sim_tz"]').val();
-
-        // Clear all the former errors
-
-        // plotMergedData();
     });
 });
 
@@ -217,9 +201,6 @@ $(document).ready(function() {
 function plotMergedData() {
     let formData = new FormData(document.getElementsByName('merge_form')[0]); // getting the data from the form
     $('#merged_hydrograph').empty();
-
-    // Validate the data to make sure no errors exist
-    let obs_file_exists =
 
     $.ajax({
         url : "/apps/statistics-calc/merged_hydrograph/", // the endpoint
@@ -230,6 +211,8 @@ function plotMergedData() {
 
         // handle a successful response
         success : function(resp) {
+            console.log(resp)
+
             let trace1 = {
                 type: "scatter",
                 mode: "lines",

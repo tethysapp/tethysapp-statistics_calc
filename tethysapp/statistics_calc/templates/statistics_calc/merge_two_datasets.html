@@ -1,6 +1,4 @@
 {% extends "statistics_calc/base.html" %}
-{% load tethys_gizmos %}
-{% load tethys_gizmos staticfiles %}
 
 {% block app_content %}
 
@@ -15,8 +13,6 @@
 
         <div id="error_redirect_point"></div>
     </div>
-
-    <button onclick="checkVisible()">Check Visibility</button>
 
     <h2>Data Upload</h2>
     <hr>
@@ -45,20 +41,6 @@
         <br><br>
 
         <h3>Simulated Data</h3>
-
-        <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
-{#        <div class="btn-group btn-group-md" data-toggle="buttons">#}
-{#            <label class="btn btn-default form-check-label waves-effect waves-light active">#}
-{#                <input class="form-check-input" type="radio" autocomplete="off"#}
-{#                       name="predicted_radio" value="upload">#}
-{#                Upload Predicted Data (CSV)#}
-{#            </label>#}
-{#            <label class="btn btn-default form-check-label waves-effect waves-light">#}
-{#                <input class="form-check-input" type="radio" autocomplete="off"#}
-{#                       name="predicted_radio" value="sfpt">#}
-{#                Use Streamflow Prediction Tool Historical Data#}
-{#            </label>#}
-{#        </div>#}
 
         <div class="pretty p-default p-curve p-smooth">
             <input type="radio" name="predicted_radio" value="upload" checked>
@@ -141,21 +123,23 @@
         <!--Timezone Form-->
         <div id="timezone_form" style="display:none">
 
-            {% gizmo obs_tz_select %}
-            {% gizmo sim_tz_select %}
+            <label for="obs_tz">Observed Data Timezone</label>
+            <select class="all_the_observed_tz" name="obs_tz" id="obs_tz" style="width: 100%">
+                {% for timezone in all_timezones %}
+                    <option value="{{ timezone }}">{{ timezone }}</option>
+                {% endfor %}
+            </select>
 
-{#            <div class="btn-group btn-group-md" data-toggle="buttons">#}
-{#                <label class="btn btn-default form-check-label waves-effect waves-light">#}
-{#                    <input class="form-check-input" type="radio" autocomplete="off"#}
-{#                           name="interpolate_radio" value="simulated">#}
-{#                    Interpolate Simulated Data#}
-{#                </label>#}
-{#                <label class="btn btn-default form-check-label waves-effect waves-light">#}
-{#                    <input class="form-check-input" type="radio" autocomplete="off"#}
-{#                           name="interpolate_radio" value="observed">#}
-{#                    Interpolate Observed Data#}
-{#                </label>#}
-{#            </div>#}
+            <br><br>
+
+            <label for="sim_tz">Simulated Data Timezone</label>
+            <select class="all_the_simulated_tz" name="sim_tz" id="sim_tz" style="width: 100%">
+                {% for timezone in all_timezones %}
+                    <option value="{{ timezone }}">{{ timezone }}</option>
+                {% endfor %}
+            </select>
+
+            <br><br>
 
             <div class="pretty p-default p-curve p-smooth">
                 <input type="radio" name="interpolate_radio" value="simulated" checked>
@@ -179,3 +163,5 @@
     <button id="download_merged" class="btn btn-success">Download Merged Data</button>
 
     <div id="merged_hydrograph">{# Plot Goes Here #}</div>
+
+{% endblock %}
