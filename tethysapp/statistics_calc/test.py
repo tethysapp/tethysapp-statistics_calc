@@ -10,13 +10,19 @@ import requests
 from helper_functions import parse_api_request
 from ast import literal_eval
 # import json
+import requests
 
-daterange = pd.date_range('1980-01-01', '2000-01-01')
+reach_id = 5
 
-begin_time = pd.to_datetime("1998-01-01")
-end_time = pd.to_datetime("2001-01-01")
+request_params = dict(watershed_name='Africa', subbasin_name='Continental', reach_id=reach_id)
+request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetHistoricData/', params=request_params, headers=request_headers)
 
-print(daterange[0] < end_time < daterange[-1])
+print(res.content)
+print(type(res.content))
+
+if res.content == "Not found: ERA Interim river with ID {}.".format(reach_id):
+    print("This stream does not exist")
 
 """Calling the api to get a metric value"""
 # request_headers = dict(Authorization='Token')
@@ -118,107 +124,6 @@ print(daterange[0] < end_time < daterange[-1])
 
 # print(seasonal_period(merged_df, daily_period=['01-01', '01-05'], time_range=['hi', 'bye']))
 
-
-"""Appending to a dictionary"""
-# d = {}
-#
-# print(d)
-#
-# d['newkey'] = 'newvalue'
-#
-# print(d)
-#
-# d['second key'] = 'two'
-#
-# print(d)
-
-# def sql_table(forecasted_array, observed_array, watershed, reach_ID):
-#     """Takes two numpy arrays and returns a pandas dataframe with all of the metrics included."""
-#     metrics_list = ["reach_ID", "watershed", 'Mean Error', 'Mean Absolute Error', 'Mean Squared Error',
-#                     'Eclidean Distance', 'Normalized Eclidean Distance', 'Root Mean Square Error',
-#                     'Root Mean Squared Log Error', 'Mean Absolute Scaled Error', 'R^2', 'Anomoly Correlation Coefficient',
-#                     'Mean Absolute Percentage Error', 'Mean Absolute Percentage Deviation',
-#                     'Symmetric Mean Absolute Percentage Error (1)', 'Symmetric Mean Absolute Percentage Error (2)',
-#                     'Index of Agreement (d)', 'Index of Agreement (d1)', 'Index of Agreement Refined (dr)',
-#                     'Relative Index of Agreement', 'Modified Index of Agreement', "Watterson's M", 'Mielke-Berry R',
-#                     'Nash-Sutcliffe Efficiency', 'Modified Nash-Sutcliffe Efficiency',
-#                     'Relative Nash-Sutcliffe Efficiency',
-#                     'Legate-McCabe Index', 'Spectral Angle', 'Spectral Correlation',
-#                     'Spectral Information Divergence', 'Spectral Gradient Angle', 'H1 - Mean', 'H1 - Absolute',
-#                     'H1 - Root', 'H2 - Mean', 'H2 - Absolute', 'H2 - Root', 'H3 - Mean', 'H3 - Absolute', 'H3 - Root',
-#                     'H4 - Mean', 'H4 - Absolute', 'H4 - Root', 'H5 - Mean', 'H5 - Absolute', 'H5 - Root', 'H6 - Mean',
-#                     'H6 - Absolute', 'H6 - Root', 'H7 - Mean', 'H7 - Absolute', 'H7 - Root', 'H8 - Mean',
-#                     'H8 - Absolute', 'H8 - Root', 'H10 - Mean', 'H10 - Absolute', 'H10 - Root']
-#
-#     # Creating the Metrics Matrix
-#     metrics_array = np.zeros(len(metrics_list), dtype=object)
-#
-#     metrics_array[0] = reach_ID
-#     metrics_array[1] = watershed
-#     metrics_array[2] = me(forecasted_array, observed_array)
-#     warnings.filterwarnings("ignore")
-#     metrics_array[3] = mae(forecasted_array, observed_array)
-#     metrics_array[4] = mse(forecasted_array, observed_array)
-#     metrics_array[5] = ed(forecasted_array, observed_array)
-#     metrics_array[6] = ned(forecasted_array, observed_array)
-#     metrics_array[7] = rmse(forecasted_array, observed_array)
-#     metrics_array[8] = rmsle(forecasted_array, observed_array)
-#     metrics_array[9] = mase(forecasted_array, observed_array)
-#     metrics_array[10] = r_squared(forecasted_array, observed_array)
-#     metrics_array[11] = acc(forecasted_array, observed_array)
-#     metrics_array[12] = mape(forecasted_array, observed_array)
-#     metrics_array[13] = mapd(forecasted_array, observed_array)
-#     metrics_array[14] = smap1(forecasted_array, observed_array)
-#     metrics_array[15] = smap2(forecasted_array, observed_array)
-#     metrics_array[16] = d(forecasted_array, observed_array)
-#     metrics_array[17] = d1(forecasted_array, observed_array)
-#     metrics_array[18] = dr(forecasted_array, observed_array)
-#     metrics_array[19] = drel(forecasted_array, observed_array)
-#     metrics_array[20] = dmod(forecasted_array, observed_array)
-#     metrics_array[21] = M(forecasted_array, observed_array)
-#     metrics_array[22] = R(forecasted_array, observed_array)
-#     metrics_array[23] = E(forecasted_array, observed_array)
-#     metrics_array[24] = Emod(forecasted_array, observed_array)
-#     metrics_array[25] = Erel(forecasted_array, observed_array)
-#     metrics_array[26] = E_1(forecasted_array, observed_array)
-#     metrics_array[27] = sa(forecasted_array, observed_array)
-#     metrics_array[28] = sc(forecasted_array, observed_array)
-#     metrics_array[29] = sid(forecasted_array, observed_array)
-#     metrics_array[30] = sga(forecasted_array, observed_array)
-#     metrics_array[31] = h1(forecasted_array, observed_array, 'mean')
-#     metrics_array[32] = h1(forecasted_array, observed_array, 'absolute')
-#     metrics_array[33] = h1(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[34] = h2(forecasted_array, observed_array, 'mean')
-#     metrics_array[35] = h2(forecasted_array, observed_array, 'absolute')
-#     metrics_array[36] = h2(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[37] = h3(forecasted_array, observed_array, 'mean')
-#     metrics_array[38] = h3(forecasted_array, observed_array, 'absolute')
-#     metrics_array[39] = h3(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[40] = h4(forecasted_array, observed_array, 'mean')
-#     metrics_array[41] = h4(forecasted_array, observed_array, 'absolute')
-#     metrics_array[42] = h4(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[43] = h5(forecasted_array, observed_array, 'mean')
-#     metrics_array[44] = h5(forecasted_array, observed_array, 'absolute')
-#     metrics_array[45] = h5(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[46] = h6(forecasted_array, observed_array, 'mean')
-#     metrics_array[47] = h6(forecasted_array, observed_array, 'absolute')
-#     metrics_array[48] = h6(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[49] = h7(forecasted_array, observed_array, 'mean')
-#     metrics_array[50] = h7(forecasted_array, observed_array, 'absolute')
-#     metrics_array[51] = h7(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[52] = h8(forecasted_array, observed_array, 'mean')
-#     metrics_array[53] = h8(forecasted_array, observed_array, 'absolute')
-#     metrics_array[54] = h8(forecasted_array, observed_array, 'rmhe')
-#     metrics_array[55] = h10(forecasted_array, observed_array, 'mean')
-#     metrics_array[56] = h10(forecasted_array, observed_array, 'absolute')
-#     metrics_array[57] = h10(forecasted_array, observed_array, 'rmhe')
-#     warnings.filterwarnings("always")
-#
-#     return pd.DataFrame(metrics_array.reshape(-1, len(metrics_array)), columns=metrics_list)
-
-
-# conn = sqlite3.connect('//home//wade//tethysdev//tethysapp-statistics_calc//tethysapp//statistics_calc//stat_app.db')
-# c = conn.cursor()
 
 """Saving the database to a database"""
 # metrics_df = sql_table(forecasted_array=sim, observed_array=obs, watershed='South Asia', reach_ID=5892430543909403)

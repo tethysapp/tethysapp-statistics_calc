@@ -1,5 +1,3 @@
-// >>>>>>>>jQuery Functions<<<<<<<<
-
 // Function for the file upload
 $(document).ready(function() {
     $("#pps_csv").change(function () {
@@ -8,7 +6,8 @@ $(document).ready(function() {
     });
 });
 
-// Function to validate the File Upload
+
+// Function to validate the File Upload on change
 $(document).ready(function () {
     $("#pps_csv").change(function () {
         // Clear all of the current plots
@@ -57,7 +56,8 @@ $(document).ready(function () {
 
 });
 
-// Creating a raw data plot
+
+// Creating a raw data plot with the button click
 $(document).ready(function() {
     $("#raw_data_plot_button").click( function(evt) {
         evt.preventDefault();
@@ -80,101 +80,6 @@ $(document).ready(function() {
         if (csv_file_bool && csv_error_bool) {
             plotRawData();
         }
-    });
-});
-
-// Function to Display the current value of the hour slider
-function updateSliderDisplayValue(element_id, element) {
-    if (element_id === "interp_hours") {
-        $("#interp_hour_value").html($("#interp_hours").val()+' Hours');
-    } else if (element_id === "interp_minutes") {
-        $("#interp_minute_value").html($("#interp_minutes").val()+' Minutes');
-    }
-}
-
-// Function to show the begin and end date inputs if the user wants them
-$(document).ready( function() {
-    $("#time_range_bool").change( function(evt) {
-        evt.preventDefault();
-        if($(this).is(":checked")) {
-            $("#time_range_inputs").show();
-        } else {
-            $("#time_range_inputs").hide();
-        }
-        console.log('Time Range Slider Clicked.'); // sanity check
-
-    });
-});
-
-// Validating form input and then triggering the create plot function
-$(document).ready(function () {
-    $("#generate_plot").click(function (evt) {
-        evt.preventDefault();
-        console.log('Plot preprocessed data Event Triggered'); // sanity check
-
-        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
-
-        $.ajax({
-            url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
-            type: "POST", // http method
-            data: formData, // data sent with the post request, the form data from above
-            processData: false,
-            contentType: false,
-
-            // handle a successful response
-            success: function (resp) {
-                // Validating the inerpolation frequencies
-
-                let validation_error = resp["error"];
-
-                // Emptying the error divs
-                $('#validation_error_time').empty();
-
-                // Getting the form data
-                let begin_date = $('#begin_date').val();
-                let end_date = $('#end_date').val();
-
-                // Checking to make sure that the dates make sense
-                let begin_date_int = new Date(begin_date).getTime();
-                let end_date_int = new Date(end_date).getTime();
-
-                if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
-                    console.log("No Begin Date Supplied!");
-                    validation_error = true;
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
-                } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
-                    console.log("No End date supplied!");
-                    validation_error = true;
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
-                } else if (!isNaN(begin_date_int) && !isNaN(end_date_int)) {
-                    if (begin_date_int > end_date_int) {
-                        validation_error = true;
-                        console.log("Begin date cannot be after end date!");
-                        $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
-                    }
-                }
-
-                if (!validation_error) {
-                    ppsPlotHydrograph();
-                } else {
-                    window.location.href = "#h2_preprocessing";
-                }
-            },
-
-            // handle a non-successful response
-            error: function (xhr, errmsg, err) {
-                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
-                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            }
-        });
-    });
-});
-
-$(document).ready(function() {
-    $("#csv_button").click( function(evt) {
-        evt.preventDefault();
-        $( "#pps_form" ).submit();
-        console.log('CSV response Event Triggered'); // sanity check
     });
 });
 
@@ -243,6 +148,97 @@ function plotRawData() {
     });
 }
 
+
+// Function to Display the current value of the hour and minute slider
+function updateSliderDisplayValue(element_id, element) {
+    if (element_id === "interp_hours") {
+        $("#interp_hour_value").html($("#interp_hours").val()+' Hours');
+    } else if (element_id === "interp_minutes") {
+        $("#interp_minute_value").html($("#interp_minutes").val()+' Minutes');
+    }
+}
+
+
+// Function to show the begin and end date inputs if the user wants them
+$(document).ready( function() {
+    $("#time_range_bool").change( function(evt) {
+        evt.preventDefault();
+        if($(this).is(":checked")) {
+            $("#time_range_inputs").show();
+        } else {
+            $("#time_range_inputs").hide();
+        }
+    });
+});
+
+
+// Validating form input and then triggering the create plot function
+$(document).ready(function () {
+    $("#generate_plot").click(function (evt) {
+        evt.preventDefault();
+        console.log('Plot preprocessed data Event Triggered'); // sanity check
+
+        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+
+        $.ajax({
+            url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
+            type: "POST", // http method
+            data: formData, // data sent with the post request, the form data from above
+            processData: false,
+            contentType: false,
+
+            // handle a successful response
+            success: function (resp) {
+                // Validating the inerpolation frequencies
+
+                let validation_error = false;
+
+                // Emptying the error divs
+                $('#validation_error_time').empty();
+
+                // Getting the form data
+                let begin_date = $('#begin_date').val();
+                let end_date = $('#end_date').val();
+
+                // Checking to make sure that the dates make sense
+                let begin_date_int = new Date(begin_date).getTime();
+                let end_date_int = new Date(end_date).getTime();
+
+                if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
+                    console.log("No Begin Date Supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
+                    console.log("No End date supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && !isNaN(end_date_int) && begin_date_int > end_date_int) {
+                    validation_error = true;
+                    console.log("Begin date cannot be after end date!");
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
+                } else if (resp["error"]) {
+                    validation_error = true;
+                    console.log("The time ranges to timescale do not fit into the csv time ranges!");
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Your timescale values do not fit into the time range provided in the CSV!</div><br>');
+                }
+
+                if (!validation_error) {
+                    ppsPlotHydrograph();
+                } else {
+                    window.location.href = "#h2_preprocessing";
+
+                }
+            },
+
+            // handle a non-successful response
+            error: function (xhr, errmsg, err) {
+                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+        });
+    });
+});
+
 function ppsPlotHydrograph() {
     let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
     console.log(formData); // another sanity check
@@ -282,3 +278,71 @@ function ppsPlotHydrograph() {
         }
     });
 }
+
+
+$(document).ready(function() {
+    $("#csv_button").click( function(evt) {
+        evt.preventDefault();
+        console.log('CSV response Event Triggered'); // sanity check
+
+        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+
+        $.ajax({
+            url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
+            type: "POST", // http method
+            data: formData, // data sent with the post request, the form data from above
+            processData: false,
+            contentType: false,
+
+            // handle a successful response
+            success: function (resp) {
+                // Validating the inerpolation frequencies
+
+                let validation_error = false;
+
+                // Emptying the error divs
+                $('#validation_error_time').empty();
+
+                // Getting the form data
+                let begin_date = $('#begin_date').val();
+                let end_date = $('#end_date').val();
+
+                // Checking to make sure that the dates make sense
+                let begin_date_int = new Date(begin_date).getTime();
+                let end_date_int = new Date(end_date).getTime();
+
+                if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
+                    console.log("No Begin Date Supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
+                    console.log("No End date supplied!");
+                    validation_error = true;
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
+                } else if (!isNaN(begin_date_int) && !isNaN(end_date_int) && begin_date_int > end_date_int) {
+                    validation_error = true;
+                    console.log("Begin date cannot be after end date!");
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
+                } else if (resp["error"]) {
+                    validation_error = true;
+                    console.log("The time ranges to timescale do not fit into the csv time ranges!");
+                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Your timescale values do not fit into the time range provided in the CSV!</div><br>');
+                }
+
+                if (!validation_error) {
+                    $("#pps_form").submit();
+                } else {
+                    window.location.href = "#h2_preprocessing";
+
+                }
+            },
+
+            // handle a non-successful response
+            error: function (xhr, errmsg, err) {
+                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+        });
+    });
+});
+

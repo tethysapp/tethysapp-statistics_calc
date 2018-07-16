@@ -2,14 +2,18 @@
 
 function checkVisible() {
     let obs_error_mesage_bool = $('#obs_csv_error_message').is(':visible');
-    console.log("Is the obs csv error msg visible? " + obs_error_mesage_bool)
-    let file_exists = (document.getElementById("obs_csv").files.length == 0)
-    console.log("Is there not a file in the obs input? " + file_exists)
-    let radio_value = $('[name="predicted_radio"]').val();
-    console.log("The radio value is " + radio_value)
-    // if (!$('#obs_csv_error_message').is(':visible')) {
-    //     console.log("ERROR MESSAGE VISIBLE")
-    // }
+    console.log("Is the obs csv error msg visible? " + obs_error_mesage_bool);
+    let file_exists = (document.getElementById("obs_csv").files.length == 0);
+    console.log("Is there not a file in the obs input? " + file_exists);
+    let radio_value = $( 'input[name=predicted_radio]:checked' ).val();
+    console.log("The radio value is " + radio_value);
+    console.log("The radio type is " + typeof radio_value);
+    let obs_data_tz = $('[name="obs_tz"]').val();
+    console.log("The observed TZ is: " + obs_data_tz);
+    console.log("The observed TZ type is: " + typeof obs_data_tz);
+    let sim_data_tz = $('[name="sim_tz"]').val();
+    console.log("The sim TZ is: " + sim_data_tz);
+    console.log("The sim TZ type is: " + typeof sim_data_tz);
 }
 
 // Getting the csrf token
@@ -28,6 +32,7 @@ $.ajaxSetup({
     }
 });
 
+
 // Function for the observed file upload display name
 $(document).ready(function() {
     $("#obs_csv").change(function () {
@@ -40,52 +45,42 @@ $(document).ready(function() {
 $(document).ready(function () {
     $("#obs_csv").change(function () {
         // Hide any previous error messages
-        $("#obs_csv_error_message").hide();
+        $("#obs_csv_error_message").empty();
+        $('#obs_file_upload_div').css({ "border": 'hidden'});
 
-        let theFile = document.getElementById("obs_csv").files[0];
+        let obsCSV = document.getElementById("obs_csv").files[0];
 
         // Parsing the CSV to check for errors
-        Papa.parse(
-            theFile,
-            {
-                // preview: 50,
-                complete: function (results) {
-                    let error = false;
-                    for (let i = 0; i < results.data.length; i++) {
-                        let row = results.data[i];
+        if (typeof document.getElementById("obs_csv").files[0] === "object") {
+            Papa.parse(
+                obsCSV,
+                {
+                    // preview: 50,
+                    complete: function (results) {
+                        let error = false;
+                        for (let i = 0; i < results.data.length; i++) {
+                            let row = results.data[i];
 
-                        if (row.length >= 3) {
-                            console.log("There was an error when parsing column " + i);
-                            error = true;
-                            break;
+                            if (row.length >= 3) {
+                                console.log("There was an error when parsing column " + i);
+                                error = true;
+                                break;
+                            }
+                        }
+                        if (error) {
+                            console.log("Error Protocol Running");
+                            $('#obs_csv_error_message').show();
+                            $('#obs_csv_error_message').html('<p style="color: #FF0000"><small>Please make sure that your CSV only has 2 columns.</small></p>');
+                            $('#obs_file_upload_div').css({ "border": '#FF0000 1px solid', "border-radius": '4px' });
                         }
                     }
-                    if (error) {
-                        console.log("Error Protocol Running");
-                        $('#obs_csv_error_message').show();
-                        $('#obs_csv_error_message').html('<br><div class="alert alert-danger" role="alert">There was an error while parsing the first 50 lines of your CSV. Please make sure that it only has 2 columns.</div>');
-
-                        // Disable all the Buttons
-                        // $('#raw_data_plot_button').prop("disabled", true);
-                        // $('#generate_plot').prop("disabled", true);
-                        // $('#csv_button').prop("disabled", true);
-
-
-                    } else {
-
-                    }
-                }
-            });
+                });
+        } else {
+            $('#obs_file_upload_div').css({ "border": 'hidden'});
+        }
     });
 });
 
-// Function for the simulated file upload
-$(document).ready(function() {
-    $("#sim_csv").change(function () {
-        const label = $("#sim_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
-        $("#sim_csv_name").val(label);
-    });
-});
 
 // Function to Hide and Show Values based on the radio box for the simulated data
 $(document).ready(function() {
@@ -93,6 +88,52 @@ $(document).ready(function() {
         let test = $(this).val();
         $(".sim_upload").hide();
         $("#"+test).show();
+    });
+});
+
+
+// Function for the simulated file upload display name
+$(document).ready(function() {
+    $("#sim_csv").change(function () {
+        const label = $("#sim_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
+        $("#sim_csv_name").val(label);
+    });
+});
+
+// Function to validate the simulated data csv
+$(document).ready(function () {
+    $("#sim_csv").change(function () {
+        // Hide any previous error messages
+        $("#sim_csv_error_message").empty();
+        $('#sim_file_upload_div').css({ "border": 'hidden'});
+
+        let obsCSV = document.getElementById("sim_csv").files[0];
+
+        // Parsing the CSV to check for errors
+        if (typeof document.getElementById("sim_csv").files[0] === "object") {
+            Papa.parse(
+                obsCSV,
+                {
+                    // preview: 50,
+                    complete: function (results) {
+                        let error = false;
+                        for (let i = 0; i < results.data.length; i++) {
+                            let row = results.data[i];
+
+                            if (row.length >= 3) {
+                                console.log("There was an error when parsing column " + i);
+                                error = true;
+                                break;
+                            }
+                        }
+                        if (error) {
+                            console.log("Error Protocol Running");
+                            $('#sim_csv_error_message').html('<p style="color: #FF0000"><small>Please make sure that your CSV only has 2 columns.</small></p>');
+                            $('#sim_file_upload_div').css({ "border": '#FF0000 1px solid', "border-radius": '4px' });
+                        }
+                    }
+                });
+        }
     });
 });
 
@@ -115,7 +156,60 @@ $(document).ready(function() {
     $("#plot_merged").click( function(evt) {
         evt.preventDefault();
         console.log('CSV response Event Triggered'); // sanity check
-        plotMergedData();
+
+        // Validation
+        let validation_error = false;
+
+        // Checking if an observed data was provided and if no parsing errors exist
+        if (!($("#obs_csv_error_message").html() === "")) { // parsing error
+            window.location.assign("#error_redirect_point");
+            validation_error = true;
+        } else if (!(typeof document.getElementById("obs_csv").files[0] === "object")) {
+            $('#obs_file_upload_div').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#obs_csv_error_message").html('<p style="color: #FF0000"><small>The observed data csv is a required input.</small></p>');
+            window.location.assign("#error_redirect_point");
+            validation_error = true;
+        }
+
+        // Checking if the simulated data forms were filled and if no parsing errors exist
+        let radio_value = $( 'input[name=predicted_radio]:checked' ).val();
+
+        if (radio_value === "upload") {
+            if (!($("#sim_csv_error_message").html() === "")) { // parsing error
+                window.location.assign("#error_redirect_point");
+                validation_error = true;
+            } else if (!(typeof document.getElementById("sim_csv").files[0] === "object")) {
+                $('#sim_file_upload_div').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+                $("#sim_csv_error_message").html('<p style="color: #FF0000"><small>The simulated data csv is a required input.</small></p>');
+                window.location.assign("#error_redirect_point")
+                validation_error = true;
+            }
+        } else {
+            if ($("#reach_id").val() === "") {
+                $('#reach_id').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+                $("#reach_id_error_message").html('<p style="color: #FF0000"><small>The reach ID is a required input.</small></p>');
+                window.location.assign("#error_redirect_point")
+                validation_error = true;
+            }
+        }
+
+        // Checking if the timezones are supplied if they are wanted
+        if ($('#time_zone_bool').is(':checked')) {
+            if ($('[name="obs_tz"]').val() === "") {
+
+            }
+            if ($('[name="sim_tz"]').val() === "") {
+
+            }
+        }
+
+        // if (!(typeof document.getElementById("obs_csv").files[0] === "object"))
+
+        // let sim_data_tz = $('[name="sim_tz"]').val();
+
+        // Clear all the former errors
+
+        // plotMergedData();
     });
 });
 

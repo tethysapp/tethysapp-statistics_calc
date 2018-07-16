@@ -206,9 +206,12 @@ def pps_check_dates_ajax(request):
             "error": False
         }
 
-        if pd.isna(begin_date) and pd.isna(end_date):
-            print('The User did not want to time scale.')
+        print(pd.isna(begin_date), pd.isna(end_date))
+        print(type(begin_date), type(end_date))
+        print(begin_date, end_date)
 
+        if begin_date == "" and end_date == "":
+            print('The User did not want to time scale.')
         else:
             begin_date = pd.to_datetime(begin_date, errors="coerce")
             end_date = pd.to_datetime(end_date, errors="coerce")
@@ -216,12 +219,12 @@ def pps_check_dates_ajax(request):
             if begin_timeseries < begin_date < end_timeseries and begin_timeseries < end_date < end_timeseries:
                 print("Timescale range is contained in the timeseries")
             else:
+                print("Timescale range is not contained in the timeseries!")
                 resp = {
                     "error": True
                 }
 
         return JsonResponse(resp)
-
 
 
 @login_required()
@@ -243,7 +246,7 @@ def pps_hydrograph_ajax(request):
         print("Csv file is: {}".format(csv_file))
         print(interp_method)
         print(interp_hours, interp_minutes)
-        print(type(interp_hours),type(interp_minutes))
+        print(type(interp_hours), type(interp_minutes))
         print("Begin date is {} and end date is {}.".format(begin_date, end_date))
         print(type(begin_date))
 
