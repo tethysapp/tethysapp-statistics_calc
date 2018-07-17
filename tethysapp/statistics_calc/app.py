@@ -90,6 +90,11 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.calculate_single'
             ),
             UrlMap(
+                name='get_metric_names_abbr',
+                url='get_metric_names_abbr',
+                controller='statistics_calc.controllers.get_metric_names_abbr'
+            ),
+            UrlMap(
                 name='make_table_ajax',
                 url='make_table_ajax',
                 controller='statistics_calc.controllers.make_table_ajax'
@@ -125,6 +130,11 @@ class StatisticsCalc(TethysAppBase):
                 name='get_metrics',
                 url='api/get_metrics',
                 controller='statistics_calc.api.get_metrics'
+            ),
+            UrlMap(
+                name='get_metrics_names_and_abbr',
+                url='api/get_metrics_names_and_abbr',
+                controller='statistics_calc.api.get_metrics_names_and_abbr'
             )
         )
 

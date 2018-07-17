@@ -4,6 +4,7 @@
 
     <div class="jumbotron jumbotron-fluid">
         <h1>Single Stream Analyzer</h1>
+        <div id="error_redirect_point"></div>
     </div>
 
     <!-- data form-->
@@ -82,14 +83,19 @@
             </h4>
         </div>
 
+        <div id="empty_date_range_error"></div>
+        <div id="non_integer_error"></div>
+
         <div id="date-ranges"></div>
         <br><br>
 
 
         <h3>Select the Metrics to Include in the Table:</h3>
 
+        <div id="metric_select_error"></div>
+
         <!--Displaying all of the metrics for the user to select-->
-        <div class="ex1">
+        <div id="metric_overflow_div" style="background-color: white; width: 100%; height: 200px; overflow: scroll;">
             {% for name_abbr in metric_loop_list %}
 
                 {% if forloop.counter0 == 7 %}

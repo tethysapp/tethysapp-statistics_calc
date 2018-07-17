@@ -532,6 +532,23 @@ def calculate_single(request):
 
 
 @login_required()
+def get_metric_names_abbr(request):
+    if request.method == 'GET':
+
+        print("In the get_metrics_names_abbr controller.")
+
+        result = {}
+
+        if request.GET.get('names', False):
+            result["names"] = metric_names
+
+        if request.GET.get('abbreviations', False):
+            result["abbreviations"] = metric_abbr
+
+        return JsonResponse(result)
+
+
+@login_required()
 def hydrograph_ajax_plotly(request):
     if request.method == 'POST':
 
