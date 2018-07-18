@@ -662,6 +662,24 @@ $(document).ready(function(){
     $("#make_volume_table").click(function(){
         createVolumeTable();
         console.log('Make Volume Table Event Triggered');
+
+        // Validation
+        let validation_error = false;
+
+        // Checking if an merged data was provided and if no parsing errors exist
+        if ($("#merged_csv_error_message").html() !== "") { // parsing error
+            window.location.assign("#error_redirect_point");
+            validation_error = true;
+        } else if (!(typeof document.getElementById("merged_csv").files[0] === "object")) {
+            $('#merged_csv_file_input').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#merged_csv_error_message").html('<p style="color: #FF0000"><small>The merged data CSV is a required input.</small></p>');
+            window.location.assign("#error_redirect_point");
+            validation_error = true;
+        }
+
+        if (!validation_error) {
+            createVolumeTable();
+        }
     });
 });
 // Ajax for Volume Table

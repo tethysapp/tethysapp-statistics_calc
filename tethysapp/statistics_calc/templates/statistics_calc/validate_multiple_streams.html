@@ -4,305 +4,200 @@
 
 {% block app_content %}
 
-<br>
+  <br>
 
-<h1>Country Statistics Analyzer</h1>
+  <h1>Country Statistics Analyzer</h1>
 
-<br>
+  <br>
 
-<form id="add-data-form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/some_view/">
-        {% csrf_token %}
-        <button type=submit onclick="return false;" style="display:none"></button>
+  <form id="add-data-form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/some_view/">
+    {% csrf_token %}
+    <button type=submit onclick="return false;" style="display:none"></button>
 
-        <h2>Station Name</h2>
-            <input type="text" name="station_name", placeholder="Optional">
+    <h2>Station Name</h2>
+    <input type="text" name="station_name" , placeholder="Optional">
 
-        <h2>Units</h2>
-            <h3>SI (m<sup>3</sup>/s):<input type="radio" name="units" value="si" checked></h3>
-            <h3>BG (ft<sup>3</sup>/s):<input type="radio" name="units" value="bg"></h3>
+    <h2>Units</h2>
+    <h3>SI (m<sup>3</sup>/s):<input type="radio" name="units" value="si" checked></h3>
+    <h3>BG (ft<sup>3</sup>/s):<input type="radio" name="units" value="bg"></h3>
 
-        <h2>Observed Data (CSV)</h2>
-            <input type="file" name="gauge_data_upload" multiple>
+    <h2>Observed Data (CSV)</h2>
+    <input type="file" name="gauge_data_upload" multiple>
 
-        <br>
+    <br>
 
-        <h2>Simulated Data</h2>
-        <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
-            <h3>Choose how you would like to provide your simulated data:</h3>
+    <h2>Simulated Data</h2>
+    <!--Making a radio box option to either upload their own data or use the SFPT forecast historical data-->
+    <h3>Choose how you would like to provide your simulated data:</h3>
 
-                <h4>Upload Predicted Data (CSV): <input type="radio" name="predicted" value="upload"
-                                                        id="upload" onclick="myFunction()" checked></h4>
+    <h4>Upload Predicted Data (CSV): <input type="radio" name="predicted" value="upload"
+                                            id="upload" onclick="myFunction()" checked></h4>
 
-                <h4>Use Streamflow Prediction Tool Historical Data: <input type="radio" name="predicted" value="sfpt"
-                                                                           id="sfpt" onclick="myFunction()"></h4>
+    <h4>Use Streamflow Prediction Tool Historical Data: <input type="radio" name="predicted" value="sfpt"
+                                                               id="sfpt" onclick="myFunction()"></h4>
 
-        <br>
+    <br>
 
-                    <label id="predicted_label" style="display:block">Predicted Data (CSV)</label>
-                    <input type="file" id="predicted_upload" name="predicted_data_upload"
-                           multiple style="display:block">
+    <label id="predicted_label" style="display:block">Predicted Data (CSV)</label>
+    <input type="file" id="predicted_upload" name="predicted_data_upload"
+           multiple style="display:block">
 
-                    <!--Form for using the streamflow prediction tool data-->
-                    {% if not watershed_error %}
-                    <label id="reach_id" style="display:none">Reach ID: <input type="number" value=1 name="reach_id"></label>
-                    <select id="select_watershed" name="watershed" style="display:none">
-                            {% for choice in watersheds %}
-                                <option value="{{ choice }}">{{ choice }}</option>
-                            {% endfor %}
-                    </select>
-                    {% else %}
-                        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for
-                            the watershed names, we are working to fix this. Please come back later.</p></label>
-                    {% endif %}
+    <!--Form for using the streamflow prediction tool data-->
+    {% if not watershed_error %}
+      <label id="reach_id" style="display:none">Reach ID: <input type="number" value=1 name="reach_id"></label>
+      <select id="select_watershed" name="watershed" style="display:none">
+        {% for choice in watersheds %}
+          <option value="{{ choice }}">{{ choice }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for
+        the watershed names, we are working to fix this. Please come back later.</p></label>
+    {% endif %}
 
-        <br>
+    <br>
 
     <h2>Table</h2>
 
-        <h3>When calculating metrics, would you like to:</h3>
-            Remove Negative Values?<input type="checkbox" name="remove_neg">
+    <h3>When calculating metrics, would you like to:</h3>
+    Remove Negative Values?<input type="checkbox" name="remove_neg">
     <br>
-            Remove Zero Values? (useful when using log metrics)<input type="checkbox" name="remove_zero">
+    Remove Zero Values? (useful when using log metrics)<input type="checkbox" name="remove_zero">
 
-        <h3>Select the Metrics to Include in the Table:</h3>
+    <h3>Select the Metrics to Include in the Table:</h3>
 
-        <!--Displaying all of the metrics for the user to select-->
+    <!--Displaying all of the metrics for the user to select-->
     <div class="ex1">
-        {% for name_abbr in metric_loop_list %}
-            {% if forloop.counter0 == 7 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+      {% for name_abbr in metric_loop_list %}
+        {% if forloop.counter0 == 7 %}
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    M = <input type="number" name="mase_m" min="0" max="100" step=".1" value="1"> (Non-Seasonal = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            M = <input type="number" name="mase_m" min="0" max="100" step=".1" value="1"> (Non-Seasonal = 1)
+          </label>
+          <br>
 
-            {% elif forloop.counter0 == 18 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+        {% elif forloop.counter0 == 18 %}
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    J = <input type="number" name="dmod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            J = <input type="number" name="dmod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 22 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    J = <input type="number" name="nse_mod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            J = <input type="number" name="nse_mod_j" min="0" max="100" step=".1" value="1"> (Default = 1)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 24 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    x&#772;' = <input type="number" name="lm_x_bar"
-                                      min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            x&#772;' = <input type="number" name="lm_x_bar"
+                              min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 44 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    k = <input type="number" name="h6_k_MHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            k = <input type="number" name="h6_k_MHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 45 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    k = <input type="number" name="h6_k_AHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            k = <input type="number" name="h6_k_AHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 46 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    k = <input type="number" name="h6_k_RMSHE" min="0" max="100" step=".1" value="1"> (Default = 1)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            k = <input type="number" name="h6_k_RMSHE" min="0" max="100" step=".1" value="1"> (Default = 1)
+          </label>
+          <br>
 
         {% elif forloop.counter0 == 65 %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
-                                              name="{{ name_abbr.1 }}" onclick="myFunction()">
-                </label>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"
+                                      name="{{ name_abbr.1 }}" onclick="myFunction()">
+          </label>
 
-                <label id="{{ name_abbr.1 }}_label" style="display:none">
-                    x&#772;' = <input type="number" name="d1_p_x_bar"
-                                      min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
-                </label>
-        <br>
+          <label id="{{ name_abbr.1 }}_label" style="display:none">
+            x&#772;' = <input type="number" name="d1_p_x_bar"
+                              min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)
+          </label>
+          <br>
 
         {% else %}
-                <label>
-                    {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}" name="{{ name_abbr.1 }}"></label>
-                <br>
+          <label>
+            {{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}" name="{{ name_abbr.1 }}"></label>
+          <br>
         {% endif %}
-        {% endfor %}
+      {% endfor %}
 
     </div>
 
-        <!--Optional: Date Range-->
-        <h3>Include Analysis of Date Range(s) in Table? <input type="checkbox"
-                                                               name="date_range_bool"
-                                                               id="date_range_bool"
-                                                               onclick="myFunction()"></h3>
+    <!--Optional: Date Range-->
+    <h3>Include Analysis of Date Range(s) in Table? <input type="checkbox"
+                                                           name="date_range_bool"
+                                                           id="date_range_bool"
+                                                           onclick="myFunction()"></h3>
 
-            <!--begin date-->
-            <label id="date_range_form" style="display:none">
-                <h4>How many Date Ranges Would You Like to Analyze?
-                    <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
-                           step="1" value="0" oninput="addFields()">
-                    <!--<a href="javascript:void(0);" id="fill_date_ranges" onclick="addFields()">Add Date Range Forms</a>-->
-                    <div id="date_range_container"></div></h4>
-            </label>
+    <!--begin date-->
+    <label id="date_range_form" style="display:none">
+      <h4>How many Date Ranges Would You Like to Analyze?
+        <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
+               step="1" value="0" oninput="addFields()">
+        <!--<a href="javascript:void(0);" id="fill_date_ranges" onclick="addFields()">Add Date Range Forms</a>-->
+        <div id="date_range_container"></div>
+      </h4>
+    </label>
 
 
     <h2>Plots</h2>
-        <h3>Plot of Entire Time Series:</h3>
-            {% for plot in list_of_plots|slice:":5" %}
-                <h4>-{{ plot }}: <input type="checkbox" name="{{ plot }}"></h4>
-            {% endfor %}
-        <h3>Plot of Daily Averages:</h3>
-            {% for plot in list_of_plots|slice:"5:" %}
-                <h4>-{{ plot }}: <input type="checkbox" name="{{ plot }}_daily_average"></h4>
-            {% endfor %}
+    <h3>Plot of Entire Time Series:</h3>
+    {% for plot in list_of_plots|slice:":5" %}
+      <h4>-{{ plot }}: <input type="checkbox" name="{{ plot }}"></h4>
+    {% endfor %}
+    <h3>Plot of Daily Averages:</h3>
+    {% for plot in list_of_plots|slice:"5:" %}
+      <h4>-{{ plot }}: <input type="checkbox" name="{{ plot }}_daily_average"></h4>
+    {% endfor %}
     <h2>Volume</h2>
-        <h3>Create Table of Streamflow Volumes? <input type="checkbox" name="volume_table"></h3>
-
-    <!--<h2>Lag Analysis</h2>-->
-        <!--<h3>Perform Lag Analysis?<input type="checkbox" id="lag_analysis_bool"-->
-                                        <!--name="lag_analysis_bool" onclick="myFunction()"></h3>-->
-            <!--<label id="lag_analysis_form" style="display:none">-->
-                <!--<div class="ex1">-->
-                    <!--{% for name_abbr in metric_loop_list %}-->
-                        <!--{% if forloop.counter0 == 7 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--M = <input type="number" name="mase_m" min="0" max="100" step=".1" value="1"> (Non-Seasonal = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                        <!--{% elif forloop.counter0 == 18 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--J = <input type="number" name="dmod_j" min="0" max="100" step=".1" value="1"> (Default = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 22 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--J = <input type="number" name="nse_mod_j" min="0" max="100" step=".1" value="1"> (Default = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 24 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--x&#772;' = <input type="number" name="lm_x_bar"-->
-                                                  <!--min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 44 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--k = <input type="number" name="h6_k_MHE" min="0" max="100" step=".1" value="1"> (Default = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 45 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--k = <input type="number" name="h6_k_AHE" min="0" max="100" step=".1" value="1"> (Default = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 46 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--k = <input type="number" name="h6_k_RMSHE" min="0" max="100" step=".1" value="1"> (Default = 1)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% elif forloop.counter0 == 65 %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}"-->
-                                                          <!--name="{{ name_abbr.1 }}" onclick="myFunction()">-->
-                            <!--</label>-->
-            <!---->
-                            <!--<label id="{{ name_abbr.1 }}_label" style="display:none">-->
-                                <!--x&#772;' = <input type="number" name="d1_p_x_bar"-->
-                                                  <!--min="0" max="1000000" step=".01" value="1"> (Default = x&#772;)-->
-                            <!--</label>-->
-                    <!--<br>-->
-            <!---->
-                    <!--{% else %}-->
-                            <!--<label>-->
-                                <!--{{ name_abbr.0 }}: <input type="checkbox" id="{{ name_abbr.1 }}" name="{{ name_abbr.1 }}"></label>-->
-                            <!--<br>-->
-                    <!--{% endif %}-->
-                    <!--{% endfor %}-->
-            <!---->
-                <!--</div>-->
-            <!--</label>-->
+    <h3>Create Table of Streamflow Volumes? <input type="checkbox" name="volume_table"></h3>
 
     <button type=submit>Submit</button>
-    </form>
+  </form>
 
 {% endblock %}

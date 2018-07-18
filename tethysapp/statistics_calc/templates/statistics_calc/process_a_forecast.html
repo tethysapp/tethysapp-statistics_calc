@@ -1,0 +1,139 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Process an Ensemble Forecast</h1>
+    <p>
+      This page is for preprocessing an ensemble forecast before merging it with either the water balance or
+      observed time series data. You can view, interpolate, time scale, and download the preprocessed forecast
+      here so that it can be used in the merge forecast page.
+    </p>
+    <div id="form_error_ref_point"></div>
+  </div>
+
+  <div id="form_error_message" style="display: none">
+    <div class="alert alert-danger" role="alert">
+      There was an error in the submission
+    </div>
+  </div>
+
+  <form id="process_forecast_form" name="process_forecast_form" method="post" enctype="multipart/form-data" action="">
+    {% csrf_token %}
+
+    <h2>Check Raw Data</h2>
+    <hr>
+
+    <h3>File Upload (CSV)</h3>
+
+    {# File Input Button #}
+    <div class="input-group" id="csv_file_upload">
+      <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="forecast_csv" id="forecast_csv" style="display: none;"
+                                  accept=".csv">
+            </span>
+      </label>
+      <input type="text" id="forecast_csv_name" class="form-control is-invalid" readonly="">
+    </div>
+
+    <div id="csv_error"></div>
+
+    <br>
+
+    <button class="btn btn-success" id="raw_data_plot_button">Analyze Raw Data</button>
+
+    <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
+    <button id="clear_raw_data_plot" class="btn btn-warning" style="display: none">Clear Plot</button>
+    <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
+
+    <br>
+    <br>
+    <br>
+
+    <h2 id="h2_preprocessing">Preprocessing</h2>
+    <hr>
+
+    <h3>
+      Interpolation <input type="checkbox" id="interpolation_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+                           data-onstyle="success" data-offstyle="danger" data-size="small">
+    </h3>
+
+    <br>
+
+    <div id="interpolation_inputs" style="display: none;">
+
+      <h5>Interpolation Type</h5>
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="linear" checked>
+        <div class="state p-success">
+          <label>Linear Interpolation</label>
+        </div>
+      </div>
+
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="pchip">
+        <div class="state p-success">
+          <label>PCHIP Interpolation</label>
+        </div>
+      </div>
+
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="cubic">
+        <div class="state p-success">
+          <label>Cubic Interpolation</label>
+        </div>
+      </div>
+
+      <br><br>
+
+      <h5 id="h5_interp_freq">Interpolation Frequency</h5>
+      <div class="interpolation_frequencies">
+        <label for="interp_hours">Hours:</label>
+        <span id="interp_hours_value" style="font-weight:bold;color:red">0</span>
+        <input type="range" min="0" max="24" value="0" class="slider" id="interp_hours" name="interp_hours">
+
+        <br>
+
+        <label for="interp_minutes">Minutes:</label>
+        <span id="interp_minutes_value" style="font-weight:bold;color:red">0</span>
+        <input type="range" min="0" max="45" step="15" value="0" class="slider" id="interp_minutes"
+               name="interp_minutes">
+
+      </div>
+
+      <br>
+
+      <div id="interpolation_error"></div>
+
+    </div>
+
+    <br><br>
+
+    <h3>Time Scale <input type="checkbox" id="time_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+                          data-onstyle="success" data-offstyle="danger" data-size="small">
+    </h3>
+
+    <br>
+
+    <div id="time_range_inputs" style="display: none;">
+
+      <h5>Time Range</h5>
+      <div class="input-group input-daterange" id="timerange_input_box">
+        <input type="text" class="form-control" name="begin_date" id="begin_date">
+        <div class="input-group-addon">to</div>
+        <input type="text" class="form-control" name="end_date" id="end_date">
+      </div>
+
+      <div id="validation_error_time"></div>
+
+    </div>
+
+
+    <br>
+
+    <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
+    <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
+
+  </form>
+{% endblock %}

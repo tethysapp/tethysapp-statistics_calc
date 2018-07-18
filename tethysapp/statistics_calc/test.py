@@ -1,25 +1,49 @@
 import pandas as pd
-import zipfile
-import io
+# import zipfile
+# import io
 # from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-import hydrostats.visual as hv
-import hydrostats.data as hd
-import requests
-from helper_functions import parse_api_request
-from ast import literal_eval
+# import hydrostats.visual as hv
+# import hydrostats.data as hd
+# from helper_functions import parse_api_request
+# from ast import literal_eval
 # import json
-import requests
+# import requests
 
-merged_df = hd.merge_data(
-    sim_fpath='/home/wade/Documents/La_Plata/Simulated.csv',
-    obs_fpath='/home/wade/Documents/La_Plata/observed_processed.csv',
-    interpolate="observed", column_names=['Simulated', 'Observed'],
-    simulated_tz='UTC', observed_tz='Brazil/West', interp_type='pchip'
-)
+forecasts = pd.read_csv("/home/wade/Documents/Forecast/south_asia_historical_20170809_01-51.csv",
+                        index_col=0)
 
-print(merged_df)
+forecasts.index = pd.to_datetime(forecasts.index)
+
+mean_forecast = forecasts.mean(axis=1).values
+
+num_of_ensambles = 30
+
+date_range_ensambles = pd.date_range(forecasts.index[0], forecasts.index[-1], periods=num_of_ensambles)
+
+twenty_ensamble_list = []
+
+for i in range(num_of_ensambles):
+    twenty_ensamble_list.append(forecasts.index.get_loc(date_range_ensambles[i], method='nearest'))
+
+ensample_plot_df = forecasts.iloc[twenty_ensamble_list, :]
+
+fig, ax = plt.subplots()
+
+for i in range(len(ensample_plot_df.index)):
+    x = [ensample_plot_df.index[i]] * 51
+    plt.plot(x, ensample_plot_df.iloc[i, :], c='#87a7db', alpha=0.2, marker="o", markeredgecolor="None", linestyle='None', ms=3)
+
+plt.plot(forecasts.index, mean_forecast, "k-")
+
+fig.autofmt_xdate()
+
+plt.show()
+
+# print(forecasts.index)
+# print(forecasts.loc[forecasts.index[0]])
+# print(forecasts.loc['2017-08-23 00:00:00'])
 
 """SFPT api for historic data"""
 # reach_id = 5

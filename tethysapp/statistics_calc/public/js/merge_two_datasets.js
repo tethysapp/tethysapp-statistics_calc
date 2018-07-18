@@ -1,18 +1,11 @@
 // >>>>>>>>>>>>>>>>>>> Merge Two Datasets JS Functions <<<<<<<<<<<<<<<<<<<<<
 
-// Select2 Test
-$(document).ready(function() {
-    $('.js-example-basic-single').select2();
-});
-
 // Getting the csrf token
 let csrftoken = Cookies.get('csrftoken');
-
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
-
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -29,8 +22,6 @@ $(document).ready(function() {
         $("#obs_csv_name").val(label);
     });
 });
-
-
 // Function to validate the observed data csv
 $(document).ready(function () {
     $("#obs_csv").change(function () {
@@ -45,13 +36,13 @@ $(document).ready(function () {
             Papa.parse(
                 obsCSV,
                 {
-                    // preview: 50,
+                    preview: 50,
                     complete: function (results) {
                         let error = false;
                         for (let i = 0; i < results.data.length; i++) {
                             let row = results.data[i];
 
-                            if (row.length >= 3) {
+                            if (row.length !== 2) {
                                 console.log("There was an error when parsing column " + i);
                                 error = true;
                                 break;
@@ -89,7 +80,6 @@ $(document).ready(function() {
         $("#sim_csv_name").val(label);
     });
 });
-
 // Function to validate the simulated data csv
 $(document).ready(function () {
     $("#sim_csv").change(function () {
@@ -104,13 +94,13 @@ $(document).ready(function () {
             Papa.parse(
                 obsCSV,
                 {
-                    // preview: 50,
+                    preview: 50,
                     complete: function (results) {
                         let error = false;
                         for (let i = 0; i < results.data.length; i++) {
                             let row = results.data[i];
 
-                            if (row.length >= 3) {
+                            if (row.length !== 2) {
                                 console.log("There was an error when parsing column " + i);
                                 error = true;
                                 break;

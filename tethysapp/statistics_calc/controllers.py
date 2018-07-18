@@ -78,60 +78,8 @@ def preprocessing(request):
     """
     Controller for the app home page.
     """
-    first_name = request.user.get_short_name()
 
-    if first_name == "":
-        first_name = "there"
-
-    context = {
-        "first_name": first_name,
-    }
-
-    hour_slider = RangeSlider(
-        display_text='Hours',
-        name='interp_hours',
-        min=0,
-        max=24,
-        initial=0,
-        step=1,
-    )
-
-    minute_slider = RangeSlider(
-        display_text='Minutes',
-        name='interp_minutes',
-        min=0,
-        max=45,
-        initial=0,
-        step=15
-    )
-
-    context["hour_slider"] = hour_slider
-    context["minute_slider"] = minute_slider
-
-    begin_date = DatePicker(
-        name='begin_date',
-        display_text='Begin Date',
-        autoclose=True,
-        format='MM d, yyyy',
-        start_date='1/1/1960',
-        start_view='decade',
-        today_button=True,
-        initial=''
-    )
-
-    end_date = DatePicker(
-        name='end_date',
-        display_text='End Date',
-        autoclose=True,
-        format='MM d, yyyy ',
-        start_date='1/1/1960',
-        start_view='decade',
-        today_button=True,
-        initial=''
-    )
-
-    context['begin_date'] = begin_date
-    context['end_date'] = end_date
+    context = {}
 
     return render(request, 'statistics_calc/preprocessing.html', context)
 
@@ -258,7 +206,7 @@ def pps_hydrograph_ajax(request):
         # Dropping bad time values if necessary
         df = df[df.index.notnull()]
 
-        # Stripping time if the user requests for it
+        # Scaling time if the user requests for it
         if pd.isna(begin_date) and pd.isna(end_date):
             print('The User did not want to time scale.')
         else:
@@ -1853,6 +1801,106 @@ def some_view(request):
             # writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
 
     return response
+
+
+@login_required()
+def process_a_forecast(request):
+    context = {}
+
+    return render(request, 'statistics_calc/process_a_forecast.html', context)
+
+
+@login_required()
+def forecast_raw_data_ajax(request):
+    print("In the raw forecast data ajax controller!")
+
+    if request.method == "POST":
+
+        # Creating a blank response
+        resp = {}
+
+        csv_file = request.FILES.get('forecast_csv', None)
+        interp_method = request.POST.get('interp_method', None)
+        interp_hours = request.POST.get('interp_hours', None)
+        interp_minutes = request.POST.get('interp_minutes', None)
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+
+        begin_date = pd.to_datetime(begin_date)
+        end_date = pd.to_datetime(end_date)
+
+        print("Csv file is: {}".format(csv_file))
+        print(interp_method)
+        print(interp_hours, interp_minutes)
+        print(type(interp_hours), type(interp_minutes))
+        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
+        print(type(begin_date))
+
+        df = pd.read_csv(csv_file, index_col=0)
+
+        # Changing index to datetime type
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+        # Dropping bad time values if necessary
+        df = df[df.index.notnull()]
+
+        print(df)
+
+        # Creating a list of the dates and appending it the the response
+        date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = date_list.tolist()
+        resp['all_dates'] = date_list
+
+        # Appending the dates with all ensamble members to the response
+        for i, date in enumerate(date_list):
+            resp[date] = df.iloc[i, :].tolist()
+
+        mean_forecast = df.mean(axis=1).tolist()
+        resp["ensamble_mean"] = mean_forecast
+
+        # # Getting basic info from the data
+        # time_values = df.index
+        # len_time_values = len(time_values)
+        #
+        # time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
+        # time_delta_freq = time_delta.value_counts()
+        #
+        # common_time_delta = str(time_delta_freq.index[0])
+        #
+        # if time_delta_freq.values.size > 1:
+        #     message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
+        #         </strong> The most common timedelta in the time series is {}.</div>"""
+        #
+        #     resp['information'] = message.format(common_time_delta)
+        # else:
+        #     message = """<div class="alert alert-success" role="alert">The timeseries data is <strong> consistent
+        #         </strong> with a timedelta of {}.</div>"""
+        #     resp['information'] = message.format(common_time_delta)
+
+        return JsonResponse(resp)
+
+
+@login_required()
+def forecast_plot_ajax(request):
+    """
+    Controller to create a plot of the processed forecast
+    """
+    if request.method == "POST":
+
+        # Creating a blank response
+        resp = {}
+
+        csv_file = request.FILES.get('forecast_csv', None)
+
+        df = pd.read_csv(csv_file, index_col=0)
+
+        # Changing index to datetime type
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+
+        # Dropping bad time values if necessary
+        df = df[df.index.notnull()]
+
+        print(df)
 
 
 def test_template(request):

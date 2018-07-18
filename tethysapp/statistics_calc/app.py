@@ -120,6 +120,16 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.volume_table_ajax'
             ),
             UrlMap(
+                name='process_a_forecast',
+                url='process_a_forecast',
+                controller='statistics_calc.controllers.process_a_forecast'
+            ),
+            UrlMap(
+                name='forecast_raw_data_ajax',
+                url='forecast_raw_data_ajax',
+                controller='statistics_calc.controllers.forecast_raw_data_ajax'
+            ),
+            UrlMap(
                 name='test_template',
                 url='test_template',
                 controller='statistics_calc.controllers.test_template'
