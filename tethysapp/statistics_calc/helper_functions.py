@@ -15,7 +15,7 @@ def parse_api_request(watershed, reach):
     subbasin = watershed_raw[watershed_raw.find('(') + 1:-1]
     watershed = watershed_raw[:watershed_raw.find('(') - 1]
 
-    request_headers_in_function = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+    request_headers_in_function = dict(Authorization='Token + {}')
     request_params = dict(watershed_name=watershed, subbasin_name=subbasin, reach_id=reach,
                           return_format='csv')
     forecasted_string_data = requests.get(

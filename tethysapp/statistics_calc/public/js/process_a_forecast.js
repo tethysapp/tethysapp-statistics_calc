@@ -219,15 +219,30 @@ $(document).ready(function () {
 
         // Clearing Previous Errors
         $("#form_error_message").hide();
+
         $("#csv_error").empty();
         $('#csv_file_upload').css({"border": 'hidden'});
-        $('#validation_error_time').empty();
 
+        $("#preprocessing_error").empty();
+        $('#h2_preprocessing').css({"border": 'hidden'});
+
+        $("#interpolation_error").empty();
+        $('#h5_interp_freq').css({"border": 'hidden'});
+
+        $('#validation_error_time').empty();
+        $('#timerange_input_box').css({"border": 'hidden'});
 
         // Checking the file
         if (!(typeof document.getElementById("forecast_csv").files[0] === "object")) {
             $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
             $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+            validation_error = true;
+        }
+
+        // Checking to see if any preprocessing options were selected
+        if (!($("#interpolation_bool").is(":checked")) && !($("#time_range_bool").is(":checked"))) {
+            $('#h2_preprocessing').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#preprocessing_error").html('<p style="color: #FF0000"><small>No preprocessing options were selected.</small></p>');
             validation_error = true;
         }
 
@@ -272,11 +287,11 @@ $(document).ready(function () {
             }
         }
 
-        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+        let formData = new FormData(document.getElementsByName('process_forecast_form')[0]); // getting the data from the form
 
-        if (!validation_error) {
+        if ($("#time_range_bool").is(":checked") && !validation_error) {
             $.ajax({
-                url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
+                url: "/apps/statistics-calc/forecast_check_dates_ajax/", // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
                 processData: false,
@@ -286,14 +301,13 @@ $(document).ready(function () {
                 success: function (resp) {
 
                     if (resp["error"]) {
-                        validation_error = true;
                         console.log("The time ranges to timescale do not fit into the csv time ranges!");
                         $('#validation_error_time').html('<p style="color: #FF0000"><small>Your date range does not fit into the time values in the CSV!</small></p>');
                         $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                    }
-
-                    if (!validation_error) {
-                        ppsPlotHydrograph();
+                        window.location.assign("#form_error_ref_point");
+                        $("#form_error_message").show();
+                    } else {
+                        plotForecast();
                     }
                 },
 
@@ -304,8 +318,228 @@ $(document).ready(function () {
                 }
             });
         } else {
-            window.location.assign("#form_error_ref_point");
-            $("#form_error_message").show();
+            if (!validation_error) {
+                plotForecast();
+            } else {
+                window.location.assign("#form_error_ref_point");
+                $("#form_error_message").show();
+            }
+        }
+    });
+});
+function plotForecast() {
+    let formData = new FormData(document.getElementsByName('process_forecast_form')[0]); // getting the data from the form
+    console.log(formData); // another sanity check
+
+    $.ajax({
+        url: "/apps/statistics-calc/forecast_plot_ajax/", // the endpoint
+        type: "POST", // http method
+        data: formData, // data sent with the post request, the form data from above
+        processData: false,
+        contentType: false,
+
+        // handle a successful response
+        success: function (resp) {
+            let dates = resp["all_dates"];
+
+            let single_date_array;
+            let single_data_array;
+            let dataElement;
+            let data = [];
+
+            function fillArray(value, len) {
+                if (len === 0) return [];
+                let a = [value];
+                while (a.length * 2 <= len) a = a.concat(a);
+                if (a.length < len) a = a.concat(a.slice(0, len - a.length));
+                return a;
+            }
+
+            for (let i = 0; i < dates.length; i++) {
+                single_date_array = fillArray(dates[i], 51);
+                single_data_array = resp[dates[i]];
+
+                if (i === 0) {
+                    dataElement = {
+                        x: single_date_array,
+                        y: single_data_array,
+                        type: "scatter",
+                        mode: "markers",
+                        marker: {color: '#119dff', size: 5, opacity: 0.2},
+                        showlegend: true,
+                        hoverinfo: 'none',
+                        name: "Ensamble Value"
+                    };
+                } else {
+                    dataElement = {
+                        x: single_date_array,
+                        y: single_data_array,
+                        type: "scatter",
+                        mode: "markers",
+                        marker: {color: '#119dff', size: 5, opacity: 0.2},
+                        showlegend: false,
+                        hoverinfo: 'none'
+                    };
+                }
+
+                data.push(dataElement);
+            }
+            data.push({
+                x: resp["all_dates"],
+                y: resp["ensamble_mean"],
+                type: "scatter",
+                name: "Ensamble Mean",
+                showlegend: true,
+                mode: "lines",
+                line: {color: '#000000'}
+            });
+
+            let layout = {
+                title: "Ensamble Forecast Data",
+                xaxis: {title: 'Datetime'},
+                yaxis: {title: 'Streamflow (cms)'}
+            };
+
+            // let d3 = Plotly.d3;
+            // let img_jpg = d3.select('#jpg-export');
+
+            Plotly.newPlot("forecast_plot", data, layout)
+
+            $("#clear_forecast_plot").show()
+        },
+
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+           console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}
+$(document).ready(function () {
+    $("#clear_forecast_plot").click(function (evt) {
+        evt.preventDefault();
+        $("#forecast_plot").empty();
+        $("#clear_forecast_plot").hide();
+    })
+});
+
+
+// Validating form input and then triggering the create plot function
+$(document).ready(function () {
+    $("#csv_button").click(function (evt) {
+        evt.preventDefault();
+        console.log('Download preprocessed csv event triggered.'); // sanity check
+
+        // Validation
+        let validation_error = false;
+
+        // Clearing Previous Errors
+        $("#form_error_message").hide();
+
+        $("#csv_error").empty();
+        $('#csv_file_upload').css({"border": 'hidden'});
+
+        $("#preprocessing_error").empty();
+        $('#h2_preprocessing').css({"border": 'hidden'});
+
+        $("#interpolation_error").empty();
+        $('#h5_interp_freq').css({"border": 'hidden'});
+
+        $('#validation_error_time').empty();
+        $('#timerange_input_box').css({"border": 'hidden'});
+
+        // Checking the file
+        if (!(typeof document.getElementById("forecast_csv").files[0] === "object")) {
+            $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+            validation_error = true;
+        }
+
+        // Checking to see if any preprocessing options were selected
+        if (!($("#interpolation_bool").is(":checked")) && !($("#time_range_bool").is(":checked"))) {
+            $('#h2_preprocessing').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#preprocessing_error").html('<p style="color: #FF0000"><small>No preprocessing options were selected.</small></p>');
+            validation_error = true;
+        }
+
+        // Checking the interpolation data
+        if ($("#interpolation_bool").is(":checked")) {
+            if ($("#interp_hours").val() === $("#interp_minutes").val()) {
+                $('#h5_interp_freq').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+                $("#interpolation_error").html('<p style="color: #FF0000"><small>Both frequency inputs cannot be zero.</small></p>');
+                validation_error = true;
+            }
+        }
+
+        // Checking the dates
+        if ($("#time_range_bool").is(":checked")) {
+            let begin_date = $('#begin_date').val();
+            let end_date = $('#end_date').val();
+
+            if (begin_date === "" && end_date !== "") {
+
+                validation_error = true;
+                $('#validation_error_time').html('<p style="color: #FF0000"><small>No begin date supplied!</small></p>');
+                $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+
+            } else if (begin_date !== "" && end_date === "") {
+
+                validation_error = true;
+                $('#validation_error_time').html('<p style="color: #FF0000"><small>No end date supplied!</small></p>');
+                $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+
+            } else if (begin_date === "" && end_date === "") {
+
+                validation_error = true;
+                $('#validation_error_time').html('<p style="color: #FF0000"><small>No dates supplied!</small></p>');
+                $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+
+            } else if (begin_date === end_date) {
+
+                validation_error = true;
+                $('#validation_error_time').html('<p style="color: #FF0000"><small>The begin and end times cannot be equal!</small></p>');
+                $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+
+            }
+        }
+
+        let formData = new FormData(document.getElementsByName('process_forecast_form')[0]); // getting the data from the form
+
+        if ($("#time_range_bool").is(":checked") && !validation_error) {
+            $.ajax({
+                url: "/apps/statistics-calc/forecast_check_dates_ajax/", // the endpoint
+                type: "POST", // http method
+                data: formData, // data sent with the post request, the form data from above
+                processData: false,
+                contentType: false,
+
+                // handle a successful response
+                success: function (resp) {
+
+                    if (resp["error"]) {
+                        console.log("The time ranges to timescale do not fit into the csv time ranges!");
+                        $('#validation_error_time').html('<p style="color: #FF0000"><small>Your date range does not fit into the time values in the CSV!</small></p>');
+                        $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+                        window.location.assign("#form_error_ref_point");
+                        $("#form_error_message").show();
+                    } else {
+                        $("#process_forecast_form").submit();
+                    }
+                },
+
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                }
+            });
+        } else {
+            if (!validation_error) {
+                $("#process_forecast_form").submit();
+            } else {
+                window.location.assign("#form_error_ref_point");
+                $("#form_error_message").show();
+            }
         }
     });
 });

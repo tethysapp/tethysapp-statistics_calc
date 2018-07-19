@@ -130,6 +130,21 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.forecast_raw_data_ajax'
             ),
             UrlMap(
+                name='forecast_check_dates_ajax',
+                url='forecast_check_dates_ajax',
+                controller='statistics_calc.controllers.forecast_check_dates_ajax'
+            ),
+            UrlMap(
+                name='forecast_plot_ajax',
+                url='forecast_plot_ajax',
+                controller='statistics_calc.controllers.forecast_plot_ajax'
+            ),
+            UrlMap(
+                name='forecast_csv_ajax',
+                url='forecast_csv_ajax',
+                controller='statistics_calc.controllers.forecast_csv_ajax'
+            ),
+            UrlMap(
                 name='test_template',
                 url='test_template',
                 controller='statistics_calc.controllers.test_template'

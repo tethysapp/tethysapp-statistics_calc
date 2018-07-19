@@ -288,9 +288,6 @@ def pps_csv(request):
 
         return response
 
-        # except IndexError:
-        #     raise Http404("Time Range Does not fit into the timeseries data supplied.")
-
 
 @login_required()
 def merge_two_datasets(request):
@@ -303,7 +300,7 @@ def merge_two_datasets(request):
     context = {}
 
     try:
-        request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+        request_headers = dict(Authorization='Token {}')
         res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
                            headers=request_headers)
         watersheds = literal_eval(res.content)
@@ -443,7 +440,7 @@ def calculate_single(request):
 
     # I commented this code because the API was being slow, when the app deploys we need to change it back
     """# Calling the REST API for watershed names
-    request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+    request_headers = dict(Authorization='Token {}')
 
     print("About to request headers")
 
@@ -782,7 +779,7 @@ def volume_table_ajax(request):
 #     context = {}
 #
 #     # Calling the REST API for watershed names
-#     request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+#     request_headers = dict(Authorization='Token {}')
 #
 #     res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
 #                        headers=request_headers)
@@ -921,7 +918,7 @@ def volume_table_ajax(request):
 #
 #             def parse_api_request(watershed, subbasin, reach):
 #                 """Function to parse the predicted data from the API request"""
-#                 request_headers_in_function = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+#                 request_headers_in_function = dict(Authorization='Token {}')
 #                 request_params = dict(watershed_name=watershed, subbasin_name=subbasin, reach_id=reach,
 #                                       return_format='csv')
 #                 forecasted_string_data = requests.get(
@@ -1412,7 +1409,7 @@ def validate_multiple_streams(request):
 
     # I commented this code because the API was being slow, when the app deploys we need to change it back
     """# Calling the REST API for watershed names
-    request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+    request_headers = dict(Authorization='Token {}')
 
     print("About to request headers")
 
@@ -1452,7 +1449,7 @@ def some_view(request):
     # Function to parse the predicted data from the API request
     def parse_api_request(watershed_api, subbasin_api, reach_api):
 
-        request_headers_in_function = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+        request_headers_in_function = dict(Authorization='Token {}')
         request_params = dict(watershed_name=watershed_api, subbasin_name=subbasin_api, reach_id=reach_api,
                               return_format='csv')
         forecasted_string_data = requests.get(
@@ -1820,21 +1817,6 @@ def forecast_raw_data_ajax(request):
         resp = {}
 
         csv_file = request.FILES.get('forecast_csv', None)
-        interp_method = request.POST.get('interp_method', None)
-        interp_hours = request.POST.get('interp_hours', None)
-        interp_minutes = request.POST.get('interp_minutes', None)
-        begin_date = request.POST.get('begin_date', None)
-        end_date = request.POST.get('end_date', None)
-
-        begin_date = pd.to_datetime(begin_date)
-        end_date = pd.to_datetime(end_date)
-
-        print("Csv file is: {}".format(csv_file))
-        print(interp_method)
-        print(interp_hours, interp_minutes)
-        print(type(interp_hours), type(interp_minutes))
-        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
-        print(type(begin_date))
 
         df = pd.read_csv(csv_file, index_col=0)
 
@@ -1844,7 +1826,7 @@ def forecast_raw_data_ajax(request):
         # Dropping bad time values if necessary
         df = df[df.index.notnull()]
 
-        print(df)
+        num_of_days = len(df.index)
 
         # Creating a list of the dates and appending it the the response
         date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
@@ -1858,24 +1840,44 @@ def forecast_raw_data_ajax(request):
         mean_forecast = df.mean(axis=1).tolist()
         resp["ensamble_mean"] = mean_forecast
 
-        # # Getting basic info from the data
-        # time_values = df.index
-        # len_time_values = len(time_values)
-        #
-        # time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
-        # time_delta_freq = time_delta.value_counts()
-        #
-        # common_time_delta = str(time_delta_freq.index[0])
-        #
-        # if time_delta_freq.values.size > 1:
-        #     message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
-        #         </strong> The most common timedelta in the time series is {}.</div>"""
-        #
-        #     resp['information'] = message.format(common_time_delta)
-        # else:
-        #     message = """<div class="alert alert-success" role="alert">The timeseries data is <strong> consistent
-        #         </strong> with a timedelta of {}.</div>"""
-        #     resp['information'] = message.format(common_time_delta)
+        return JsonResponse(resp)
+
+
+@login_required()
+def forecast_check_dates_ajax(request):
+    """AJAX Controller for the preprocessing page. Checks if the user has made sure that the date range is included in
+    the timeseries data"""
+
+    if request.method == "POST":
+
+        # Getting the timeseries range
+        csv_file = request.FILES.get('forecast_csv', None)
+        df = pd.read_csv(csv_file, index_col=0)
+        begin_timeseries = pd.to_datetime(df.index[0])
+        end_timeseries = pd.to_datetime(df.index[-1])
+
+        # Getting the beggining and ending date
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+
+        resp = {
+            "error": False
+        }
+
+        print(pd.isna(begin_date), pd.isna(end_date))
+        print(type(begin_date), type(end_date))
+        print(begin_date, end_date)
+
+        begin_date = pd.to_datetime(begin_date, errors="coerce")
+        end_date = pd.to_datetime(end_date, errors="coerce")
+
+        if begin_timeseries < begin_date < end_timeseries and begin_timeseries < end_date < end_timeseries:
+            print("Timescale range is contained in the timeseries")
+        else:
+            print("Timescale range is not contained in the timeseries!")
+            resp = {
+                "error": True
+            }
 
         return JsonResponse(resp)
 
@@ -1890,19 +1892,105 @@ def forecast_plot_ajax(request):
         # Creating a blank response
         resp = {}
 
+        # Parsing and processing the csv data
+        csv_file = request.FILES.get('forecast_csv', None)
+        print("Csv file is: {}".format(csv_file))
+
+        df = pd.read_csv(csv_file, index_col=0)
+        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+        df = df[df.index.notnull()]  # Dropping bad time values if necessary
+
+        # Time Scaling
+
+        time_scale_bool = request.POST.get('time_range_bool', None)
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+        begin_date = pd.to_datetime(begin_date)  # Convert to Datetime Object
+        end_date = pd.to_datetime(end_date)
+        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
+        print(type(begin_date))
+
+        if time_scale_bool == "on":
+            print("Scaling the Time!")
+            df = df.loc[begin_date: end_date]
+
+        # Interpolation
+
+        interp_bool = request.POST.get('interpolation_bool', None)
+        interp_method = request.POST.get('interp_method', None)
+        interp_hours = request.POST.get('interp_hours', None)
+        interp_minutes = request.POST.get('interp_minutes', None)
+        print(interp_bool)
+        print(interp_method)
+        print(interp_hours, interp_minutes)
+
+        if interp_bool == "on":
+            print("Interpolating!")
+            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
+            df = df.reindex(new_index)
+            df = df.interpolate(interp_method)
+
+        # Creating a list of all of the dates
+        all_date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+        all_date_list = all_date_list.tolist()
+        resp['all_dates'] = all_date_list
+
+        # Creating a seperate JSON list for each ensamble
+        for i, date in enumerate(all_date_list):
+            resp[date] = df.iloc[i, :].tolist()
+
+        # Getting the ensamble mean for the time series
+        mean_forecast = df.mean(axis=1).tolist()
+        resp["ensamble_mean"] = mean_forecast
+
+        return JsonResponse(resp)
+
+
+@login_required()
+def forecast_csv_ajax(request):
+    """Controller to return a csv download of the preprocessed CSV"""
+    if request.method == "POST":
+
+        # Parsing and processing the csv data
+
         csv_file = request.FILES.get('forecast_csv', None)
 
         df = pd.read_csv(csv_file, index_col=0)
-
-        # Changing index to datetime type
         df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+        df = df[df.index.notnull()]  # Dropping bad time values if necessary
 
-        # Dropping bad time values if necessary
-        df = df[df.index.notnull()]
+        # Time Scaling
 
-        print(df)
+        time_scale_bool = request.POST.get('time_range_bool', None)
+        begin_date = request.POST.get('begin_date', None)
+        end_date = request.POST.get('end_date', None)
+        begin_date = pd.to_datetime(begin_date)  # Convert to Datetime Object
+        end_date = pd.to_datetime(end_date)
+
+        if time_scale_bool == "on":
+            df = df.loc[begin_date: end_date]
+
+        # Interpolation
+
+        interp_bool = request.POST.get('interpolation_bool', None)
+        interp_method = request.POST.get('interp_method', None)
+        interp_hours = request.POST.get('interp_hours', None)
+        interp_minutes = request.POST.get('interp_minutes', None)
+
+        if interp_bool == "on":
+            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
+            df = df.reindex(new_index)
+            df = df.interpolate(interp_method)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=preprocessed_forecasts.csv'
+
+        df.to_csv(path_or_buf=response, index_label="Datetime")
+
+        return response
 
 
+@login_required()
 def test_template(request):
     """
     Controller for the app home page.

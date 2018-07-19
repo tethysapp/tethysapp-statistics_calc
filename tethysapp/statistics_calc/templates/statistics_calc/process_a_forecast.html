@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <form id="process_forecast_form" name="process_forecast_form" method="post" enctype="multipart/form-data" action="">
+  <form id="process_forecast_form" name="process_forecast_form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/forecast_csv_ajax/">
     {% csrf_token %}
 
     <h2>Check Raw Data</h2>
@@ -52,11 +52,12 @@
     <br>
 
     <h2 id="h2_preprocessing">Preprocessing</h2>
+    <div id="preprocessing_error"></div>
     <hr>
 
     <h3>
-      Interpolation <input type="checkbox" id="interpolation_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-                           data-onstyle="success" data-offstyle="danger" data-size="small">
+      Interpolation <input type="checkbox" id="interpolation_bool" name="interpolation_bool" data-toggle="toggle"
+                           data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger" data-size="small">
     </h3>
 
     <br>
@@ -110,8 +111,8 @@
 
     <br><br>
 
-    <h3>Time Scale <input type="checkbox" id="time_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-                          data-onstyle="success" data-offstyle="danger" data-size="small">
+    <h3>Time Scale <input type="checkbox" id="time_range_bool" name="time_range_bool" data-toggle="toggle" data-on="Yes"
+                          data-off="No" data-onstyle="success" data-offstyle="danger" data-size="small">
     </h3>
 
     <br>
@@ -129,11 +130,14 @@
 
     </div>
 
-
     <br>
 
     <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
     <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
 
   </form>
+
+  <div id="forecast_plot">{# The Hydrograph goes here #}</div>
+  <button id="clear_forecast_plot" class="btn btn-warning" style="display: none">Clear Plot</button>
+
 {% endblock %}

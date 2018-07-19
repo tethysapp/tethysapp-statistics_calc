@@ -11,45 +11,57 @@ import numpy as np
 # import json
 # import requests
 
-forecasts = pd.read_csv("/home/wade/Documents/Forecast/south_asia_historical_20170809_01-51.csv",
-                        index_col=0)
 
-forecasts.index = pd.to_datetime(forecasts.index)
 
-mean_forecast = forecasts.mean(axis=1).values
+"""Timezone conversions"""
+# time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
+#
+# print("The current time is {} in mountain time.".format(time_now))
+#
+# dti = pd.DatetimeIndex(start=time_now, freq='D', periods=1, tz="US/Mountain")
+#
+# new_time = dti.tz_convert("Asia/Kathmandu")
+#
+# print("Nepal time is {} right now".format(new_time[0].tz_localize(None).strftime("%Y-%m-%d %H:%M:%S")))
+# print("UTC time is {} right now".format(new_time[0].tz_convert(None).strftime("%Y-%m-%d %H:%M:%S")))
 
-num_of_ensambles = 30
-
-date_range_ensambles = pd.date_range(forecasts.index[0], forecasts.index[-1], periods=num_of_ensambles)
-
-twenty_ensamble_list = []
-
-for i in range(num_of_ensambles):
-    twenty_ensamble_list.append(forecasts.index.get_loc(date_range_ensambles[i], method='nearest'))
-
-ensample_plot_df = forecasts.iloc[twenty_ensamble_list, :]
-
-fig, ax = plt.subplots()
-
-for i in range(len(ensample_plot_df.index)):
-    x = [ensample_plot_df.index[i]] * 51
-    plt.plot(x, ensample_plot_df.iloc[i, :], c='#87a7db', alpha=0.2, marker="o", markeredgecolor="None", linestyle='None', ms=3)
-
-plt.plot(forecasts.index, mean_forecast, "k-")
-
-fig.autofmt_xdate()
-
-plt.show()
-
-# print(forecasts.index)
-# print(forecasts.loc[forecasts.index[0]])
-# print(forecasts.loc['2017-08-23 00:00:00'])
+"""Plotting the Ensemble Forecasts"""
+# forecasts = pd.read_csv("/home/wade/Documents/Forecast/south_asia_historical_20170809_01-51.csv",
+#                         index_col=0)
+#
+# forecasts.index = pd.to_datetime(forecasts.index)
+#
+# mean_forecast = forecasts.mean(axis=1).values
+#
+# num_of_ensambles = 30
+#
+# date_range_ensambles = pd.date_range(forecasts.index[0], forecasts.index[-1], periods=num_of_ensambles)
+#
+# twenty_ensamble_list = []
+#
+# for i in range(num_of_ensambles):
+#     twenty_ensamble_list.append(forecasts.index.get_loc(date_range_ensambles[i], method='nearest'))
+#
+# ensample_plot_df = forecasts.iloc[twenty_ensamble_list, :]
+#
+# fig, ax = plt.subplots()
+#
+# for i in range(len(ensample_plot_df.index)):
+#     x = [ensample_plot_df.index[i]] * 51
+#     plt.plot(x, ensample_plot_df.iloc[i, :], c='#87a7db', alpha=0.2, marker="o", markeredgecolor="None",
+#              linestyle='None', ms=3)
+#
+# plt.plot(forecasts.index, mean_forecast, "k-")
+#
+# fig.autofmt_xdate()
+#
+# plt.show()
 
 """SFPT api for historic data"""
 # reach_id = 5
 #
 # request_params = dict(watershed_name='Africa', subbasin_name='Continental', reach_id=reach_id)
-# request_headers = dict(Authorization='Token 3e6d5a373ff8230ccae801bf0758af9f43922e32')
+# request_headers = dict(Authorization='Token')
 # res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetHistoricData/', params=request_params, headers=request_headers)
 #
 # print(res.content)
