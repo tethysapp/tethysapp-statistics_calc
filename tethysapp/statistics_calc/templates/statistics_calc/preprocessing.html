@@ -3,10 +3,11 @@
 {% block app_content %}
 
   <div class="jumbotron jumbotron-fluid">
-    <h1>Process a Dataset</h1>
+    <h1>Process a Time Series Dataset</h1>
     <p>
-      This page is for preprocessing a single dataset before merging it. You can view, interpolate, time scale,
-      and download the preprocessed data here so that it can be used in the merge data page.
+      This page is for preprocessing a single time series dataset before merging it. You can view, interpolate,
+      time scale, and download the preprocessed time series data here so that it can be used in either of the
+      merge data pages.
     </p>
   </div>
 
@@ -14,10 +15,8 @@
         action="/apps/statistics-calc/pps_csv/">
     {% csrf_token %}
 
-    <h2 id="h2_raw_data_checks">Raw Data Checks</h2>
+    <h2 id="h2_raw_data_checks">Raw Data Upload</h2>
     <hr>
-
-    <h3>File Upload (CSV)</h3>
 
     {# File Input Button #}
     <div class="input-group" id="csv_file_upload">
@@ -33,7 +32,7 @@
 
     <br>
 
-    <button class="btn btn-success" id="raw_data_plot_button">Analyze Raw Data</button>
+    <button class="btn btn-success" id="raw_data_plot_button">Plot and Analyze Raw Data</button>
 
     <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
     <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>

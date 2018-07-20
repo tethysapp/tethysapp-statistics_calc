@@ -120,12 +120,34 @@ def pps_hydrograph_raw_data_ajax(request):
 
         if time_delta_freq.values.size > 1:
             message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
-            </strong> The most common timedelta in the time series is {}.</div>"""
+            </strong> The most common time frequency in the time series is {}.</div>"""
+
+            # Finding the location of the irregular time frequencies
+            data_list = []
+            for i, time_del in enumerate(time_delta_freq.index):
+                if i > 0:
+                    data_sublist = [time_del]
+                    indices = np.where(time_delta == time_del)
+                    missing_times = time_values[indices]
+                    missing_times = missing_times.strftime("%B %d, %Y %H:%M:%S")
+                    missing_times = missing_times.tolist()
+                    missing_times = ', '.join(missing_times)
+                    data_sublist.append(missing_times)
+
+                    data_list.append(data_sublist)
+
+            table_of_freq = pd.DataFrame(data_list, columns=["Time Frequency", "Location"])
+            table_of_freq = table_of_freq.to_html(classes="table table-hover table-striped", index=False)
+            table_of_freq = table_of_freq.replace('border="1"', 'border="0"')
+
+            message += table_of_freq
 
             resp['information'] = message.format(common_time_delta)
         else:
-            message = """<div class="alert alert-success" role="alert">The timeseries data is <strong> consistent
-            </strong> with a timedelta of {}.</div>"""
+            message = """<div class="alert alert-success" role="alert">
+                           The timeseries data is <strong>consistent</strong> with a time frequency of {}.
+                         </div>"""
+
             resp['information'] = message.format(common_time_delta)
 
         return JsonResponse(resp)
