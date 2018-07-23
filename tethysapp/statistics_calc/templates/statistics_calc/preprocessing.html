@@ -9,6 +9,13 @@
       time scale, and download the preprocessed time series data here so that it can be used in either of the
       merge data pages.
     </p>
+    <div id="form_error_ref_point"></div>
+  </div>
+
+  <div id="form_error_message" style="display: none">
+    <div class="alert alert-danger" role="alert">
+      There was an error in the submission
+    </div>
   </div>
 
   <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data"
@@ -28,93 +35,125 @@
       <input type="text" id="pps_csv_name" class="form-control is-invalid" readonly="">
     </div>
 
-    <div id="validate_csv"></div>
+    <div id="csv_error"></div>
 
     <br>
 
     <button class="btn btn-success" id="raw_data_plot_button">Plot and Analyze Raw Data</button>
+    <div id="raw_data_plot_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
 
     <div id="raw_data_plot">{# The Hydrograph goes here #}</div>
     <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
+    <button class="btn btn-warning" id="clear_raw_data_plot_button" style="display: none">Clear Plot and Analysis</button>
+
+    <br><br><br>
+
+    <h2 id="h2_preprocessing">Preprocessing</h2>
+    <div id="preprocessing_error"></div>
+    <hr>
+
+    <h3>
+      Interpolation
+        <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+              title="Select yes if you would like to interpolate your data to either change the time frequency or fill in missing data.">
+        </span>
+
+    </h3>
+
+    <input type="checkbox" id="interpolation_bool" name="interpolation_bool" data-toggle="toggle"
+           data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger" data-size="small">
 
     <br>
 
-    <h2 id="h2_preprocessing">Preprocessing</h2>
-    <hr>
+    <div id="interpolation_inputs" style="display: none;">
 
-    <h3>Interpolation Type</h3>
-
-    <div class="pretty p-default p-curve p-smooth">
-      <input type="radio" name="interp_method" value="linear" checked>
-      <div class="state p-success">
-        <label>Linear Interpolation</label>
+      <h5>Interpolation Type</h5>
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="linear" checked>
+        <div class="state p-success">
+          <label>Linear Interpolation</label>
+        </div>
       </div>
-    </div>
 
-    <div class="pretty p-default p-curve p-smooth">
-      <input type="radio" name="interp_method" value="pchip">
-      <div class="state p-success">
-        <label>PCHIP Interpolation</label>
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="pchip">
+        <div class="state p-success">
+          <label>PCHIP Interpolation</label>
+        </div>
       </div>
-    </div>
 
-    <div class="pretty p-default p-curve p-smooth">
-      <input type="radio" name="interp_method" value="cubic">
-      <div class="state p-success">
-        <label>Cubic Interpolation</label>
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="cubic">
+        <div class="state p-success">
+          <label>Cubic Interpolation</label>
+        </div>
       </div>
-    </div>
 
-    <br><br>
+      <br><br>
 
-    <h3>Interpolation Frequency (Leave both values at zero if you do not wish to interpolate)</h3>
+      <h5 id="h5_interp_freq">Interpolation Frequency</h5>
+      <div class="interpolation_frequencies">
+        <label for="interp_hours">Hours:</label>
+        <span id="interp_hours_value" style="font-weight:bold;color:red">0</span>
+        <input type="range" min="0" max="24" value="0" class="slider" id="interp_hours" name="interp_hours">
 
-    <div class="interpolation_frequencies">
-      <label for="interp_hours">Hours:</label>
-      <span id="interp_hours_value" style="font-weight:bold;color:red">0</span>
-      <input type="range" min="0" max="24" value="0" class="slider" id="interp_hours" name="interp_hours">
+        <br>
+
+        <label for="interp_minutes">Minutes:</label>
+        <span id="interp_minutes_value" style="font-weight:bold;color:red">0</span>
+        <input type="range" min="0" max="45" step="15" value="0" class="slider" id="interp_minutes"
+               name="interp_minutes">
+
+      </div>
 
       <br>
 
-      <label for="interp_minutes">Minutes:</label>
-      <span id="interp_minutes_value" style="font-weight:bold;color:red">0</span>
-      <input type="range" min="0" max="45" step="15" value="0" class="slider" id="interp_minutes"
-             name="interp_minutes">
+      <div id="interpolation_error"></div>
 
     </div>
 
-    <br>
-
-    <h3>Time Range</h3>
-
-    <h4>
-      Do you want to timescale this data?
-    </h4>
-
-    <input type="checkbox" id="time_range_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="small">
-
     <br><br>
+
+    <h3>
+      Time Scale
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+              title="Select yes if you would like to only use a certain time range. e.g. if your timeseries spanned from 1992 to 2015 and you only wanted the data from the year 2002.">
+        </span>
+    </h3>
+
+    <input type="checkbox" id="time_range_bool" name="time_range_bool" data-toggle="toggle" data-on="Yes"
+           data-off="No" data-onstyle="success" data-offstyle="danger" data-size="small">
+
+    <br>
 
     <div id="time_range_inputs" style="display: none;">
 
-      <label>Time Range</label>
+      <h5>Time Range</h5>
       <div class="input-group input-daterange" id="timerange_input_box">
         <input type="text" class="form-control" name="begin_date" id="begin_date">
         <div class="input-group-addon">to</div>
         <input type="text" class="form-control" name="end_date" id="end_date">
       </div>
 
-    </div>
+    <div id="time_error"></div>
 
-    <div id="validation_error_time"></div>
+    </div>
 
     <br>
 
     <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
     <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
 
+    <div id="plot_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
+
     <div id="pps_hydrograph"><!-- The Hydrograph goes here --></div>
+    <button class="btn btn-warning" id="clear_plot" style="display: none">Clear Plot</button>
 
   </form>
 

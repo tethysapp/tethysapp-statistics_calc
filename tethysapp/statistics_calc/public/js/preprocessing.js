@@ -1,3 +1,18 @@
+// Getting the csrf token
+let csrftoken = Cookies.get('csrftoken');
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+
 // Function for the file upload
 $(document).ready(function() {
     $("#pps_csv").change(function () {
@@ -10,17 +25,9 @@ $(document).ready(function() {
 // Function to validate the File Upload on change
 $(document).ready(function () {
     $("#pps_csv").change(function () {
-        // Clear all of the current plots
-        $('#raw_data_plot').empty();
-        $('#raw_data_results').empty();
-        $('#pps_hydrograph').empty();
 
-        // Clear the error message div
-        $('#validate_csv').empty();
-
-        // Hide Error border if it exists
-        $('#csv_file_upload').css({ "border": 'hidden'});
-
+        clearPreviousPlots();
+        clearPreviousErrors();
 
         if (typeof document.getElementById("pps_csv").files[0] === "object") {
             let theFile = document.getElementById("pps_csv").files[0];
@@ -42,7 +49,7 @@ $(document).ready(function () {
                         }
                         if (error) {
                             console.log("Error Protocol Running");
-                            $('#validate_csv').html('<p style="color: #FF0000"><small>There was an error parsing the first 50 lines of the csv, please make sure that there are only two columns throughout the csv.</small></p>');
+                            $('#csv_error').html('<p style="color: #FF0000"><small>There was an error parsing the first 50 lines of the csv, please make sure that there are only two columns throughout the csv.</small></p>');
                             $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
                         }
                     }
@@ -58,6 +65,9 @@ $(document).ready(function() {
     $("#raw_data_plot_button").click( function(evt) {
         evt.preventDefault();
 
+        // Show Loader
+        $("#raw_data_plot_loader").fadeIn();
+
         console.log('Plot Raw Data Event Triggered'); // sanity check
 
         // Validate
@@ -65,10 +75,10 @@ $(document).ready(function() {
 
         if (typeof document.getElementById("pps_csv").files[0] !== "object") {
             $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            $("#validate_csv").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+            $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
             window.location.assign("#h2_raw_data_checks")
             validation_error = true;
-        } else if ($('#validate_csv').html() !== "") {
+        } else if ($('#csv_error').html() !== "") {
             window.location.assign("#h2_raw_data_checks");
             validation_error = true;
         }
@@ -129,9 +139,9 @@ function plotRawData() {
             };
 
             Plotly.newPlot('raw_data_plot', data, layout);
-
-            console.log(resp['information']);
             $('#raw_data_results').html(resp['information']);
+            $("#clear_raw_data_plot_button").show();
+            $("#raw_data_plot_loader").fadeOut();
 
         },
 
@@ -142,6 +152,29 @@ function plotRawData() {
         }
     });
 }
+$(document).ready(function () {
+    $("#clear_raw_data_plot_button").click( function(evt) {
+        evt.preventDefault();
+        $("#clear_raw_data_plot_button").hide();
+        $("#raw_data_plot").empty();
+        $("#raw_data_results").empty();
+    });
+});
+
+
+// Displaying Interpolation Inputs on Slider Click
+$(document).ready( function() {
+    $("#interpolation_bool").change( function(evt) {
+        evt.preventDefault();
+        if($(this).is(":checked")) {
+            $("#interpolation_inputs").fadeIn();
+        } else {
+            $("#interpolation_inputs").fadeOut();
+        }
+        console.log('Interpolation Slider Clicked.'); // sanity check
+
+    });
+});
 
 
 // Functions to Display the current value of the hour and minute slider
@@ -164,12 +197,13 @@ $(document).ready( function() {
     $("#time_range_bool").change( function(evt) {
         evt.preventDefault();
         if($(this).is(":checked")) {
-            $("#time_range_inputs").show();
+            $("#time_range_inputs").fadeIn();
         } else {
-            $("#time_range_inputs").hide();
+            $("#time_range_inputs").fadeOut();
         }
     });
 });
+
 
 // Function for the datepickers
 $(document).ready(function () {
@@ -187,53 +221,49 @@ $(document).ready(function () {
 // Validating form input and then triggering the create plot function
 $(document).ready(function () {
     $("#generate_plot").click(function (evt) {
+
         evt.preventDefault();
         console.log('Plot preprocessed data Event Triggered'); // sanity check
 
+        // Validation
         let validation_error = false;
 
+        clearPreviousErrors();
+        $('#pps_hydrograph').empty();
+        $("#clear_plot").hide();
+
         // Checking the file
-        if ($("#validate_csv").html() !== "") { // parsing error
-            validation_error = true;
-        } else if (!(typeof document.getElementById("pps_csv").files[0] === "object")) {
-            $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            $("#validate_csv").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
-            validation_error = true;
-        }
+        validation_error = checkFileInput();
 
         // Checking the time range data
-        $('#validation_error_time').empty(); // Emptying the error divs
-
-        // Getting the form data
-        let begin_date = $('#begin_date').val();
-        let end_date = $('#end_date').val();
-
-        // Checking to make sure that the dates make sense
-        let begin_date_int = new Date(begin_date).getTime();
-        let end_date_int = new Date(end_date).getTime();
-
-        console.log(begin_date, end_date);
-
-        if (begin_date === "" && end_date !== "") {
-            console.log("No Begin Date Supplied!");
-            validation_error = true;
-            $('#validation_error_time').html('<p style="color: #FF0000"><small>No begin date supplied!</small></p>');
-            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-        } else if (begin_date !== "" && end_date === "") {
-            console.log("No End date supplied!");
-            validation_error = true;
-            $('#validation_error_time').html('<p style="color: #FF0000"><small>No end date supplied!</small></p>');
-            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-        } else if (begin_date === end_date) {
-            console.log("Times Equal Each Other!");
-            validation_error = true;
-            $('#validation_error_time').html('<p style="color: #FF0000"><small>The begin and end times cannot be equal!</small></p>');
-            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+        if (!validation_error) {
+            validation_error = checkTimeRange();
+        } else {
+            checkTimeRange();
         }
 
-        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
-
+        // Checking the interpolation data
         if (!validation_error) {
+            validation_error = checkInterpolation();
+        } else {
+            checkInterpolation();
+        }
+
+        // Checking to see if any preprocessing options were selected
+        if (!validation_error) {
+            validation_error = checkOptions();
+        } else {
+            checkOptions();
+        }
+
+        // Checking if the dates fit into the csv time range
+        if (!validation_error) {
+
+            // Show Loader
+            $("#plot_loader").fadeIn();
+
+            let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+
             $.ajax({
                 url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
                 type: "POST", // http method
@@ -247,11 +277,14 @@ $(document).ready(function () {
                     if (resp["error"]) {
                         validation_error = true;
                         console.log("The time ranges to timescale do not fit into the csv time ranges!");
-                        $('#validation_error_time').html('<p style="color: #FF0000"><small>Your date range does not fit into the time values in the CSV!</small></p>');
+                        $('#time_error').html('<p style="color: #FF0000"><small>Your date range does not fit into the time values in the CSV!</small></p>');
                         $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                    }
 
-                    if (!validation_error) {
+                        window.location.assign("#form_error_ref_point");
+                        $("#form_error_message").show();
+
+                        $("#plot_loader").hide();
+                    } else {
                         ppsPlotHydrograph();
                     }
                 },
@@ -262,10 +295,14 @@ $(document).ready(function () {
                     console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
                 }
             });
+        } else {
+            window.location.assign("#form_error_ref_point");
+            $("#form_error_message").show();
+
+            $("#plot_loader").hide();
         }
     });
 });
-
 function ppsPlotHydrograph() {
     let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
     console.log(formData); // another sanity check
@@ -295,81 +332,261 @@ function ppsPlotHydrograph() {
             };
 
             Plotly.newPlot('pps_hydrograph', data, layout);
-
+            $("#clear_plot").show();
+            $("#plot_loader").hide();
         },
 
         // handle a non-successful response
         error : function(xhr, errmsg, err) {
             $('#pps_hydrograph').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#plot_loader").hide();
         }
     });
 }
+$(document).ready(function () {
+    $("#clear_plot").click( function(evt) {
+        evt.preventDefault();
+        $("#clear_plot").hide();
+        $("#pps_hydrograph").empty();
+    });
+});
+
 
 
 $(document).ready(function() {
     $("#csv_button").click( function(evt) {
         evt.preventDefault();
-        console.log('CSV response Event Triggered'); // sanity check
+        console.log('Plot preprocessed data Event Triggered'); // sanity check
 
-        let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+        // Validation
+        let validation_error = false;
 
-        $.ajax({
-            url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
-            type: "POST", // http method
-            data: formData, // data sent with the post request, the form data from above
-            processData: false,
-            contentType: false,
+        clearPreviousErrors();
+        clearPreviousPlots();
 
-            // handle a successful response
-            success: function (resp) {
-                // Validating the inerpolation frequencies
+        // Checking the file
+        validation_error = checkFileInput();
 
-                let validation_error = false;
+        // Checking the time range data
+        if (!validation_error) {
+            validation_error = checkTimeRange();
+        } else {
+            checkTimeRange();
+        }
 
-                // Emptying the error divs
-                $('#validation_error_time').empty();
+        // Checking the interpolation data
+        if (!validation_error) {
+            validation_error = checkInterpolation();
+        } else {
+            checkInterpolation();
+        }
 
-                // Getting the form data
-                let begin_date = $('#begin_date').val();
-                let end_date = $('#end_date').val();
+        // Checking to see if any preprocessing options were selected
+        if (!validation_error) {
+            validation_error = checkOptions();
+        } else {
+            checkOptions();
+        }
 
-                // Checking to make sure that the dates make sense
-                let begin_date_int = new Date(begin_date).getTime();
-                let end_date_int = new Date(end_date).getTime();
+        if (!validation_error) {
 
-                if (isNaN(begin_date_int) && !isNaN(end_date_int)) {
-                    console.log("No Begin Date Supplied!");
-                    validation_error = true;
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No begin date supplied!</div><br>');
-                } else if (!isNaN(begin_date_int) && isNaN(end_date_int)) {
-                    console.log("No End date supplied!");
-                    validation_error = true;
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">No End date supplied!</div><br>');
-                } else if (!isNaN(begin_date_int) && !isNaN(end_date_int) && begin_date_int > end_date_int) {
-                    validation_error = true;
-                    console.log("Begin date cannot be after end date!");
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Begin date cannot be after end date!</div><br>');
-                } else if (resp["error"]) {
-                    validation_error = true;
-                    console.log("The time ranges to timescale do not fit into the csv time ranges!");
-                    $('#validation_error_time').html('<br><div class="alert alert-danger" role="alert">Your timescale values do not fit into the time range provided in the CSV!</div><br>');
+            let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
+
+            $.ajax({
+                url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
+                type: "POST", // http method
+                data: formData, // data sent with the post request, the form data from above
+                processData: false,
+                contentType: false,
+
+                // handle a successful response
+                success: function (resp) {
+
+                    if (resp["error"]) {
+                        console.log("The time ranges to timescale do not fit into the csv time ranges!");
+                        $('#time_error').html('<p style="color: #FF0000"><small>Your date range does not fit into the time values in the CSV!</small></p>');
+                        $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+
+                        window.location.assign("#form_error_ref_point");
+                        $("#form_error_message").show();
+                    } else {
+
+                        // Submiting the form data to return a csv if plot is empty
+                        if ($('#pps_hydrograph').is(':empty')) {
+                            console.log("Submitting the form");
+                            $("#pps_form").submit();
+                        } else {
+                            // Creating CSV response with the data that is already contained in the plot
+                            let graphDiv = document.getElementById('pps_hydrograph');
+                            let traceOneData = graphDiv.data[0];
+
+                            let dates = traceOneData['x'];
+                            let data_array = traceOneData['y'];
+
+                            // Parsing the CSV for the first line headers
+                            let theFile = document.getElementById("pps_csv").files[0];
+
+                            Papa.parse(
+                                theFile,
+                                {
+                                    preview: 1,
+                                    complete: function (results) {
+
+                                        console.log(results);
+                                        let csvContent = `${results.data[0][0]},${results.data[0][1]}\n`;
+                                        let row;
+
+                                        for (let i = 0; i < dates.length; i++) {
+                                            row = `${dates[i]},${data_array[i]}\n`;
+                                            csvContent += row;
+                                        }
+
+                                        let blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+
+                                        console.log("Returning csv client side!");
+                                        console.log(blob);
+
+                                        let filename = "merged_data.csv";
+
+                                        if (navigator.msSaveBlob) { // IE 10+
+                                            navigator.msSaveBlob(blob, filename);
+                                        } else {
+                                            let link = document.createElement("a");
+                                            if (link.download !== undefined) { // feature detection
+                                                // Browsers that support HTML5 download attribute
+                                                let url = URL.createObjectURL(blob);
+                                                link.setAttribute("href", url);
+                                                link.setAttribute("download", filename);
+                                                link.style.visibility = 'hidden';
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                            } else { // Not compatible
+                                                $("#merge_form").submit();
+                                            }
+                                        }
+
+                                    }
+                                });
+
+
+
+                        }
+                    }
+                },
+
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
                 }
-
-                if (!validation_error) {
-                    $("#pps_form").submit();
-                } else {
-                    window.location.href = "#h2_preprocessing";
-
-                }
-            },
-
-            // handle a non-successful response
-            error: function (xhr, errmsg, err) {
-                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
-                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            }
-        });
+            });
+        } else {
+            window.location.assign("#form_error_ref_point");
+            $("#form_error_message").show();
+        }
     });
 });
 
+
+// VALIDATION HELPER FUNCTIONS
+
+function clearPreviousErrors() {
+    // Clear the error messages
+    $('#csv_error').empty();
+    $('#csv_file_upload').css({"border": 'hidden'});
+
+    $("#preprocessing_error").empty();
+    $('#h2_preprocessing').css({"border": 'hidden'});
+
+    $('#interpolation_error').empty();
+    $('#h5_interp_freq').css({"border": 'hidden'});
+
+    $('#time_error').empty();
+    $('#timerange_input_box').css({"border": 'hidden'});
+
+    $("#form_error_message").hide();
+}
+
+function clearPreviousPlots() {
+    $('#raw_data_plot').empty();
+    $('#raw_data_results').empty();
+    $('#pps_hydrograph').empty();
+
+    $("#clear_plot").hide();
+    $("#clear_raw_data_plot_button").hide();
+}
+
+function checkFileInput() {
+    if ($("#csv_error").html() !== "") { // parsing error
+        return true;
+    } else if (!(typeof document.getElementById("pps_csv").files[0] === "object")) {
+        $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+        $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkTimeRange() {
+    if ($("#time_range_bool").is(":checked")) {
+        let begin_date = $('#begin_date').val();
+        let end_date = $('#end_date').val();
+
+        if (begin_date === "" && end_date !== "") {
+
+            $('#time_error').html('<p style="color: #FF0000"><small>No begin date supplied.</small></p>');
+            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            return true;
+
+        } else if (begin_date !== "" && end_date === "") {
+
+            $('#time_error').html('<p style="color: #FF0000"><small>No end date supplied.</small></p>');
+            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            return true;
+
+        } else if (begin_date === "" && end_date === "") {
+
+            $('#time_error').html('<p style="color: #FF0000"><small>No dates supplied.</small></p>');
+            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            return true;
+
+        } else if (begin_date === end_date) {
+
+            $('#time_error').html('<p style="color: #FF0000"><small>The begin and end times cannot be equal.</small></p>');
+            $('#timerange_input_box').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            return true;
+
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+function checkInterpolation() {
+    if ($("#interpolation_bool").is(":checked")) {
+        if ($("#interp_hours").val() === $("#interp_minutes").val()) {
+            $('#h5_interp_freq').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            $("#interpolation_error").html('<p style="color: #FF0000"><small>Both frequency inputs cannot be zero.</small></p>');
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+function checkOptions() {
+    if (!($("#interpolation_bool").is(":checked")) && !($("#time_range_bool").is(":checked"))) {
+        $('#h2_preprocessing').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+        $("#preprocessing_error").html('<p style="color: #FF0000"><small>No preprocessing options were selected.</small></p>');
+        return true;
+    } else {
+        return false;
+    }
+}

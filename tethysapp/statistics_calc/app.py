@@ -149,7 +149,11 @@ class StatisticsCalc(TethysAppBase):
                 url='test_template',
                 controller='statistics_calc.controllers.test_template'
             ),
-
+            UrlMap(
+                name='test_ajax',
+                url='test_ajax',
+                controller='statistics_calc.controllers.test_ajax'
+            ),
             # API Controllers
             UrlMap(
                 name='get_metrics',

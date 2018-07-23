@@ -87,7 +87,6 @@ def preprocessing(request):
 @login_required()
 def pps_hydrograph_raw_data_ajax(request):
     """AJAX Controller for the preprocessing page. Creates a Hydrograph given the Interpolation method selected"""
-
     print("In the raw data ajax controller!")
 
     if request.method == "POST":
@@ -122,6 +121,9 @@ def pps_hydrograph_raw_data_ajax(request):
             message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
             </strong> The most common time frequency in the time series is {}.</div>"""
 
+            # Setting pandas column width option to infinite
+            pd.set_option('display.max_colwidth', -1)
+
             # Finding the location of the irregular time frequencies
             data_list = []
             for i, time_del in enumerate(time_delta_freq.index):
@@ -132,6 +134,7 @@ def pps_hydrograph_raw_data_ajax(request):
                     missing_times = missing_times.strftime("%B %d, %Y %H:%M:%S")
                     missing_times = missing_times.tolist()
                     missing_times = ', '.join(missing_times)
+                    print(missing_times)
                     data_sublist.append(missing_times)
 
                     data_list.append(data_sublist)
@@ -2034,3 +2037,15 @@ def test_template(request):
     return render(request, 'statistics_calc/test_template.html', context)
 
 
+@login_required()
+def test_ajax(request):
+    """
+    Controller for the app home page.
+    """
+    import time
+
+    print("Sleeping")
+
+    time.sleep(5)
+
+    return JsonResponse({'Response': "Hello"})

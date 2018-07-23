@@ -339,7 +339,9 @@ function createScatter() {
                 x: resp["simulated"],
                 y: resp["observed"],
                 mode: 'markers',
-                type: 'scatter'
+                type: 'scattergl',
+                hoverinfo: 'none',
+                marker: {color: '#119dff', size: 5, opacity: 0.5},
             };
 
             const data = [trace1];

@@ -11,48 +11,31 @@ import numpy as np
 # import json
 # import requests
 
-csv_path = '/home/wade/Documents/Nepal_Recorded_Data/asaraghat_karnali_recorded_data.csv'
+csv_path = '/home/wade/Downloads/my_data.csv'
 
-df = pd.read_csv(csv_path, index_col=0, names=['Data'])
+df = pd.read_csv(csv_path, index_col=0)
 
 # Changing index to datetime type
 df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
 
 df = df[df.index.notnull()]  # Dropping bad time values if necessary
 
-# Getting basic info from the data
-time_values = df.index
-len_time_values = len(time_values)
+print(df)
 
-time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
-time_delta_freq = time_delta.value_counts()
-
-common_time_delta = str(time_delta_freq.index[0])
-
-print(time_delta_freq)
-
-data_list = []
-
-for i, time_del in enumerate(time_delta_freq.index):
-    if i > 0:
-        data_sublist = []
-        data_sublist.append(time_del)
-        indices = np.where(time_delta == time_del)
-        missing_times = time_values[indices]
-        missing_times = missing_times.strftime("%Y-%m-%d %H:%M:%S")
-        missing_times = missing_times.tolist()
-        missing_times = ', '.join(missing_times)
-        data_sublist.append(missing_times)
-
-        data_list.append(data_sublist)
-
-print(data_list)
-
-print(pd.DataFrame(data_list, columns=["Time Frequency", "Location"]).to_html(classes="table table-hover table-striped", index=False).replace('border="1"', 'border="0"'))
-
-# print(np.where(time_delta == "2 days"))
-
-
+# date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+#
+# date_list = date_list[:500]
+# date_list = date_list.tolist()
+#
+# data_list = df.iloc[:, 0].tolist()
+# data_list = data_list[:500]
+#
+# resp = {
+#     'dates': date_list,
+#     'data': data_list,
+# }
+#
+# print(json.dumps(resp))
 
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
