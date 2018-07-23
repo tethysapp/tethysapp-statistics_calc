@@ -167,6 +167,9 @@ $(document).ready(function(){
 });
 // AJAX for Hydrograph
 function createHydrograph() {
+    // Show Loader
+    $("#hydrograph_loader").fadeIn();
+
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
@@ -201,6 +204,7 @@ function createHydrograph() {
             };
 
             Plotly.newPlot('hydrograph', data, layout);
+            $("#hydrograph_loader").hide();
 
             console.log("successfully plotted the hydrograph"); // another sanity check
         },
@@ -209,6 +213,7 @@ function createHydrograph() {
         error : function(xhr, errmsg, err) {
             $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#hydrograph_loader").hide();
         }
     });
 }
@@ -240,6 +245,9 @@ $(document).ready(function(){
 });
 // AJAX for Hydrograph of Daily Averages
 function createHydrographDailyAvg() {
+    // Show Loader
+    $("#hydrograph_daily_avg_loader").fadeIn();
+
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
@@ -281,6 +289,7 @@ function createHydrographDailyAvg() {
              };
 
             Plotly.newPlot('hydrograph-daily-avg', data, layout);
+            $("#hydrograph_daily_avg_loader").hide();
 
             console.log("successfully plotted the daily average hydrograph"); // another sanity check
         },
@@ -289,6 +298,7 @@ function createHydrographDailyAvg() {
         error : function(xhr, errmsg, err) {
             $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#hydrograph_daily_avg_loader").hide();
         }
     });
 }
@@ -320,6 +330,9 @@ $(document).ready(function(){
 });
 //AJAX for Scatter Plot
 function createScatter() {
+    // Show Loader
+    $("#scatterplot_loader").fadeIn();
+
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
@@ -339,7 +352,7 @@ function createScatter() {
                 x: resp["simulated"],
                 y: resp["observed"],
                 mode: 'markers',
-                type: 'scattergl',
+                type: 'scatter',
                 hoverinfo: 'none',
                 marker: {color: '#119dff', size: 5, opacity: 0.5},
             };
@@ -351,6 +364,7 @@ function createScatter() {
             };
 
             Plotly.newPlot('scatter', data, layout);
+            $("#scatterplot_loader").hide();
 
             console.log("successfully plotted the interactive scatter plot!"); // another sanity check
         },
@@ -358,6 +372,7 @@ function createScatter() {
         error: function (xhr, errmsg, err) {
             $('#scatter').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#scatterplot_loader").hide();
         }
     });
 }
@@ -389,6 +404,9 @@ $(document).ready(function(){
 });
 //AJAX for Scatter Log Plot
 function createScatterLog() {
+    // Show Loader
+    $("#scatterplot_log_loader").fadeIn();
+
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
@@ -408,7 +426,8 @@ function createScatterLog() {
                 x: resp["simulated"],
                 y: resp["observed"],
                 mode: 'markers',
-                type: 'scatter'
+                type: 'scatter',
+                marker: {color: '#119dff', size: 5, opacity: 0.5},
             };
 
             const data = [trace1];
@@ -426,6 +445,7 @@ function createScatterLog() {
                 };
 
             Plotly.newPlot('scatter_log', data, layout);
+            $("#scatterplot_log_loader").hide();
 
             console.log("successfully plotted the interactive scatter plot!"); // another sanity check
         },
@@ -433,6 +453,7 @@ function createScatterLog() {
         error: function (xhr, errmsg, err) {
             $('#scatter_log').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            $("#scatterplot_log_loader").hide();
         }
     });
 }

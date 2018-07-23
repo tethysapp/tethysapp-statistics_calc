@@ -360,10 +360,9 @@ $(document).ready(function() {
         console.log('Plot preprocessed data Event Triggered'); // sanity check
 
         // Validation
-        let validation_error = false;
+        let validation_error;
 
         clearPreviousErrors();
-        clearPreviousPlots();
 
         // Checking the file
         validation_error = checkFileInput();
@@ -447,7 +446,7 @@ $(document).ready(function() {
                                         console.log("Returning csv client side!");
                                         console.log(blob);
 
-                                        let filename = "merged_data.csv";
+                                        let filename = "preprocessed_data.csv";
 
                                         if (navigator.msSaveBlob) { // IE 10+
                                             navigator.msSaveBlob(blob, filename);

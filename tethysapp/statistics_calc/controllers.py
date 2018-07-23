@@ -187,7 +187,7 @@ def pps_check_dates_ajax(request):
             begin_date = pd.to_datetime(begin_date, errors="coerce")
             end_date = pd.to_datetime(end_date, errors="coerce")
 
-            if begin_timeseries < begin_date < end_timeseries and begin_timeseries < end_date < end_timeseries:
+            if begin_timeseries <= begin_date <= end_timeseries and begin_timeseries <= end_date <= end_timeseries:
                 print("Timescale range is contained in the timeseries")
             else:
                 print("Timescale range is not contained in the timeseries!")
@@ -521,6 +521,9 @@ def get_metric_names_abbr(request):
 @login_required()
 def hydrograph_ajax_plotly(request):
     if request.method == 'POST':
+
+        import time
+        time.sleep(5)
 
         print("In the hydrograph controller!")
 

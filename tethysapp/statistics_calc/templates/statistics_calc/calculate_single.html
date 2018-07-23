@@ -33,27 +33,50 @@
     <h3>Hydrograph of Entire Time Series</h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-hydrograph">Create Hydrograph</button>
+
+    <div id="hydrograph_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
+
     <div id="hydrograph"><!-- Hydrograph will be drawn inside this DIV --></div>
 
     <h3>Hydrograph of Daily Averages</h3>
 
-    <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">Create Hydrograph of
-      Daily
-      Averages
+    <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">
+      Create Hydrograph of Daily Averages
     </button>
+
+    <div id="hydrograph_daily_avg_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
+
     <div id="hydrograph-daily-avg"><!-- Hydrograph of daily averages will be drawn inside this DIV --></div>
 
     <h3>Scatter Plot</h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
+
+    <div id="scatterplot_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
+
     <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
     <img id="jpg-export" height="100%" width="100%">
     <!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
     <h3>Scatter Plot with Log-Log Scale</h3>
 
-    <button type="button" class="btn btn-default btn-block" id="create-scatter-log">Create Scatter Plot with Log-Log
-      Scale
+    <button type="button" class="btn btn-default btn-block" id="create-scatter-log">
+      Create Scatter Plot with Log-Log Scale
     </button>
+
+    <div id="scatterplot_log_loader" style="display: none;">
+      <br>
+      <div class="loader"></div>
+    </div>
+
     <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
 
     <br>
