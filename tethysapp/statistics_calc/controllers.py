@@ -91,67 +91,91 @@ def pps_hydrograph_raw_data_ajax(request):
 
     if request.method == "POST":
 
+        backend_error = False
+
         csv_file = request.FILES.get('pps_csv', None)
 
-        df = pd.read_csv(csv_file, index_col=0, names=['Data'])
+        try:
+            df = pd.read_csv(csv_file, index_col=0, names=['Data'])
+            # Changing index to datetime type
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+            # Dropping bad time values if necessary
+            df = df[df.index.notnull()]
 
-        # Changing index to datetime type
-        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+            # Converting the DF to JSON
+            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+            data_list = df.iloc[:, 0].tolist()
 
-        df = df[df.index.notnull()]  # Dropping bad time values if necessary
-
-        date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
-        date_list = date_list.tolist()
-        data_list = df.iloc[:, 0].tolist()
-
-        resp = {'dates': date_list,
+            resp = {
+                'dates': date_list,
                 'data': data_list,
+                'error': backend_error
+            }
+
+        except Exception as e:
+            print(e)
+            backend_error = True
+            error_message = "Error parsing the CSV on the server, please make sure the CSV is formatted correctly."
+            resp = {
+                'error': backend_error,
+                'error_message': error_message
+                    }
+
+        if not backend_error:
+            try:
+                # Getting basic info from the data
+                time_values = df.index
+                len_time_values = len(time_values)
+
+                time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
+                time_delta_freq = time_delta.value_counts()
+
+                common_time_delta = str(time_delta_freq.index[0])
+
+                if time_delta_freq.values.size > 1:
+                    message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
+                    </strong> The most common time frequency in the time series is {}.</div>"""
+
+                    # Setting pandas column width option to infinite
+                    pd.set_option('display.max_colwidth', -1)
+
+                    # Finding the location of the irregular time frequencies
+                    data_list = []
+                    for i, time_del in enumerate(time_delta_freq.index):
+                        if i > 0:
+                            data_sublist = [time_del]
+                            indices = np.where(time_delta == time_del)
+                            missing_times = time_values[indices]
+                            missing_times = missing_times.strftime("%B %d, %Y %H:%M:%S")
+                            missing_times = missing_times.tolist()
+                            missing_times = ', '.join(missing_times)
+                            data_sublist.append(missing_times)
+
+                            data_list.append(data_sublist)
+
+                    table_of_freq = pd.DataFrame(data_list, columns=["Time Frequency", "Location"])
+                    table_of_freq = table_of_freq.to_html(classes="table table-hover table-striped", index=False)
+                    table_of_freq = table_of_freq.replace('border="1"', 'border="0"')
+
+                    message += table_of_freq
+
+                    resp['information'] = message.format(common_time_delta)
+                else:
+                    message = """<div class="alert alert-success" role="alert">
+                                   The timeseries data is <strong>consistent</strong> with a time frequency of {}.
+                                 </div>"""
+
+                    resp['information'] = message.format(common_time_delta)
+            except Exception as e:
+                print(e)
+                backend_error = True
+                error_message = "Error finding the time frequency data, please make sure the CSV is formatted " \
+                                "correctly. "
+                resp = {
+                    'error': backend_error,
+                    'error_message': error_message
                 }
-
-        # Getting basic info from the data
-        time_values = df.index
-        len_time_values = len(time_values)
-
-        time_delta = time_values[1:len_time_values] - time_values[0:len_time_values - 1]
-        time_delta_freq = time_delta.value_counts()
-
-        common_time_delta = str(time_delta_freq.index[0])
-
-        if time_delta_freq.values.size > 1:
-            message = """<div class="alert alert-warning" role="alert">The timeseries data is <strong>not consistent.
-            </strong> The most common time frequency in the time series is {}.</div>"""
-
-            # Setting pandas column width option to infinite
-            pd.set_option('display.max_colwidth', -1)
-
-            # Finding the location of the irregular time frequencies
-            data_list = []
-            for i, time_del in enumerate(time_delta_freq.index):
-                if i > 0:
-                    data_sublist = [time_del]
-                    indices = np.where(time_delta == time_del)
-                    missing_times = time_values[indices]
-                    missing_times = missing_times.strftime("%B %d, %Y %H:%M:%S")
-                    missing_times = missing_times.tolist()
-                    missing_times = ', '.join(missing_times)
-                    print(missing_times)
-                    data_sublist.append(missing_times)
-
-                    data_list.append(data_sublist)
-
-            table_of_freq = pd.DataFrame(data_list, columns=["Time Frequency", "Location"])
-            table_of_freq = table_of_freq.to_html(classes="table table-hover table-striped", index=False)
-            table_of_freq = table_of_freq.replace('border="1"', 'border="0"')
-
-            message += table_of_freq
-
-            resp['information'] = message.format(common_time_delta)
-        else:
-            message = """<div class="alert alert-success" role="alert">
-                           The timeseries data is <strong>consistent</strong> with a time frequency of {}.
-                         </div>"""
-
-            resp['information'] = message.format(common_time_delta)
 
         return JsonResponse(resp)
 

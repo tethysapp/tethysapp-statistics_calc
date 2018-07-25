@@ -11,31 +11,13 @@ import numpy as np
 # import json
 # import requests
 
-csv_path = '/home/wade/Downloads/my_data.csv'
+# res = requests.get(app.get_custom_setting('api_source') + '/apps/streamflow-prediction-tool/api/GetWatersheds/',
+#                    headers={'Authorization': 'Token ' + app.get_custom_setting('spt_token')})
 
-df = pd.read_csv(csv_path, index_col=0)
-
-# Changing index to datetime type
-df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
-
-df = df[df.index.notnull()]  # Dropping bad time values if necessary
-
-print(df)
-
-# date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
-#
-# date_list = date_list[:500]
-# date_list = date_list.tolist()
-#
-# data_list = df.iloc[:, 0].tolist()
-# data_list = data_list[:500]
-#
-# resp = {
-#     'dates': date_list,
-#     'data': data_list,
-# }
-#
-# print(json.dumps(resp))
+try:
+    request.get()
+except Exception as e:
+    print(e)
 
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
