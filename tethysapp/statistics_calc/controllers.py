@@ -91,9 +91,14 @@ def pps_hydrograph_raw_data_ajax(request):
 
     if request.method == "POST":
 
-        backend_error = False
-
+        # POST data collection
         csv_file = request.FILES.get('pps_csv', None)
+
+        # Intializing response dictionary
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
 
         try:
             df = pd.read_csv(csv_file, index_col=0, names=['Data'])
@@ -107,22 +112,16 @@ def pps_hydrograph_raw_data_ajax(request):
             date_list = date_list.tolist()
             data_list = df.iloc[:, 0].tolist()
 
-            resp = {
-                'dates': date_list,
-                'data': data_list,
-                'error': backend_error
-            }
+            resp["dates"] = date_list
+            resp['data'] = data_list
 
         except Exception as e:
             print(e)
-            backend_error = True
-            error_message = "Error parsing the CSV on the server, please make sure the CSV is formatted correctly."
-            resp = {
-                'error': backend_error,
-                'error_message': error_message
-                    }
+            resp["backend_error"] = True
+            resp["error_message"] = "Error parsing the CSV on the server, please make sure the CSV is formatted " \
+                                    "correctly."
 
-        if not backend_error:
+        if not resp["backend_error"]:
             try:
                 # Getting basic info from the data
                 time_values = df.index
@@ -169,13 +168,9 @@ def pps_hydrograph_raw_data_ajax(request):
                     resp['information'] = message.format(common_time_delta)
             except Exception as e:
                 print(e)
-                backend_error = True
-                error_message = "Error finding the time frequency data, please make sure the CSV is formatted " \
-                                "correctly. "
-                resp = {
-                    'error': backend_error,
-                    'error_message': error_message
-                }
+                resp["backend_error"] = True
+                resp["error_message"] = "Error finding the time frequency data, please make sure the CSV is " \
+                                        "formatted correctly. "
 
         return JsonResponse(resp)
 
@@ -187,37 +182,40 @@ def pps_check_dates_ajax(request):
 
     if request.method == "POST":
 
-        # Getting the timeseries range
+        # Getting the POST data
         csv_file = request.FILES.get('pps_csv', None)
-        df = pd.read_csv(csv_file, index_col=0)
-        begin_timeseries = pd.to_datetime(df.index[0])
-        end_timeseries = pd.to_datetime(df.index[-1])
-
-        # Getting the beggining and ending date
         begin_date = request.POST.get('begin_date', None)
         end_date = request.POST.get('end_date', None)
 
+        # Initializing response dictionary
         resp = {
-            "error": False
+            "backend_error": False,
+            "error_message": ""
         }
 
-        print(pd.isna(begin_date), pd.isna(end_date))
-        print(type(begin_date), type(end_date))
-        print(begin_date, end_date)
-
-        if begin_date == "" and end_date == "":
-            print('The User did not want to time scale.')
-        else:
+        # Parsing CSV
+        try:
+            df = pd.read_csv(csv_file, index_col=0)
+            begin_timeseries = pd.to_datetime(df.index[0])
+            end_timeseries = pd.to_datetime(df.index[-1])
             begin_date = pd.to_datetime(begin_date, errors="coerce")
             end_date = pd.to_datetime(end_date, errors="coerce")
+        except Exception as e:
+            print(e)
+            resp["backend_error"] = True
+            resp["error_message"] = "Error while parsing the CSV and dates supplied."
 
-            if begin_timeseries <= begin_date <= end_timeseries and begin_timeseries <= end_date <= end_timeseries:
-                print("Timescale range is contained in the timeseries")
-            else:
-                print("Timescale range is not contained in the timeseries!")
-                resp = {
-                    "error": True
-                }
+        if not resp["backend_error"]:
+            try:
+                if begin_timeseries <= begin_date <= end_timeseries and begin_timeseries <= end_date <= end_timeseries:
+                    resp["error"] = False
+                else:
+                    resp["error"] = False
+
+            except Exception as e:
+                print(e)
+                resp["backend_error"] = True
+                resp["error_message"] = "Error while comparing the dates."
 
         return JsonResponse(resp)
 
@@ -228,60 +226,65 @@ def pps_hydrograph_ajax(request):
 
     if request.method == "POST":
 
-        interp_method = request.POST.get('interp_method', None)
-        csv_file = request.FILES.get('pps_csv', None)
-        interp_hours = request.POST.get('interp_hours', None)
-        interp_minutes = request.POST.get('interp_minutes', None)
-        begin_date = request.POST.get('begin_date', None)
-        end_date = request.POST.get('end_date', None)
-
-        begin_date = pd.to_datetime(begin_date)
-        end_date = pd.to_datetime(end_date)
-
-        print("Csv file is: {}".format(csv_file))
-        print(interp_method)
-        print(interp_hours, interp_minutes)
-        print(type(interp_hours), type(interp_minutes))
-        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
-        print(type(begin_date))
-
-        # Reading CSV and ensuring that the data column is the correct type
-        df = pd.read_csv(csv_file, index_col=0)
-        df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
-
-        # Changing index to datetime type
-        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
-
-        # Dropping bad time values if necessary
-        df = df[df.index.notnull()]
-
-        # Scaling time if the user requests for it
-        if pd.isna(begin_date) and pd.isna(end_date):
-            print('The User did not want to time scale.')
-        else:
-            df = df.loc[begin_date: end_date]
-
-        print(df)
-
-        if interp_hours == "0" and interp_minutes == "0":
-            print("The user did not want to interpolate")
-        else:
-            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
-
-            df = df.reindex(new_index)
-            df = df.interpolate(interp_method)
-
-        print(df)
-
-        date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
-        date_list = date_list.tolist()
-
-        data_list = df.iloc[:, 0].tolist()
-
+        # Initializing the resp variable
         resp = {
-            'dates': date_list,
-            'data': data_list,
+            "backend_error": False,
+            "error_message": ""
         }
+
+        # Parsing the CSV
+        try:
+            csv_file = request.FILES.get('pps_csv', None)
+            df = pd.read_csv(csv_file, index_col=0)
+            df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+            df = df[df.index.notnull()]
+        except Exception as e:
+            print(e)
+            resp["backend_error"] = True
+            resp["error_message"] = "Error while parsing the CSV."
+
+        # Time scaling if requested
+        if not resp["backend_error"]:
+            if request.POST.get('time_range_bool', None) == "on":
+                try:
+                    begin_date = request.POST.get('begin_date', None)
+                    end_date = request.POST.get('end_date', None)
+                    begin_date = pd.to_datetime(begin_date)
+                    end_date = pd.to_datetime(end_date)
+                    df = df.loc[begin_date: end_date]
+                except Exception as e:
+                    print(e)
+                    resp["backend_error"] = True
+                    resp["error_message"] = "Error while time scaling the data."
+
+        # Interpolating the data if requested
+        if not resp["backend_error"]:
+            if request.POST.get('interpolation_bool', None) == "on":
+                try:
+                    # Retrieving the POST data
+                    interp_method = request.POST.get('interp_method', None)
+                    interp_hours = request.POST.get('interp_hours', None)
+                    interp_minutes = request.POST.get('interp_minutes', None)
+
+                    new_index = pd.date_range(df.index[0],
+                                              df.index[-1],
+                                              freq="{}H {}min".format(interp_hours, interp_minutes))
+                    df = df.reindex(new_index)
+                    df = df.interpolate(interp_method)
+                except Exception as e:
+                    print(e)
+                    resp["backend_error"] = True
+                    resp["error_message"] = "Error while time interpolating the data."
+
+        # Returning the response data
+        if not resp['backend_error']:
+            date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+            data_list = df.iloc[:, 0].tolist()
+
+            resp['dates'] = date_list
+            resp['data'] = data_list
 
         return JsonResponse(resp)
 
@@ -290,52 +293,65 @@ def pps_hydrograph_ajax(request):
 def pps_csv(request):
     if request.method == "POST":
 
-        interp_method = request.POST.get('interp_method', None)
-        csv_file = request.FILES.get('pps_csv', None)
-        interp_hours = request.POST.get('interp_hours', None)
-        interp_minutes = request.POST.get('interp_minutes', None)
-        begin_date = request.POST.get('begin_date', None)
-        end_date = request.POST.get('end_date', None)
+        # Initializing the resp variable
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
 
-        begin_date = pd.to_datetime(begin_date)
-        end_date = pd.to_datetime(end_date)
+        # Parsing the CSV
+        try:
+            csv_file = request.FILES.get('pps_csv', None)
+            df = pd.read_csv(csv_file, index_col=0)
+            df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+            df = df[df.index.notnull()]
+        except Exception as e:
+            print(e)
+            resp["backend_error"] = True
+            resp["error_message"] = "Error while parsing the CSV."
 
-        print("Csv file is: {}".format(csv_file))
-        print(interp_method)
-        print(interp_hours, interp_minutes)
-        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
+        # Time scaling if requested
+        if not resp["backend_error"]:
+            if request.POST.get('time_range_bool', None) == "on":
+                try:
+                    begin_date = request.POST.get('begin_date', None)
+                    end_date = request.POST.get('end_date', None)
+                    begin_date = pd.to_datetime(begin_date)
+                    end_date = pd.to_datetime(end_date)
+                    df = df.loc[begin_date: end_date]
+                except Exception as e:
+                    print(e)
+                    resp["backend_error"] = True
+                    resp["error_message"] = "Error while time scaling the data."
 
-        # Reading CSV and ensuring that the data column is the correct type
-        df = pd.read_csv(csv_file, index_col=0)
-        df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
-        # Changing index to datetime type
-        df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
+        # Interpolating the data if requested
+        if not resp["backend_error"]:
+            if request.POST.get('interpolation_bool', None) == "on":
+                try:
+                    # Retrieving the POST data
+                    interp_method = request.POST.get('interp_method', None)
+                    interp_hours = request.POST.get('interp_hours', None)
+                    interp_minutes = request.POST.get('interp_minutes', None)
 
-        # Dropping bad time values if necessary
-        df = df[df.index.notnull()]
+                    new_index = pd.date_range(df.index[0],
+                                              df.index[-1],
+                                              freq="{}H {}min".format(interp_hours, interp_minutes))
+                    df = df.reindex(new_index)
+                    df = df.interpolate(interp_method)
+                except Exception as e:
+                    print(e)
+                    resp["backend_error"] = True
+                    resp["error_message"] = "Error while time interpolating the data."
 
-        # Stripping time if the user requests for it
-        if pd.isna(begin_date) and pd.isnull(end_date):
-            print('The User did not want to time scale.')
-        else:
-            df = df.loc[begin_date: end_date]
+        # Returning the response data
+        if not resp['backend_error']:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
 
-        print(df)
+            df.to_csv(path_or_buf=response, index_label="Datetime")
 
-        if interp_hours == "0" and interp_minutes == "0":
-            print("The user did not want to interpolate")
-        else:
-            new_index = pd.date_range(df.index[0], df.index[-1], freq="{}H {}min".format(interp_hours, interp_minutes))
-
-            df = df.reindex(new_index)
-            df = df.interpolate(interp_method)
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=preprocessed_data.csv'
-
-        df.to_csv(path_or_buf=response, index_label="Datetime")
-
-        return response
+            return response
 
 
 @login_required()
