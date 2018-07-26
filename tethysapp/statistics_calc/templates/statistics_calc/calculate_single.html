@@ -25,7 +25,7 @@
 
     <div id="merged_csv_error_message"></div>
 
-    <br>
+    <br><br><br>
 
     <h2>Visualization</h2>
     <hr>
@@ -79,21 +79,36 @@
 
     <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
 
-    <br>
+    <br><br><br>
 
     <h2>Table</h2>
     <hr>
 
-    <h3>Remove Negative Values?&nbsp;</h3>
+    <h3>
+      Remove Negative Values
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="When a zero value is found at the i-th position in the observed OR simulated array, the i-th value of the observed AND simulated array are removed before the computation.">
+      </span>
+    </h3>
     <input type="checkbox" name="remove_neg_bool" data-toggle="toggle" data-on="Yes" data-off="No"
            data-onstyle="success" data-offstyle="danger" data-size="mini">
 
-    <h3>Remove Zero Values?&nbsp;</h3>
+    <h3>
+      Remove Zero Values
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="When a negative value is found at the i-th position in the observed OR simulated array, the i-th value of the observed AND simulated array are removed before the computation.">
+      </span>
+    </h3>
     <input type="checkbox" name="remove_zero_bool" data-toggle="toggle" data-on="Yes" data-off="No"
            data-onstyle="success" data-offstyle="danger" data-size="mini">
 
     <!--Optional: Date Range-->
-    <h3>Include Analysis of Date Range(s) in Table?</h3>
+    <h3>
+      Include Analysis of Date Range(s) in Table
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Allows for analysis of different time ranges. For example, if your time series spanned 20 years, you can specify to only analyze the month of May and see how your model performs in the month of May.">
+      </span>
+    </h3>
     <input type="checkbox" name="date_range_bool" id="date_range_bool" data-toggle="toggle" data-on="Yes"
            data-off="No"
            data-onstyle="success" data-offstyle="danger" data-size="mini">
@@ -261,7 +276,14 @@
     <div id="table"><!-- The table or errors go here --></div>
   </div>
 
-  <h2>Volume</h2>
+  <br><br><br>
+
+  <h2>
+    Volume
+    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Calculate the volume of the simulated and observed hydrographs and compare them.">
+    </span>
+  </h2>
   <hr>
 
   <button class="btn btn-success" id="make_volume_table">Compare Volumes</button>

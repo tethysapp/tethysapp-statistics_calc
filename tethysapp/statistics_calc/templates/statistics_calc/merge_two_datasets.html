@@ -23,7 +23,12 @@
   <h2>Data Upload</h2>
   <hr>
 
-  <h3>Observed Data</h3>
+  <h3>
+    Observed Data
+    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Upload your observed timeseries data here in CSV format. The data should be formatted in two columns, with the left column containing the dates and the right column containing the observed data values. The CSV should also have the first row contain descriptive information (header).">
+    </span>
+  </h3>
   <form name="merge_form" id="merge_form" method="post" enctype="multipart/form-data"
         action="/apps/statistics-calc/merged_csv_download/">
     {% csrf_token %}
@@ -46,7 +51,12 @@
 
     <br><br>
 
-    <h3>Simulated Data</h3>
+    <h3>
+      Simulated Data
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Upload your simulated timeseries data here in CSV format. The data should be contain two columns, with the left column containing the dates and the right column containing the simulated data values. The CSV should also have the first row contain descriptive information (header).">
+      </span>
+    </h3>
 
     <div class="pretty p-default p-curve p-smooth">
       <input type="radio" name="predicted_radio" value="upload" checked>
@@ -104,14 +114,14 @@
     </div>
 
     <br>
-    {#    {% if not watershed_error %}#}
-    {#        <label id="reach_id" style="display:none">Reach ID: <input></label>#}
-    {#        <select id="select_watershed" name="watershed" style="display:none">#}
-    {#        </select>#}
-    {#    {% else %}#}
-    {#        <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for#}
-    {#            the watershed names, we are working to fix this. Please come back later.</p></label>#}
-    {#    {% endif %}#}
+    {# {% if not watershed_error %} #}
+    {#   <label id="reach_id" style="display:none">Reach ID: <input></label> #}
+    {#   <select id="select_watershed" name="watershed" style="display:none"> #}
+    {#   </select> #}
+    {# {% else %} #}
+    {#   <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for #}
+    {#          the watershed names, we are working to fix this. Please come back later.</p></label> #}
+    {# {% endif %} #}
 
     <h2>Timezones</h2>
     <hr>
@@ -119,6 +129,9 @@
     <h4>
       Do the timeseries have different timezones?
     </h4>
+
+    <p>In order to apply timezones, both time series must have a consistent timestep. Interpolation can be applied
+        in the preprocessing page if needed.</p>
 
     <input type="checkbox" id="time_zone_bool" name="time_zone_bool" data-toggle="toggle" data-on="Yes"
            data-off="No"
@@ -128,7 +141,6 @@
 
     <!--Timezone Form-->
     <div id="timezone_form" style="display:none">
-
       <label for="obs_tz">Observed Data Timezone</label>
       <select class="all_the_observed_tz" name="obs_tz" id="obs_tz" style="width: 100%">
         {% for timezone in all_timezones %}
@@ -147,6 +159,13 @@
 
       <br><br>
 
+      <h4>
+        Interpolation
+        <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Because changing timezones might cause the two timeseries to not match up, it may be necessary to interpolate one of the time series so that the time series can be matched up.">
+        </span>
+      </h4>
+
       <div class="pretty p-default p-curve p-smooth">
         <input type="radio" name="interpolate_radio" value="simulated" checked>
         <div class="state p-success">
@@ -159,6 +178,30 @@
           <label>Interpolate Observed Data</label>
         </div>
       </div>
+
+
+      <h5>Type</h5>
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="linear" checked>
+        <div class="state p-success">
+          <label>Linear Interpolation</label>
+        </div>
+      </div>
+
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="pchip">
+        <div class="state p-success">
+          <label>PCHIP Interpolation</label>
+        </div>
+      </div>
+
+      <div class="pretty p-default p-curve p-smooth">
+        <input type="radio" name="interp_method" value="cubic">
+        <div class="state p-success">
+          <label>Cubic Interpolation</label>
+        </div>
+      </div>
+
     </div>
 
     <br><br>
