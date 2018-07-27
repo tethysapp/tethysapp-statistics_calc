@@ -387,64 +387,83 @@ def merged_hydrograph(request):
     """
     if request.method == 'POST':
 
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
+
         # getting the observed and simulated data
         obs = request.FILES.get('obs_csv', None)
+
         if request.POST.get("predicted_radio", None) == "upload":
             sim = request.FILES.get('sim_csv', None)
-
         elif request.POST.get("predicted_radio", None) == "sfpt":
-            reach_id = request.POST.get("reach_id", None)
-            watershed = request.POST.get("watershed", None)
-            sim = parse_api_request(watershed=watershed, reach=reach_id)
-            obs = pd.read_csv(obs, index_col=0)
-            obs.index = pd.to_datetime(obs.index, errors="coerce")
+            try:
+                reach_id = request.POST.get("reach_id", None)
+                watershed = request.POST.get("watershed", None)
+                sim = parse_api_request(watershed=watershed, reach=reach_id)
+            except Exception as e:
+                print(e)
+                resp['backend_error'] = True
+                resp['error_message'] = 'There was an error requesting the simulated data from the API.'
 
-        else:
-            sim = None
+            if not resp['backend_error']:
+                try:
+                    obs = pd.read_csv(obs, index_col=0)
+                    obs.index = pd.to_datetime(obs.index, errors="coerce")
+                except Exception as e:
+                    print(e)
+                    resp['backend_error'] = True
+                    resp['error_message'] = 'There was an error parsing the observed data CSV.'
 
+        # Getting the timezone information
         timezone_boolean = request.POST.get('time_zone_bool', None)
 
         if timezone_boolean == 'on':
             simulated_tz = request.POST.get('sim_tz', None)
             observed_tz = request.POST.get('obs_tz', None)
             interpolate = request.POST.get('interpolate_radio')
-            print(simulated_tz, observed_tz, interpolate)
         else:
             simulated_tz = None
             observed_tz = None
             interpolate = None
 
         if request.POST.get("predicted_radio", None) == "upload":
-            print("Merging the two files!")
-            merged_df = hd.merge_data(
-                sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-                simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-            )
-            print(merged_df)
+            if not resp["backend_error"]:
+                try:
+                    merged_df = hd.merge_data(
+                        sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                        simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+                    )
+                except Exception as e:
+                    print(e)
+                    resp['backend_error'] = True
+                    resp['error_message'] = 'There was an merging the simulated and observed CSV files. ' \
+                                            'Please make sure that all of the times exist in their respective timezone.'
+
         elif request.POST.get("predicted_radio", None) == "sfpt":
             pass  # Need to change this
             # merged_df = hd.merge_data(
             #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
             #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
             # )
-        else:
-            merged_df = None
 
-        if merged_df is not None:
-            date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
-            date_list = date_list.tolist()
-            print(type(date_list))
-            print(date_list)
+        # If no errors converting the data to JSON for response to frontend
+        if not resp['backend_error']:
+            try:
+                date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+                date_list = date_list.tolist()
 
-            sim_list = merged_df.iloc[:, 0].tolist()
-            print(type(sim_list))
-            obs_list = merged_df.iloc[:, 1].tolist()
+                sim_list = merged_df.iloc[:, 0].tolist()
+                obs_list = merged_df.iloc[:, 1].tolist()
 
-            resp = {'dates': date_list,
-                    'simulated': sim_list,
-                    'observed': obs_list}
-        else:
-            resp = None
+                resp['dates'] = date_list
+                resp['simulated'] = sim_list
+                resp['observed'] = obs_list
+            except Exception as e:
+                print(e)
+                resp['backend_error'] = True
+                resp['error_message'] = 'Error while creating the response JSON file.'
 
         return JsonResponse(resp)
 
@@ -456,33 +475,82 @@ def merged_csv_download(request):
     """
     if request.method == 'POST':
 
-        sim = request.FILES.get('sim_csv', None)
-        obs = request.FILES.get('obs_csv', None)
-        timezone_boolean = request.POST.get('time_zone_bool', None)
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
 
-        print(sim, obs, timezone_boolean)
+        # getting the observed and simulated data
+        obs = request.FILES.get('obs_csv', None)
+
+        if request.POST.get("predicted_radio", None) == "upload":
+            sim = request.FILES.get('sim_csv', None)
+        elif request.POST.get("predicted_radio", None) == "sfpt":
+            try:
+                reach_id = request.POST.get("reach_id", None)
+                watershed = request.POST.get("watershed", None)
+                sim = parse_api_request(watershed=watershed, reach=reach_id)
+            except Exception as e:
+                print(e)
+                resp['backend_error'] = True
+                resp['error_message'] = 'There was an error requesting the simulated data from the API.'
+
+            if not resp['backend_error']:
+                try:
+                    obs = pd.read_csv(obs, index_col=0)
+                    obs.index = pd.to_datetime(obs.index, errors="coerce")
+                except Exception as e:
+                    print(e)
+                    resp['backend_error'] = True
+                    resp['error_message'] = 'There was an error parsing the observed data CSV.'
+
+        # Getting the timezone information
+        timezone_boolean = request.POST.get('time_zone_bool', None)
 
         if timezone_boolean == 'on':
             simulated_tz = request.POST.get('sim_tz', None)
             observed_tz = request.POST.get('obs_tz', None)
             interpolate = request.POST.get('interpolate_radio')
-            print(simulated_tz, observed_tz, interpolate)
         else:
             simulated_tz = None
             observed_tz = None
             interpolate = None
 
-        merged_df = hd.merge_data(
-            sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-        )
+        if request.POST.get("predicted_radio", None) == "upload":
+            if not resp["backend_error"]:
+                try:
+                    merged_df = hd.merge_data(
+                        sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                        simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+                    )
+                except Exception as e:
+                    print(e)
+                    resp['backend_error'] = True
+                    resp['error_message'] = 'There was an merging the simulated and observed CSV files. ' \
+                                            'Please make sure that all of the times exist in their respective timezone.'
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=merged_data.csv'
+        elif request.POST.get("predicted_radio", None) == "sfpt":
+            pass  # Need to change this
+            # merged_df = hd.merge_data(
+            #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+            #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+            # )
 
-        merged_df.to_csv(path_or_buf=response, index_label="Datetime", header=["Simulated Data", "Observed Data"])
+        if not resp['backend_error']:
+            try:
+                resp = HttpResponse(content_type='text/csv')
+                resp['Content-Disposition'] = 'attachment; filename=merged_data.csv'
 
-        return response
+                merged_df.to_csv(path_or_buf=resp, index_label="Datetime", header=["Simulated Data", "Observed Data"])
+            except Exception as e:
+                print(e)
+                resp['backend_error'] = True
+                resp['error_message'] = 'There was an creating the CSV response.'
+
+        if not resp['backend_error']:
+            return resp
+        else:
+            return HttpResponse(resp['error_message'])
 
 
 @login_required()
@@ -565,26 +633,27 @@ def hydrograph_ajax_plotly(request):
         import time
         time.sleep(5)
 
-        print("In the hydrograph controller!")
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
 
-        print(request.FILES)
+        try:
+            merged_csv = request.FILES.get('merged_csv', None)
+            merged_df = pd.read_csv(merged_csv, index_col=0)
+            date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
 
-        merged_csv = request.FILES.get('merged_csv', None)
+            sim_list = merged_df.iloc[:, 0].tolist()
+            obs_list = merged_df.iloc[:, 1].tolist()
 
-        print(merged_csv)
-
-        merged_df = pd.read_csv(merged_csv, index_col=0)
-
-        date_list = merged_df.index.tolist()  # strftime("%Y-%m-%d %H:%M:%S")
-        # date_list = date_list.tolist()
-
-        sim_list = merged_df.iloc[:, 0].tolist()
-
-        obs_list = merged_df.iloc[:, 1].tolist()
-
-        resp = {'dates': date_list,
-                'simulated': sim_list,
-                'observed': obs_list}
+            resp['dates'] = date_list
+            resp['simulated'] = sim_list
+            resp['observed'] = obs_list
+        except Exception as e:
+            print(e)
+            resp['backend_error'] = True
+            resp['error_message'] = 'Error while parsing the CSV.'
 
         return JsonResponse(resp)
 
@@ -593,46 +662,61 @@ def hydrograph_ajax_plotly(request):
 def hydrograph_daily_avg_ajax_plotly(request):
     if request.method == 'POST':
 
-        merged_csv = request.FILES.get('merged_csv', None)
+        resp = {
+            "backend_error": False,
+            "error_message": ""
+        }
 
-        merged_df = pd.read_csv(merged_csv, index_col=0)
+        try:
+            merged_csv = request.FILES.get('merged_csv', None)
+            merged_df = pd.read_csv(merged_csv, index_col=0)
+            merged_df.index = pd.to_datetime(merged_df.index, errors="coerce")
 
-        merged_df.index = pd.to_datetime(merged_df.index, errors="coerce")
+            daily_avg_df = hd.daily_average(merged_df)
 
-        daily_avg_df = hd.daily_average(merged_df)
+            date_list = daily_avg_df.index.tolist()
+            sim_list = daily_avg_df.iloc[:, 0].tolist()
+            obs_list = daily_avg_df.iloc[:, 1].tolist()
 
-        date_list = daily_avg_df.index.tolist()
-        sim_list = daily_avg_df.iloc[:, 0].tolist()
-        obs_list = daily_avg_df.iloc[:, 1].tolist()
+            resp['dates'] = date_list
+            resp['simulated'] = sim_list
+            resp['observed'] = obs_list
+        except Exception as e:
+            print(e)
+            resp['backend_error'] = True
+            resp['error_message'] = 'Error while parsing the CSV.'
 
-        resp = {'dates': date_list,
-                'simulated': sim_list,
-                'observed': obs_list}
-
-        return JsonResponse(resp, safe=False)
+        return JsonResponse(resp)
 
 
 @login_required()
 def scatter_ajax_plotly(request):
     """
-    :param request: request from the client side
-    :return: JSON response with the simulated and observed data
+    :param request: Request from the client side.
+    :return: JSON response with the simulated and observed data.
     """
     if request.method == 'POST':
 
-        merged_csv = request.FILES.get('merged_csv', None)
-
-        merged_df = pd.read_csv(merged_csv, index_col=0)
-
-        sim_list = merged_df.iloc[:, 0].tolist()
-        obs_list = merged_df.iloc[:, 1].tolist()
-
         resp = {
-            'simulated': sim_list,
-            'observed': obs_list
+            "backend_error": False,
+            "error_message": ""
         }
 
-        return JsonResponse(resp, safe=True)
+        try:
+            merged_csv = request.FILES.get('merged_csv', None)
+            merged_df = pd.read_csv(merged_csv, index_col=0)
+
+            sim_list = merged_df.iloc[:, 0].tolist()
+            obs_list = merged_df.iloc[:, 1].tolist()
+
+            resp['simulated'] = sim_list
+            resp['observed'] = obs_list
+        except Exception as e:
+            print(e)
+            resp['backend_error'] = True
+            resp['error_message'] = 'There was an error while parsing the CSV.'
+
+        return JsonResponse(resp)
 
 
 @login_required()
@@ -643,13 +727,8 @@ def make_table_ajax(request):
 
     if request.method == 'POST':
 
-        print(request.POST)
-        print(request.FILES)
-
+        # Retrieving all of the form data
         merged_csv = request.FILES.get('merged_csv', None)
-
-        merged_df = pd.read_csv(merged_csv, index_col=0)
-        merged_df.index = pd.to_datetime(merged_df.index)
 
         # Retrieving the extra optional parameters
         extra_param_dict = {}
@@ -727,15 +806,6 @@ def make_table_ajax(request):
         else:
             sim_units = request.POST.get('simulated_units_sfpt')
 
-        if obs_units is None and sim_units is None:
-            pass
-        elif obs_units == 'on' and sim_units == 'on':
-            pass
-        elif sim_units is None and obs_units == 'on':
-            merged_df.iloc[:, 0] *= 35.314666212661
-        else:
-            merged_df.iloc[:, 1] *= 35.314666212661
-
         # Getting the form data to see of the user wants to remove zeros and negatives
         remove_neg_bool = request.POST.get('remove_neg_bool')
 
@@ -792,6 +862,20 @@ def make_table_ajax(request):
         else:
             all_date_range_list = None
 
+        # Parsing the csv
+        merged_df = pd.read_csv(merged_csv, index_col=0)
+        merged_df.index = pd.to_datetime(merged_df.index)
+
+        # Converting Units
+        if obs_units is None and sim_units is None:
+            pass
+        elif obs_units == 'on' and sim_units == 'on':
+            pass
+        elif sim_units is None and obs_units == 'on':
+            merged_df.iloc[:, 0] *= 35.314666212661
+        else:
+            merged_df.iloc[:, 1] *= 35.314666212661
+
         # Creating the Table Based on User Input
         table = hs.make_table(
             merged_dataframe=merged_df,
@@ -808,7 +892,6 @@ def make_table_ajax(request):
             lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
             seasonal_periods=all_date_range_list
         )
-
         table_html = table.transpose()
         table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
 
