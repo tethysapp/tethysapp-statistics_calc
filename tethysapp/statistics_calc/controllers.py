@@ -11,11 +11,10 @@ from django.shortcuts import render, reverse, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http.response import JsonResponse
-from django.core import serializers
 
 # Tethys Imports
 from tethys_sdk.gizmos import SelectInput, DatePicker, RangeSlider
-from .app import StatisticsCalc as app
+from .app import StatisticsCalc as App
 
 # Data Management and Plotting imports
 import pandas as pd
@@ -32,7 +31,7 @@ import hydrostats as hs
 from hydrostats.metrics import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
-from helper_functions import parse_api_request
+from model import parse_api_request
 
 # Various Python Standard Library Imports
 import sys
@@ -365,14 +364,18 @@ def merge_two_datasets(request):
     context = {}
 
     try:
-        request_headers = dict(Authorization='Token {}')
-        res = requests.get('http://tethys-staging.byu.edu/apps/streamflow-prediction-tool/api/GetWatersheds/',
-                           headers=request_headers)
+        token = App.get_custom_setting('spt_token')
+        url = App.get_custom_setting('api_source')
+        request_headers = dict(Authorization='Token {}'.format(token))
+        res = requests.get(
+            '{}/apps/streamflow-prediction-tool/api/GetWatersheds/'.format(url),
+            headers=request_headers
+        )
         watersheds = literal_eval(res.content)
         watersheds = [i[0] for i in watersheds]
         context["watersheds"] = watersheds
-    except:
-        print("Watershed API request failed!")
+    except Exception as e:
+        print(e)
         watershed_error = True
 
     context["all_timezones"] = all_timezones
@@ -395,13 +398,20 @@ def merged_hydrograph(request):
         # getting the observed and simulated data
         obs = request.FILES.get('obs_csv', None)
 
+        print(request.POST.get("predicted_radio", None))
+
         if request.POST.get("predicted_radio", None) == "upload":
             sim = request.FILES.get('sim_csv', None)
         elif request.POST.get("predicted_radio", None) == "sfpt":
             try:
                 reach_id = request.POST.get("reach_id", None)
                 watershed = request.POST.get("watershed", None)
-                sim = parse_api_request(watershed=watershed, reach=reach_id)
+                sim = parse_api_request(
+                    watershed=watershed,
+                    reach=reach_id,
+                    token=App.get_custom_setting('spt_token'),
+                    url=App.get_custom_setting('api_source')
+                )
             except Exception as e:
                 print(e)
                 resp['backend_error'] = True
@@ -442,11 +452,17 @@ def merged_hydrograph(request):
                                             'Please make sure that all of the times exist in their respective timezone.'
 
         elif request.POST.get("predicted_radio", None) == "sfpt":
-            pass  # Need to change this
-            # merged_df = hd.merge_data(
-            #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-            # )
+            try:
+                merged_df = hd.merge_data(
+                    sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                    simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+                )
+
+            except Exception as e:
+                print(e)
+                resp['backend_error'] = True
+                resp['error_message'] = 'There was an merging the simulated and observed CSV files. ' \
+                                        'Please make sure that all of the times exist in their respective timezone.'
 
         # If no errors converting the data to JSON for response to frontend
         if not resp['backend_error']:
@@ -1825,7 +1841,7 @@ def some_view(request):
 
         if not has_errors:
             # Creating a directory to store the csv and plots in
-            app_workspace = app.get_app_workspace()
+            app_workspace = App.get_app_workspace()
 
             count = 1
 

@@ -5,19 +5,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 # import hydrostats.visual as hv
-# import hydrostats.data as hd
+import hydrostats.data as hd
 # from helper_functions import parse_api_request
 # from ast import literal_eval
 # import json
 # import requests
 
-# res = requests.get(app.get_custom_setting('api_source') + '/apps/streamflow-prediction-tool/api/GetWatersheds/',
-#                    headers={'Authorization': 'Token ' + app.get_custom_setting('spt_token')})
+date1 = pd.date_range(start='1990-01-01', periods=100)
+date2 = pd.date_range(start='1990-03-01', periods=100)
 
-try:
-    request.get()
-except Exception as e:
-    print(e)
+data1 = np.random.rand(100)
+data2 = np.random.rand(100)
+
+sim = pd.DataFrame(data1, index=date1, columns=['Simulated'])
+obs = pd.DataFrame(data2, index=date2, columns=['Observed'])
+
+merged_df = hd.merge_data(sim_df=sim, obs_df=obs)
+
+print(merged_df)
+
 
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
