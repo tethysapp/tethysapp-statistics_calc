@@ -13,15 +13,11 @@ from django.views.decorators.cache import never_cache
 from django.http.response import JsonResponse
 
 # Tethys Imports
-from tethys_sdk.gizmos import SelectInput, DatePicker, RangeSlider
 from .app import StatisticsCalc as App
 
 # Data Management and Plotting imports
 import pandas as pd
-import sqlite3
-import plotly.graph_objs as go
 import numpy as np
-import sympy as sp
 from matplotlib import use as matplotlib_use
 import matplotlib.pyplot as plt
 from scipy import integrate
@@ -34,18 +30,16 @@ import hydrostats.data as hd
 from model import parse_api_request
 
 # Various Python Standard Library Imports
-import sys
 import requests
 import os
 import shutil
+from pytz import all_timezones
+import datetime
+from ast import literal_eval
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-from io import BytesIO
-from pytz import all_timezones
-import datetime
-from ast import literal_eval
 
 # Setting the Matplotlib Backend
 matplotlib_use('Agg')
@@ -75,7 +69,7 @@ def home(request):
 @login_required()
 def preprocessing(request):
     """
-    Controller for the app home page.
+    Controller for the preprocessing page.
     """
 
     context = {}
@@ -2160,21 +2154,8 @@ def forecast_csv_ajax(request):
 @login_required()
 def test_template(request):
     """
-    Controller for the app home page.
+    Controller for testing code.
     """
-
-    slider2 = RangeSlider(display_text='Slider 2',
-                          name='slider2',
-                          min=0,
-                          max=1,
-                          initial=0.5,
-                          step=0.1,
-                          disabled=True,
-                          error='Incorrect, please choose another value.')
-
-    context = {
-        "slider2": slider2
-    }
 
     return render(request, 'statistics_calc/test_template.html', context)
 

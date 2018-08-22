@@ -1,17 +1,16 @@
 {% extends "statistics_calc/base.html" %}
-{% load tethys_gizmos %}
-{% load tethys_gizmos staticfiles %}
 
 {% block app_content %}
 
   <div class="jumbotron jumbotron-fluid">
     <h1>Streamflow Statistics Calculator</h1>
-    <p>
-      Hi {{ first_name }}! You can use this app for validation of hydrologic timeseries data. See the sidebar for
-      the
-      available tools on this app!
-    </p>
   </div>
+
+<h4>
+  Hi {{ first_name }}! You can use this app for validation of hydrologic timeseries data. See the sidebar for
+  the available tools on this app! We offer preprocessing of data, merging of timeseries data, and statistical
+  validation of timeseries data.
+</h4>
 
 {% endblock %}
 
