@@ -13,7 +13,8 @@ class StatisticsCalc(TethysAppBase):
     package = 'statistics_calc'
     root_url = 'statistics-calc'
     color = '#AEDB9F'
-    description = 'Calculates Correlation Between Predicted and Gauged Streamflow'
+    description = 'Calculates both hydrologic and forecast skill between simulated ond observed streamflow data. ' \
+                  'Also contains tools for preprocessing data and visualizing data.'
     tags = ''
     enable_feedback = False
     feedback_emails = []
