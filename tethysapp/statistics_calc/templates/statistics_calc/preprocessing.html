@@ -22,6 +22,7 @@
         action="/apps/statistics-calc/pps_csv/">
     {% csrf_token %}
 
+    <hr>
     <h2 id="h2_raw_data_checks">Raw Data Upload</h2>
     <hr>
 
@@ -39,6 +40,17 @@
 
     <br>
 
+    {# Units Checkboxes #}
+    <h4>Current Data Units</h4>
+    <input type="checkbox" name="current_units" data-toggle="toggle" data-on="SI" data-off="BG"
+           data-onstyle="success" data-offstyle="primary" data-size="small" id="observed-units" checked>
+
+    <h4>Desired Data Units</h4>
+    <input type="checkbox" name="desired_units" data-toggle="toggle" data-on="SI" data-off="BG"
+           data-onstyle="success" data-offstyle="primary" data-size="small" id="observed-units" checked>
+
+    <br><br><br><br>
+
     <button class="btn btn-success" id="raw_data_plot_button">Plot and Analyze Raw Data</button>
     <div id="raw_data_plot_loader" style="display: none;">
       <br>
@@ -49,9 +61,10 @@
     <div id="raw_data_results">{# Table of Information Regarding Raw Data Goes Here #}</div>
     <button class="btn btn-warning" id="clear_raw_data_plot_button" style="display: none">Clear Plot and Analysis</button>
 
-    <br><br><br>
+    <br>
 
-    <h2 id="h2_preprocessing">Preprocessing</h2>
+    <hr>
+    <h2 id="h2_preprocessing">Preprocessing Options</h2>
     <div id="preprocessing_error"></div>
     <hr>
 
@@ -142,10 +155,10 @@
 
     </div>
 
-    <br>
+    <br><br><br><br>
 
-    <button class="btn btn-success waves-effect waves-light" id="generate_plot">Generate Plot</button>
-    <button class="btn btn-success waves-effect waves-light" id="csv_button">Download CSV</button>
+    <button class="btn btn-success waves-effect waves-light" id="generate_plot">Plot Preprocessed Data</button>
+    <button class="btn btn-success waves-effect waves-light" id="csv_button">Download Preprocessed Data CSV</button>
 
     <div id="plot_loader" style="display: none;">
       <br>

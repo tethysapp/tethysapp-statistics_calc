@@ -20,6 +20,7 @@
     </div>
   </div>
 
+  <hr>
   <h2>Data Upload</h2>
   <hr>
 
@@ -46,10 +47,13 @@
 
     <br>
 
-    <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
-           data-onstyle="success" data-offstyle="primary" data-size="normal" id="observed-units" checked>
+    {# Observed Units Checkbox #}
+    <h4>Observed Data Units
+      <input type="checkbox" name="observed-units" data-toggle="toggle" data-on="SI" data-off="BG"
+             data-onstyle="success" data-offstyle="primary" data-size="small" id="observed-units" checked>
+    </h4>
 
-    <br><br>
+    <br><br><br>
 
     <h3>
       Simulated Data
@@ -87,9 +91,12 @@
 
       <br>
 
-      <input type="checkbox" name="simulated-units" id="simulated-units" data-toggle="toggle" data-on="SI"
-             data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="normal" checked>
-
+      {# Simulated Units Checkbox #}
+      <h4>
+        Simulated Data Units
+        <input type="checkbox" name="simulated-units" id="simulated-units" data-toggle="toggle" data-on="SI"
+               data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="small" checked>
+      </h4>
 
     </div>
 
@@ -113,7 +120,15 @@
       </div>
     </div>
 
-    <br>
+    <br><br><br>
+
+    {# Desired Units Checkbox #}
+      <h4>
+          Desired Data Units
+          <input type="checkbox" name="desired_units" id="desired_units" data-toggle="toggle" data-on="SI"
+                 data-off="BG" data-onstyle="success" data-offstyle="primary" data-size="small" checked>
+      </h4>
+
     {# {% if not watershed_error %} #}
     {#   <label id="reach_id" style="display:none">Reach ID: <input></label> #}
     {#   <select id="select_watershed" name="watershed" style="display:none"> #}
@@ -122,7 +137,7 @@
     {#   <label id="reach_id" style="display:none"><p style="color:red">There is a problem calling the API for #}
     {#          the watershed names, we are working to fix this. Please come back later.</p></label> #}
     {# {% endif %} #}
-
+    <hr>
     <h2>Timezones</h2>
     <hr>
 

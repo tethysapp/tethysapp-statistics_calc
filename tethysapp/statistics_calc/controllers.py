@@ -27,7 +27,7 @@ import hydrostats as hs
 from hydrostats.HydroErr import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
-from model import parse_api_request
+from model import parse_api_request, convert_units
 
 # Various Python Standard Library Imports
 import requests
@@ -84,21 +84,37 @@ def pps_hydrograph_raw_data_ajax(request):
 
     if request.method == "POST":
 
-        # POST data collection
-        csv_file = request.FILES.get('pps_csv', None)
-
         # Intializing response dictionary
         resp = {
             "backend_error": False,
             "error_message": ""
         }
 
+        # Try to read the CSV and convert units
         try:
-            df = pd.read_csv(csv_file, index_col=0, names=['Data'])
+            # POST data collection
+            csv_file = request.FILES.get('pps_csv', None)
+            current_units = request.POST.get("current_units", None)
+            desired_units = request.POST.get("desired_units", None)
+
+            df = pd.read_csv(csv_file, index_col=0)
+
             # Changing index to datetime type
             df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
             # Dropping bad time values if necessary
             df = df[df.index.notnull()]
+
+            if current_units == "on":
+                current_units = 'si'
+            else:
+                current_units = 'bg'
+
+            if desired_units == "on":
+                desired_units = 'si'
+            else:
+                desired_units = 'bg'
+
+            df = convert_units(single_df=df, single_units=current_units, final_units=desired_units)
 
             # Converting the DF to JSON
             date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
@@ -107,13 +123,15 @@ def pps_hydrograph_raw_data_ajax(request):
 
             resp["dates"] = date_list
             resp['data'] = data_list
+            resp['units'] = desired_units
 
         except Exception as e:
             print(e)
             resp["backend_error"] = True
             resp["error_message"] = "Error parsing the CSV on the server, please make sure the CSV is formatted " \
-                                    "correctly."
+                                    "correctly"
 
+        # Try to get some info from that data to supply to the user
         if not resp["backend_error"]:
             try:
                 # Getting basic info from the data
@@ -163,7 +181,7 @@ def pps_hydrograph_raw_data_ajax(request):
                 print(e)
                 resp["backend_error"] = True
                 resp["error_message"] = "Error finding the time frequency data, please make sure the CSV is " \
-                                        "formatted correctly. "
+                                        "formatted correctly"
 
         return JsonResponse(resp)
 
@@ -225,13 +243,32 @@ def pps_hydrograph_ajax(request):
             "error_message": ""
         }
 
-        # Parsing the CSV
+        # Parsing the CSV and checking units
         try:
+            # Collect POST data
             csv_file = request.FILES.get('pps_csv', None)
+            current_units = request.POST.get("current_units", None)
+            desired_units = request.POST.get("desired_units", None)
+
             df = pd.read_csv(csv_file, index_col=0)
             df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
             df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
             df = df[df.index.notnull()]
+
+            if current_units == "on":
+                current_units = 'si'
+            else:
+                current_units = 'bg'
+
+            if desired_units == "on":
+                desired_units = 'si'
+            else:
+                desired_units = 'bg'
+
+            df = convert_units(single_df=df, single_units=current_units, final_units=desired_units)
+
+            resp['units'] = desired_units
+
         except Exception as e:
             print(e)
             resp["backend_error"] = True
@@ -292,13 +329,32 @@ def pps_csv(request):
             "error_message": ""
         }
 
-        # Parsing the CSV
+        # Parsing the CSV and applying specified units
         try:
+            # Collect POST data
             csv_file = request.FILES.get('pps_csv', None)
+            current_units = request.POST.get("current_units", None)
+            desired_units = request.POST.get("desired_units", None)
+
             df = pd.read_csv(csv_file, index_col=0)
             df.iloc[:, 0] = df.iloc[:, 0].astype(np.float64)
             df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
             df = df[df.index.notnull()]
+
+            if current_units == "on":
+                current_units = 'si'
+            else:
+                current_units = 'bg'
+
+            if desired_units == "on":
+                desired_units = 'si'
+            else:
+                desired_units = 'bg'
+
+            df = convert_units(single_df=df, single_units=current_units, final_units=desired_units)
+
+            resp['units'] = desired_units
+
         except Exception as e:
             print(e)
             resp["backend_error"] = True
@@ -2156,6 +2212,8 @@ def test_template(request):
     """
     Controller for testing code.
     """
+
+    context = {}
 
     return render(request, 'statistics_calc/test_template.html', context)
 

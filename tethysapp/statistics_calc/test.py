@@ -24,7 +24,6 @@ merged_df = hd.merge_data(sim_df=sim, obs_df=obs)
 
 print(merged_df)
 
-
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
 #

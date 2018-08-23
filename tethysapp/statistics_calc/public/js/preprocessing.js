@@ -102,47 +102,60 @@ function plotRawData() {
         // handle a successful response
         success: function (resp) {
             console.log(resp);
+            if (resp['backend_error'] === false) {
+                let trace = {
+                    x: resp["dates"],
+                    y: resp["data"],
+                    mode: 'lines',
+                    type: 'scatter'
+                };
 
-            let trace = {
-                x: resp["dates"],
-                y: resp["data"],
-                mode: 'lines',
-                type: 'scatter'
-            };
+                let data = [trace];
 
-            let data = [trace];
+                // Changing the y axis label based on the units selected
+                let y_axis_label = "";
 
-            let layout = {
-                title: 'Hydrograph',
-                titlefont: {
-                    family: 'Arial',
-                    size: 24,
-                    color: '#000000'
-                },
+                if (resp['units'] === 'si') {
+                    y_axis_label = 'Streamflow (cms)';
+                } else {
+                    y_axis_label = 'Streamflow (cfs)';
+                }
 
-                xaxis: {
-                    title: "Datetime",
+                let layout = {
+                    title: 'Hydrograph',
                     titlefont: {
                         family: 'Arial',
-                        size: 18,
+                        size: 24,
                         color: '#000000'
                     },
-                },
-                yaxis: {
-                    title: 'Streamflow (cms)',
-                    titlefont: {
-                        family: 'Arial',
-                        size: 18,
-                        color: '#000000'
+
+                    xaxis: {
+                        title: "Datetime",
+                        titlefont: {
+                            family: 'Arial',
+                            size: 18,
+                            color: '#000000'
+                        },
                     },
-                },
-            };
+                    yaxis: {
+                        title: y_axis_label,
+                        titlefont: {
+                            family: 'Arial',
+                            size: 18,
+                            color: '#000000'
+                        },
+                    },
+                };
 
-            Plotly.newPlot('raw_data_plot', data, layout);
-            $('#raw_data_results').html(resp['information']);
-            $("#clear_raw_data_plot_button").show();
-            $("#raw_data_plot_loader").fadeOut();
-
+                Plotly.newPlot('raw_data_plot', data, layout);
+                $('#raw_data_results').html(resp['information']);
+                $("#clear_raw_data_plot_button").show();
+                $("#raw_data_plot_loader").fadeOut();
+            } else {
+                $('#raw_data_results').html("<div class='alert-box alert radius' data-alert>" +
+                    "Oops! We have encountered an error: " + resp['error_message'] + ".</div>");
+                $("#raw_data_plot_loader").fadeOut();
+            }
         },
 
         // handle a non-successful response
@@ -316,24 +329,65 @@ function ppsPlotHydrograph() {
         contentType : false,
 
         // handle a successful response
-        success : function(resp) {
-            let trace = {
-                type: "scatter",
-                mode: "lines",
-                name: "Simulated Data",
-                x: resp["dates"],
-                y: resp["data"],
-                line: {color: '#17BECF'}
-            };
+        success: function (resp) {
+            if (!resp['backend_error']) {
+                let trace = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Simulated Data",
+                    x: resp["dates"],
+                    y: resp["data"],
+                    line: {color: '#17BECF'}
+                };
 
-            let data = [trace];
-            let layout = {
-                title: 'Hydrograph',
-            };
+                let data = [trace];
 
-            Plotly.newPlot('pps_hydrograph', data, layout);
-            $("#clear_plot").show();
-            $("#plot_loader").hide();
+                // Changing the y axis label based on the units selected
+                let y_axis_label = "";
+
+                if (resp['units'] === 'si') {
+                    y_axis_label = 'Streamflow (cms)';
+                } else {
+                    y_axis_label = 'Streamflow (cfs)';
+                }
+
+                let layout = {
+                    title: 'Hydrograph',
+
+                    titlefont: {
+                        family: 'Arial',
+                        size: 24,
+                        color: '#000000'
+                    },
+
+                    xaxis: {
+                        title: "Datetime",
+                        titlefont: {
+                            family: 'Arial',
+                            size: 18,
+                            color: '#000000'
+                        },
+                    },
+                    yaxis: {
+                        title: y_axis_label,
+                        titlefont: {
+                            family: 'Arial',
+                            size: 18,
+                            color: '#000000'
+                        },
+                    },
+                };
+
+                Plotly.newPlot('pps_hydrograph', data, layout);
+                $("#clear_plot").show();
+                $("#plot_loader").hide();
+
+            } else {
+                $('#pps_hydrograph').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered " +
+                    "an error: " + resp['error_message'] + ".</div>");
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                $("#plot_loader").hide();
+            }
         },
 
         // handle a non-successful response
@@ -461,16 +515,13 @@ $(document).ready(function() {
                                                 document.body.appendChild(link);
                                                 link.click();
                                                 document.body.removeChild(link);
-                                            } else { // Not compatible
+                                            } else { // If the internet browser is not compatible with this feature
                                                 $("#merge_form").submit();
                                             }
                                         }
 
                                     }
                                 });
-
-
-
                         }
                     }
                 },

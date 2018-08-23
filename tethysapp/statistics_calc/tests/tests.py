@@ -157,47 +157,10 @@ class StatisticsCalcTestCase(TethysTestCase):
         # Test that the request processed correctly (with a 200 status code)
         self.assertEqual(response.status_code, 200)
 
-
-        # NOTE: Next, you would likely test that your context variables returned as expected. That would look
-        # something like the following:
-        #
-        # context = response.context
-        # self.assertEqual(context['my_integer'], 10)
-
-
-    # def test_unit_conversion_model(self):
-    #     """
-    #     Tests the unit conversion function in the models
-    #     """
-    #     import numpy as np
-    #     import pandas as pd
-    #     import imp
-    #     convert_function = imp.load_source('convert_units', r'../workspaces/model.py')
-    #
-    #     dates = pd.date_range('1980-01-01', periods=4)
-    #
-    #     sim_data_cfs = np.array([35000, 27000, 29500, 32000])
-    #     obs_data_cfs = np.array([34000, 26000, 28500, 31000])
-    #     forecast_data_cfs = np.array([[34500, 33500, 32500, 31500],
-    #                                   [30500, 29500, 28500, 27500],
-    #                                   [26500, 25500, 24500, 23500],
-    #                                   [22500, 21500, 20500, 19500]])
-    #     sim_data_cms = sim_data_cfs * 0.028316846592
-    #     obs_data_cms = obs_data_cfs * 0.028316846592
-    #     forecast_data_cms = forecast_data_cfs * 0.028316846592
-    #
-    #     one_column_df_cfs = pd.DataFrame(obs_data_cfs, index=dates)
-    #     one_column_df_cms = pd.DataFrame(obs_data_cms, index=dates)
-    #
-    #     two_column_df_cfs_cfs = pd.DataFrame(np.column_stack((sim_data_cfs, obs_data_cfs)), index=dates)
-    #     two_column_df_cms_cms = pd.DataFrame(np.column_stack((sim_data_cms, obs_data_cms)), index=dates)
-    #     two_column_df_cms_cfs = pd.DataFrame(np.column_stack((sim_data_cms, obs_data_cfs)), index=dates)
-    #     two_column_df_cfs_cms = pd.DataFrame(np.column_stack((sim_data_cfs, obs_data_cms)), index=dates)
-    #
-    #     forecast_df_cfs_cfs = pd.DataFrame(np.insert(forecast_data_cfs, 0, obs_data_cfs, axis=1), index=dates)
-    #     forecast_df_cms_cms = pd.DataFrame(np.insert(forecast_data_cms, 0, obs_data_cms, axis=1), index=dates)
-    #     forecast_df_cms_cfs = pd.DataFrame(np.insert(forecast_data_cfs, 0, obs_data_cms, axis=1), index=dates)
-    #     forecast_df_cfs_cms = pd.DataFrame(np.insert(forecast_data_cms, 0, obs_data_cfs, axis=1), index=dates)
-    #
-    #     # self.assertEqual()
-    #     print(convert_function)
+        '''
+        NOTE: Next, you would likely test that your context variables returned as expected. That would look
+        something like the following:
+        
+        context = response.context
+        self.assertEqual(context['my_integer'], 10)
+        '''
