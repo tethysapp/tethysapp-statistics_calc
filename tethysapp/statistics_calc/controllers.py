@@ -28,7 +28,7 @@ from scipy import integrate
 
 # Hydrostats Imports and helper functions
 import hydrostats as hs
-from hydrostats.metrics import metric_names, metric_abbr
+from hydrostats.HydroErr import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
 from model import parse_api_request

@@ -1,0 +1,11 @@
+hydrostats
+pandas
+plotly
+numpy
+sympy
+matplotlib
+requests
+pytz
+scipy
+django
+djangorestframework
