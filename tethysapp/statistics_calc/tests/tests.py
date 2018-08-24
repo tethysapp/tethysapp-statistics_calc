@@ -1,5 +1,10 @@
 # Most of your test classes should inherit from TethysTestCase
+import unittest
 from tethys_sdk.testing import TethysTestCase
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+import os
 
 # Use if your app has persistent stores that will be tested against.
 # Your app class from app.py must be passed as an argument to the TethysTestCase functions to both
@@ -105,38 +110,6 @@ class StatisticsCalcTestCase(TethysTestCase):
         """
         pass
 
-    def is_tethys_platform_great(self):
-        return True
-
-    def test_if_tethys_platform_is_great(self):
-        """
-        This is an example test function that can be modified to test a specific aspect of your app.
-        It is required that the function name begins with the word "test" or it will not be executed.
-        Generally, the code written here will consist of many assert methods.
-        A list of assert methods is included here for reference or to get you started:
-            assertEqual(a, b)	        a == b
-            assertNotEqual(a, b)	    a != b
-            assertTrue(x)	            bool(x) is True
-            assertFalse(x)	            bool(x) is False
-            assertIs(a, b)	            a is b
-            assertIsNot(a, b)	        a is not b
-            assertIsNone(x)	            x is None
-            assertIsNotNone(x)	        x is not None
-            assertIn(a, b)	            a in b
-            assertNotIn(a, b)	        a not in b
-            assertIsInstance(a, b)	    isinstance(a, b)
-            assertNotIsInstance(a, b)   !isinstance(a, b)
-        Learn more about assert methods here:
-            https://docs.python.org/2.7/library/unittest.html#assert-methods
-        """
-
-        self.assertEqual(self.is_tethys_platform_great(), True)
-        self.assertNotEqual(self.is_tethys_platform_great(), False)
-        self.assertTrue(self.is_tethys_platform_great())
-        self.assertFalse(not self.is_tethys_platform_great())
-        self.assertIs(self.is_tethys_platform_great(), True)
-        self.assertIsNot(self.is_tethys_platform_great(), False)
-
     def test_home_controller(self):
         """
         This is an example test function of how you might test a controller that returns an HTML template rendered
@@ -164,3 +137,41 @@ class StatisticsCalcTestCase(TethysTestCase):
         context = response.context
         self.assertEqual(context['my_integer'], 10)
         '''
+
+
+class HydroStatsAppTesting(unittest.TestCase):
+
+    def setUp(self):
+        self.driver = webdriver.Firefox()
+
+    def test_preprocessing(self):
+        driver = self.driver
+
+        driver.get("http://127.0.0.1:8000/apps/statistics-calc/preprocessing/")
+        self.assertIn("Tethys", driver.title)
+
+        os.environ['RECAPTCHA_TESTING'] = 'True'
+        elem = driver.find_element_by_id("id_username")
+        elem.send_keys('admin')
+        elem = driver.find_element_by_id("id_password")
+        elem.send_keys('pass')
+
+        # CAPTCHA
+        elem = driver.find_element_by_xpath('//*[@id="id_captcha_1"]')
+        elem.send_keys('PASSED')
+
+        # Button
+        elem = driver.find_element_by_xpath('// *[ @ id = "login-submit"]')
+        elem.click()
+
+        time.sleep(5)
+
+        # elem.send_keys("pycon")
+        # elem.send_keys(Keys.RETURN)
+        # time.sleep(5)
+        # elem = driver.find_element_by_xpath('/html/body/div/div[3]/div/section/form/ul/li[1]/h3/a')
+        # elem.click()
+
+    def tearDown(self):
+        self.driver.close()
+        os.environ['RECAPTCHA_TESTING'] = 'False'

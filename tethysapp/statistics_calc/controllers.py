@@ -514,9 +514,48 @@ def merged_hydrograph(request):
                 resp['error_message'] = 'There was an merging the simulated and observed CSV files. ' \
                                         'Please make sure that all of the times exist in their respective timezone.'
 
-        # If no errors converting the data to JSON for response to frontend
+        # If no errors applying units and converting the data to JSON for response to frontend
         if not resp['backend_error']:
             try:
+                # Collecting post data
+                simulated_units = request.POST.get("simulated-units", None)
+                observed_units = request.POST.get("observed-units", None)
+                desired_units = request.POST.get('desired_units', None)
+
+                # Converting Units
+                if request.POST.get("predicted_radio", None) == "sfpt":
+                    simulated_units = 'si'
+
+                    if observed_units == "on":
+                        observed_units = 'si'
+                    else:
+                        observed_units = 'bg'
+
+                    if desired_units == "on":
+                        desired_units = 'si'
+                    else:
+                        desired_units = 'bg'
+
+                elif request.POST.get("predicted_radio", None) == "upload":
+
+                    if simulated_units == "on":
+                        simulated_units = 'si'
+                    else:
+                        simulated_units = 'bg'
+
+                    if observed_units == "on":
+                        observed_units = 'si'
+                    else:
+                        observed_units = 'bg'
+
+                    if desired_units == "on":
+                        desired_units = 'si'
+                    else:
+                        desired_units = 'bg'
+
+                convert_units(two_stream_df=merged_df, sim_units=simulated_units, obs_units=observed_units,
+                              final_units=desired_units)
+
                 date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
                 date_list = date_list.tolist()
 
@@ -526,6 +565,8 @@ def merged_hydrograph(request):
                 resp['dates'] = date_list
                 resp['simulated'] = sim_list
                 resp['observed'] = obs_list
+                resp['units'] = desired_units
+
             except Exception as e:
                 print(e)
                 resp['backend_error'] = True
