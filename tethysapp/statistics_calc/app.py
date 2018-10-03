@@ -12,7 +12,7 @@ class StatisticsCalc(TethysAppBase):
     icon = 'statistics_calc/images/icon.gif'
     package = 'statistics_calc'
     root_url = 'statistics-calc'
-    color = '#AEDB9F'
+    color = '#158329'
     description = 'Calculates both hydrologic and forecast skill between simulated ond observed streamflow data. ' \
                   'Also contains tools for preprocessing data and visualizing data.'
     tags = ''
@@ -147,6 +147,16 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.forecast_csv_ajax'
             ),
             UrlMap(
+                name='validate_forecast',
+                url='validate_forecast',
+                controller='statistics_calc.controllers.validate_forecast'
+            ),
+            UrlMap(
+                name='validate_forecast_plot',
+                url='validate_forecast_plot',
+                controller='statistics_calc.controllers.validate_forecast_plot'
+            ),
+            UrlMap(
                 name='test_template',
                 url='test_template',
                 controller='statistics_calc.controllers.test_template'
@@ -156,6 +166,29 @@ class StatisticsCalc(TethysAppBase):
                 url='test_ajax',
                 controller='statistics_calc.controllers.test_ajax'
             ),
+
+            # Examples
+            UrlMap(
+                name='timeseries_csv_example',
+                url='timeseries_csv_example',
+                controller='statistics_calc.controllers.timeseries_csv_example'
+            ),
+            UrlMap(
+                name='merged_timeseries_csv_example',
+                url='merged_timeseries_csv_example',
+                controller='statistics_calc.controllers.merged_timeseries_csv_example'
+            ),
+            UrlMap(
+                name='forecast_csv_example',
+                url='forecast_csv_example',
+                controller='statistics_calc.controllers.forecast_csv_example'
+            ),
+            UrlMap(
+                name='merged_forecast_csv_example',
+                url='merged_forecast_csv_example',
+                controller='statistics_calc.controllers.merged_forecast_csv_example'
+            ),
+
 
             # API Controllers
             UrlMap(

@@ -93,7 +93,7 @@ function plotRawData() {
                         y: single_data_array,
                         type: "scatter",
                         mode: "markers",
-                        marker: {color: '#119dff', size: 5, opacity: 0.2},
+                        marker: {color: '#119dff', size: 5, opacity: 0.4},
                         showlegend: true,
                         hoverinfo: 'none',
                         name: "Ensamble Value"
@@ -104,7 +104,7 @@ function plotRawData() {
                         y: single_data_array,
                         type: "scatter",
                         mode: "markers",
-                        marker: {color: '#119dff', size: 5, opacity: 0.2},
+                        marker: {color: '#119dff', size: 5, opacity: 0.4},
                         showlegend: false,
                         hoverinfo: 'none'
                     };

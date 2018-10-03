@@ -1,0 +1,80 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Validate a Single Forecast</h1>
+
+    <p>
+      This page is for validation of a single ensemble forecast that has been preprocessed and merged with observed
+      data (or water balance). You can calculate metrics and determine the forecast skill.
+    </p>
+
+    <div id="error_redirect_point"></div>
+  </div>
+
+  <form id="validate_forecast" name="validate_forecast" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <hr>
+    <h2>
+      Data Upload
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Upload your merged data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
+    </span>
+    </h2>
+    <hr>
+
+  <div class="input-group" id="merged_forecast_file_input">
+    <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+              Merged Forecast CSV File Upload<input type="file" name="forecast_csv" id="forecast_csv" style="display: none;">
+            </span>
+    </label>
+    <input type="text" id="merged_csv_name" class="form-control" readonly="">
+  </div>
+
+  <br>
+
+  <div class="input-group" id="benchmark_file_inpu">
+    <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+              Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv" style="display: none;">
+            </span>
+    </label>
+    <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
+  </div>
+
+  </form>
+
+  <div id="merged_csv_error_message"></div>
+
+  <br><br><br>
+
+  <hr>
+  <h2>
+    Visualize
+    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Visualize the ensemble, observed (or water balance), and benchmark data.">
+    </span>
+  </h2>
+  <hr>
+
+  <button type="button" class="btn btn-default btn-block" id="visualize_button">Create Plot</button>
+
+  <br><br><br>
+
+  <hr>
+  <h2>
+    Validation
+    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+          title="Calculate ensemble metrics indicating the goodness of fit of the forecast compared to the observed (or water balance) data. Also calculate the skill score of the forecast compared to the benchmark.">
+    </span>
+  </h2>
+  <hr>
+
+  <button type="button" class="btn btn-default btn-block" id="validate_button">Run Validation</button>
+
+  <div id="validation_results">{# HTML Table output goes here #}</div>
+
+{% endblock %}

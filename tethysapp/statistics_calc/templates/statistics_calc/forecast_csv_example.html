@@ -1,0 +1,296 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Example Forecast CSV</h1>
+    <p>
+      Below is an example of how the rows and columns in the forecast CSV file must be formatted, with the dates
+      in the first column and the ensembles (any number of ensembles will be ok) in the remaining columns.
+    </p>
+  </div>
+
+  <div class="example-csv">
+    <table class="table table-bordered table-hover table-condensed">
+      <thead>
+      <tr>
+        <th title="Field #1">Datetime</th>
+        <th title="Field #2">Ensemble_1</th>
+        <th title="Field #3">Ensemble_2</th>
+        <th title="Field #4">Ensemble_3</th>
+        <th title="Field #5">Ensemble_4</th>
+        <th title="Field #6">Ensemble_5</th>
+        <th title="Field #7">Ensemble_6</th>
+        <th title="Field #8">Ensemble_7</th>
+        <th title="Field #9">Ensemble_8</th>
+        <th title="Field #10">Ensemble_9</th>
+        <th title="Field #11">Ensemble_10</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>2000-01-01 05:00:00</td>
+        <td align="right">0.40001780068842996</td>
+        <td align="right">0.6767196506375844</td>
+        <td align="right">0.9195706073652901</td>
+        <td align="right">0.4338280035381603</td>
+        <td align="right">0.2240274341731996</td>
+        <td align="right">0.5482253870543651</td>
+        <td align="right">0.33571974488381995</td>
+        <td align="right">0.3010820232878385</td>
+        <td align="right">0.35137273755782106</td>
+        <td align="right">0.7202696479576106</td>
+      </tr>
+      <tr>
+        <td>2000-01-02 05:00:00</td>
+        <td align="right">0.5690575473127343</td>
+        <td align="right">0.9648831379636758</td>
+        <td align="right">0.8426324137456761</td>
+        <td align="right">0.6487056078615102</td>
+        <td align="right">0.4511161574048175</td>
+        <td align="right">0.7160290950171174</td>
+        <td align="right">0.030915312219835345</td>
+        <td align="right">0.40039149133424823</td>
+        <td align="right">0.32565276314795766</td>
+        <td align="right">0.43248282269719784</td>
+      </tr>
+      <tr>
+        <td>2000-01-03 05:00:00</td>
+        <td align="right">0.6766303663084718</td>
+        <td align="right">0.724868379983196</td>
+        <td align="right">0.6842284894757247</td>
+        <td align="right">0.11165132212504947</td>
+        <td align="right">0.077805442049514</td>
+        <td align="right">0.20088843063112716</td>
+        <td align="right">0.8040260633685282</td>
+        <td align="right">0.8266471683273316</td>
+        <td align="right">0.6330892399486238</td>
+        <td align="right">0.467295673289874</td>
+      </tr>
+      <tr>
+        <td>2000-01-04 05:00:00</td>
+        <td align="right">0.16428186366812547</td>
+        <td align="right">0.5729210221999463</td>
+        <td align="right">0.2138673633434368</td>
+        <td align="right">0.6190276131274678</td>
+        <td align="right">0.27486550462280923</td>
+        <td align="right">0.5932188836564547</td>
+        <td align="right">0.543403579038343</td>
+        <td align="right">0.29894689089905047</td>
+        <td align="right">0.699070579353159</td>
+        <td align="right">0.4136559526389624</td>
+      </tr>
+      <tr>
+        <td>2000-01-05 05:00:00</td>
+        <td align="right">0.9291142262914067</td>
+        <td align="right">0.05973375468976816</td>
+        <td align="right">0.818786364017438</td>
+        <td align="right">0.7795234206856105</td>
+        <td align="right">0.12857936799852754</td>
+        <td align="right">0.4393893873262563</td>
+        <td align="right">0.6497529661006783</td>
+        <td align="right">0.7912707433220096</td>
+        <td align="right">0.42876991473631165</td>
+        <td align="right">0.2996869404542132</td>
+      </tr>
+      <tr>
+        <td>2000-01-06 05:00:00</td>
+        <td align="right">0.6396011094307363</td>
+        <td align="right">0.5934056994707873</td>
+        <td align="right">0.33597922284495896</td>
+        <td align="right">0.8070872426438868</td>
+        <td align="right">0.04741182309854819</td>
+        <td align="right">0.40210971083207714</td>
+        <td align="right">0.7155143561656273</td>
+        <td align="right">0.4904788277404736</td>
+        <td align="right">0.6801318121412042</td>
+        <td align="right">0.32243753437558953</td>
+      </tr>
+      <tr>
+        <td>2000-01-07 05:00:00</td>
+        <td align="right">0.978703309468542</td>
+        <td align="right">0.18688171237967466</td>
+        <td align="right">0.20533271823829935</td>
+        <td align="right">0.7680469539787731</td>
+        <td align="right">0.2011224496329287</td>
+        <td align="right">0.7007873903195503</td>
+        <td align="right">0.5895938541449545</td>
+        <td align="right">0.848099985352164</td>
+        <td align="right">0.2619313181552496</td>
+        <td align="right">0.9267464244640411</td>
+      </tr>
+      <tr>
+        <td>2000-01-08 05:00:00</td>
+        <td align="right">0.5109385099087349</td>
+        <td align="right">0.7937450103526003</td>
+        <td align="right">0.09662447212009484</td>
+        <td align="right">0.7624753576412038</td>
+        <td align="right">0.45292973236183165</td>
+        <td align="right">0.22481088690930506</td>
+        <td align="right">0.06378616828401962</td>
+        <td align="right">0.9440599002676581</td>
+        <td align="right">0.01389152965120255</td>
+        <td align="right">0.8014714864637675</td>
+      </tr>
+      <tr>
+        <td>2000-01-09 05:00:00</td>
+        <td align="right">0.6388517131517633</td>
+        <td align="right">0.8151690666403942</td>
+        <td align="right">0.2509824899223557</td>
+        <td align="right">0.3758193744336996</td>
+        <td align="right">0.7199951821091689</td>
+        <td align="right">0.6699081477480807</td>
+        <td align="right">0.2859619838566705</td>
+        <td align="right">0.1634564594324226</td>
+        <td align="right">0.9314960743972909</td>
+        <td align="right">0.8662747354080964</td>
+      </tr>
+      <tr>
+        <td>2000-01-10 05:00:00</td>
+        <td align="right">0.3895339818963892</td>
+        <td align="right">0.6158328977058161</td>
+        <td align="right">0.677689207807646</td>
+        <td align="right">0.6302633270151432</td>
+        <td align="right">0.507400753497595</td>
+        <td align="right">0.21423793934750457</td>
+        <td align="right">0.5429071695600065</td>
+        <td align="right">0.668477313200229</td>
+        <td align="right">0.38295371782585486</td>
+        <td align="right">0.9026276454210438</td>
+      </tr>
+      <tr>
+        <td>2000-01-11 05:00:00</td>
+        <td align="right">0.9133807156681019</td>
+        <td align="right">0.9024829482752478</td>
+        <td align="right">0.8731853938924261</td>
+        <td align="right">0.46436604721168095</td>
+        <td align="right">0.6625636435282949</td>
+        <td align="right">0.3645881965503832</td>
+        <td align="right">0.26894396616382343</td>
+        <td align="right">0.5216955381853396</td>
+        <td align="right">0.45333425134866656</td>
+        <td align="right">0.8770156645471663</td>
+      </tr>
+      <tr>
+        <td>2000-01-12 05:00:00</td>
+        <td align="right">0.5680220226205293</td>
+        <td align="right">0.6501557512067239</td>
+        <td align="right">0.9419283882898728</td>
+        <td align="right">0.1353929845332904</td>
+        <td align="right">0.21628346742726645</td>
+        <td align="right">0.9524516574653521</td>
+        <td align="right">0.010067732118461903</td>
+        <td align="right">0.9133041546246549</td>
+        <td align="right">0.5597389753878929</td>
+        <td align="right">0.056100332576111245</td>
+      </tr>
+      <tr>
+        <td>2000-01-13 05:00:00</td>
+        <td align="right">0.8431209653265117</td>
+        <td align="right">0.8837152588219674</td>
+        <td align="right">0.9170333916094829</td>
+        <td align="right">0.8435408391209231</td>
+        <td align="right">0.013942210487649098</td>
+        <td align="right">0.6270655661796243</td>
+        <td align="right">0.02199931034836433</td>
+        <td align="right">0.48914809382958024</td>
+        <td align="right">0.4150352747588847</td>
+        <td align="right">0.6926242582404988</td>
+      </tr>
+      <tr>
+        <td>2000-01-14 05:00:00</td>
+        <td align="right">0.1387924088939967</td>
+        <td align="right">0.313750565023557</td>
+        <td align="right">0.5850998658558578</td>
+        <td align="right">0.9744642967895871</td>
+        <td align="right">0.5169494479753253</td>
+        <td align="right">0.15292427778608375</td>
+        <td align="right">0.679606675940552</td>
+        <td align="right">0.558196436654356</td>
+        <td align="right">0.9437529546982166</td>
+        <td align="right">0.9386628867371817</td>
+      </tr>
+      <tr>
+        <td>2000-01-15 05:00:00</td>
+        <td align="right">0.9518961463266344</td>
+        <td align="right">0.7337325749456224</td>
+        <td align="right">0.6631328383060557</td>
+        <td align="right">0.48331432669463126</td>
+        <td align="right">0.02946145855761595</td>
+        <td align="right">0.34525502760603377</td>
+        <td align="right">0.7676461825409735</td>
+        <td align="right">0.3040208337296276</td>
+        <td align="right">0.9572410982636178</td>
+        <td align="right">0.650785238018585</td>
+      </tr>
+      <tr>
+        <td>2000-01-16 05:00:00</td>
+        <td align="right">0.08086151651558515</td>
+        <td align="right">0.15025261005781376</td>
+        <td align="right">0.8235893061096926</td>
+        <td align="right">0.09287979657109757</td>
+        <td align="right">0.040580780167928876</td>
+        <td align="right">0.2529439469145064</td>
+        <td align="right">0.017173812013507983</td>
+        <td align="right">0.7476473820096613</td>
+        <td align="right">0.35059881108216817</td>
+        <td align="right">0.7671737932419872</td>
+      </tr>
+      <tr>
+        <td>2000-01-17 05:00:00</td>
+        <td align="right">0.030110330492410187</td>
+        <td align="right">0.7961630507613096</td>
+        <td align="right">0.6936634041305051</td>
+        <td align="right">0.06945628343174837</td>
+        <td align="right">0.9647281726856908</td>
+        <td align="right">0.2444984921837604</td>
+        <td align="right">0.1389225723944837</td>
+        <td align="right">0.605219394624039</td>
+        <td align="right">0.183803251402342</td>
+        <td align="right">0.1924779117169565</td>
+      </tr>
+      <tr>
+        <td>2000-01-18 05:00:00</td>
+        <td align="right">0.5677459832132011</td>
+        <td align="right">0.5186541304820499</td>
+        <td align="right">0.2756069732689491</td>
+        <td align="right">0.17785916405671387</td>
+        <td align="right">0.7323164309520972</td>
+        <td align="right">0.561128455181384</td>
+        <td align="right">0.4568134117137449</td>
+        <td align="right">0.21244936624997002</td>
+        <td align="right">0.46625937233194614</td>
+        <td align="right">0.34764985875473564</td>
+      </tr>
+      <tr>
+        <td>2000-01-19 05:00:00</td>
+        <td align="right">0.8735733684529584</td>
+        <td align="right">0.09137316737963463</td>
+        <td align="right">0.09308523028666982</td>
+        <td align="right">0.29118861500311255</td>
+        <td align="right">0.9014394661060731</td>
+        <td align="right">0.027846176605985762</td>
+        <td align="right">0.9331030163368496</td>
+        <td align="right">0.610475980513353</td>
+        <td align="right">0.7259782254569332</td>
+        <td align="right">0.5002483900008416</td>
+      </tr>
+      <tr>
+        <td>2000-01-20 05:00:00</td>
+        <td align="right">0.948097095845393</td>
+        <td align="right">0.10643661957697925</td>
+        <td align="right">0.8550384550930437</td>
+        <td align="right">0.7291369997504337</td>
+        <td align="right">0.9769350452070944</td>
+        <td align="right">0.5183172412956824</td>
+        <td align="right">0.8705274891015121</td>
+        <td align="right">0.32998972190297005</td>
+        <td align="right">0.6279992473787583</td>
+        <td align="right">0.5034241117445284</td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+{% endblock %}

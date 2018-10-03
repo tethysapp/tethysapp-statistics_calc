@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from hydrostats import kge_2012
-from hydrostats.HydroErr import metric_names, metric_abbr
+from hydrostats.metrics import metric_names, metric_abbr
 import json
 import numpy as np
 

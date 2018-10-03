@@ -139,39 +139,42 @@ class StatisticsCalcTestCase(TethysTestCase):
         '''
 
 
-class HydroStatsAppTesting(unittest.TestCase):
+class HydroStatsPreprocessTesting(unittest.TestCase):
 
     def setUp(self):
-        self.driver = webdriver.Firefox()
+        self.driver = webdriver.Firefox(r'/usr/local/bin')
 
-    def test_preprocessing(self):
+    def test_ideal_case(self):
         driver = self.driver
 
         driver.get("http://127.0.0.1:8000/apps/statistics-calc/preprocessing/")
         self.assertIn("Tethys", driver.title)
 
-        os.environ['RECAPTCHA_TESTING'] = 'True'
+        # Username
         elem = driver.find_element_by_id("id_username")
         elem.send_keys('admin')
+        # Password
         elem = driver.find_element_by_id("id_password")
         elem.send_keys('pass')
-
-        # CAPTCHA
-        elem = driver.find_element_by_xpath('//*[@id="id_captcha_1"]')
-        elem.send_keys('PASSED')
 
         # Button
         elem = driver.find_element_by_xpath('// *[ @ id = "login-submit"]')
         elem.click()
 
-        time.sleep(5)
+        time.sleep(2)
 
-        # elem.send_keys("pycon")
-        # elem.send_keys(Keys.RETURN)
-        # time.sleep(5)
-        # elem = driver.find_element_by_xpath('/html/body/div/div[3]/div/section/form/ul/li[1]/h3/a')
-        # elem.click()
+        # CSV File
+        driver.execute_script("document.getElementById('pps_csv').style.display = 'block'")
+        elem = driver.find_element_by_id('pps_csv')
+        elem.send_keys(os.path.join(os.getcwd(), "Asaraghat_observed.csv"))
+
+        # Change Units
+        elem = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[2]/form/div[4]/div/label[1]')
+        elem.click()
+
+        # Plot
+        elem = driver.find_element_by_xpath('//*[@id="raw_data_plot_button"]')
+        elem.click()
 
     def tearDown(self):
         self.driver.close()
-        os.environ['RECAPTCHA_TESTING'] = 'False'

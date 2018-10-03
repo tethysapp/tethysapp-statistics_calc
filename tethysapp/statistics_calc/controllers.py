@@ -24,7 +24,7 @@ from scipy import integrate
 
 # Hydrostats Imports and helper functions
 import hydrostats as hs
-from hydrostats.HydroErr import metric_names, metric_abbr
+from hydrostats.metrics import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
 from model import parse_api_request, convert_units
@@ -2246,6 +2246,53 @@ def forecast_csv_ajax(request):
         df.to_csv(path_or_buf=response, index_label="Datetime")
 
         return response
+
+
+@login_required()
+def validate_forecast(request):
+    context = {}
+
+    return render(request, 'statistics_calc/validate_forecast.html', context)
+
+
+@login_required()
+def validate_forecast_plot(request):
+    forecast_csv = request.FILES.get('forecast_csv', None)
+    benchmark_csv = request.FILES.get('benchmark_csv', None)
+    forecast_data = pd.read_csv(forecast_csv, index_col=0)
+    benchmark_data = pd.read_csv(benchmark_csv, index_col=0)
+    print(forecast_data)
+    print(benchmark_data)
+
+    return JsonResponse({"hello": 123})
+
+
+@login_required()
+def timeseries_csv_example(request):
+    context = {}
+
+    return render(request, 'statistics_calc/timeseries_csv_example.html', context)
+
+
+@login_required()
+def merged_timeseries_csv_example(request):
+    context = {}
+
+    return render(request, 'statistics_calc/merged_timeseries_csv_example.html', context)
+
+
+@login_required()
+def forecast_csv_example(request):
+    context = {}
+
+    return render(request, 'statistics_calc/forecast_csv_example.html', context)
+
+
+@login_required()
+def merged_forecast_csv_example(request):
+    context = {}
+
+    return render(request, 'statistics_calc/merged_forecast_csv_example.html', context)
 
 
 @login_required()

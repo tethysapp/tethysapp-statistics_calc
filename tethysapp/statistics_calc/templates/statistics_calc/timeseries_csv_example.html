@@ -1,0 +1,86 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Example Time Series CSV</h1>
+    <p>
+      Below is an example of how the rows and columns in a time series CSV file must be formatted, with the dates
+      in the first column and the observed or simulated data in the second column.
+    </p>
+  </div>
+
+  <div class="example-csv">
+    <table class="table table-bordered table-hover table-condensed">
+      <thead>
+      <tr>
+        <th title="Field #1">Datetime</th>
+        <th title="Field #2">Observed/Simulated Data</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>2000-01-01 05:00:00</td>
+        <td align="left">0.011146181891478202</td>
+      </tr>
+      <tr>
+        <td>2000-01-02 05:00:00</td>
+        <td align="left">0.5654900568119274</td>
+      </tr>
+      <tr>
+        <td>2000-01-03 05:00:00</td>
+        <td align="left">0.08087070649074934</td>
+      </tr>
+      <tr>
+        <td>2000-01-04 05:00:00</td>
+        <td align="left">0.8756049701903129</td>
+      </tr>
+      <tr>
+        <td>2000-01-05 05:00:00</td>
+        <td align="left">0.8073316196759719</td>
+      </tr>
+      <tr>
+        <td>2000-01-06 05:00:00</td>
+        <td align="left">0.3832679104310627</td>
+      </tr>
+      <tr>
+        <td>2000-01-07 05:00:00</td>
+        <td align="left">0.3169736615886365</td>
+      </tr>
+      <tr>
+        <td>2000-01-08 05:00:00</td>
+        <td align="left">0.2609481200996351</td>
+      </tr>
+      <tr>
+        <td>2000-01-09 05:00:00</td>
+        <td align="left">0.20833197815680515</td>
+      </tr>
+      <tr>
+        <td>2000-01-10 05:00:00</td>
+        <td align="left">0.98071167211961</td>
+      </tr>
+      <tr>
+        <td>2000-01-11 05:00:00</td>
+        <td align="left">0.997838334528349</td>
+      </tr>
+      <tr>
+        <td>2000-01-12 05:00:00</td>
+        <td align="left">0.27619432457584914</td>
+      </tr>
+      <tr>
+        <td>2000-01-13 05:00:00</td>
+        <td align="left">0.0730589241679217</td>
+      </tr>
+      <tr>
+        <td>2000-01-14 05:00:00</td>
+        <td align="left">0.8689856509827739</td>
+      </tr>
+      <tr>
+        <td>2000-01-15 05:00:00</td>
+        <td align="left">0.119801375349179</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+{% endblock %}
