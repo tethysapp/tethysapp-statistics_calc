@@ -62,3 +62,34 @@ function plotData() {
         }
     })
 }
+
+
+// Function to perform analysis of the
+$(document).ready(function () {
+    $("#validate_button_ensemble").click(function() {
+        validateEnsemble();
+    })
+});
+function validateEnsemble () {
+    let formData = new FormData(document.getElementsByName('validate_forecast')[0]);// getting the data from the form
+    console.log(formData); // another sanity check
+
+    $.ajax({
+        url : "/apps/statistics-calc/validate_forecast_ensemble_metrics/", // the endpoint
+        type : "POST", // http method
+        data : formData, // data sent with the post request, the form data from above
+        processData : false,
+        contentType : false,
+
+        // handle a successful response
+        success : function(resp) {
+            console.log(resp) // TODO: Make sure that the controller is formatted correctly and that error are checked for.
+        },
+
+        // handle a non-successful response
+        error : function(xhr, errmsg, err) {
+            $('#validation_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    })
+}

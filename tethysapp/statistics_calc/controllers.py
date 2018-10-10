@@ -2268,6 +2268,40 @@ def validate_forecast_plot(request):
 
 
 @login_required()
+def validate_forecast_ensemble_metrics(request):
+    if request.method == "POST":
+        try:
+            # Parsing and processing the csv data
+
+            csv_file_forecast = request.FILES.get('forecast_csv', None)
+            csv_file_benchmark = request.FILES.get('benchmark_csv', None)
+
+            df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
+            df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
+            df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
+
+            df_benchmark = pd.read_csv(csv_file_benchmark, index_col=0)
+            df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
+            df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
+
+            # Merge the two dataframes
+            merged_df = pd.DataFrame.join(df_benchmark, df_forecast).dropna()
+
+            merged_df
+
+            return response
+
+        except Exception as e:
+            return JsonResponse(
+                {
+                    "error_bool": True,
+                    "error_message": e
+                 })
+
+
+
+
+@login_required()
 def timeseries_csv_example(request):
     context = {}
 

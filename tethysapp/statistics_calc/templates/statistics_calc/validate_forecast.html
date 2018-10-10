@@ -20,30 +20,32 @@
     <h2>
       Data Upload
       <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-          title="Upload your merged data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
+            title="Upload your merged data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
     </span>
     </h2>
     <hr>
 
-  <div class="input-group" id="merged_forecast_file_input">
-    <label class="input-group-btn">
+    <div class="input-group" id="merged_forecast_file_input">
+      <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
-              Merged Forecast CSV File Upload<input type="file" name="forecast_csv" id="forecast_csv" style="display: none;">
+              Merged Forecast CSV File Upload<input type="file" name="forecast_csv" id="forecast_csv"
+                                                    style="display: none;">
             </span>
-    </label>
-    <input type="text" id="merged_csv_name" class="form-control" readonly="">
-  </div>
+      </label>
+      <input type="text" id="merged_csv_name" class="form-control" readonly="">
+    </div>
 
-  <br>
+    <br>
 
-  <div class="input-group" id="benchmark_file_inpu">
-    <label class="input-group-btn">
+    <div class="input-group" id="benchmark_file_inpu">
+      <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
-              Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv" style="display: none;">
+              Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv"
+                                                       style="display: none;">
             </span>
-    </label>
-    <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
-  </div>
+      </label>
+      <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
+    </div>
 
   </form>
 
@@ -73,8 +75,33 @@
   </h2>
   <hr>
 
-  <button type="button" class="btn btn-default btn-block" id="validate_button">Run Validation</button>
+  <h3>
+    Ensemble Metric Validation
+  </h3>
+  <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
+    Validation
+  </button>
+  <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
 
-  <div id="validation_results">{# HTML Table output goes here #}</div>
+  <br><br><br>
+
+  <h3>
+    Binary Ensemble Metric Validation
+  </h3>
+  <form>
+    <div class="form-group row">
+      <label for="validation_threshhold" class="col-sm-2 col-form-label">Event Threshold</label>
+      <div class="col-sm-10">
+        <input type="password" class="form-control" id="validation_threshhold">
+      </div>
+    </div>
+  </form>
+  <br>
+  <button type="button" class="btn btn-default btn-block" id="validate_button_binary">
+    Run Binary Ensemble Metrics Validation
+  </button>
+  
+  <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
+
 
 {% endblock %}

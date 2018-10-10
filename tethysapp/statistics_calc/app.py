@@ -157,6 +157,11 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.validate_forecast_plot'
             ),
             UrlMap(
+                name='validate_forecast_ensemble_metrics',
+                url='validate_forecast_ensemble_metrics',
+                controller='statistics_calc.controllers.validate_forecast_ensemble_metrics'
+            ),
+            UrlMap(
                 name='test_template',
                 url='test_template',
                 controller='statistics_calc.controllers.test_template'
