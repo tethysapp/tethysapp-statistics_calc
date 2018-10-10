@@ -2026,7 +2026,7 @@ def some_view(request):
             # Creating Zip Archive
             shutil.make_archive(zip_file, 'zip', zip_dir)
 
-            # Deleting the temporary Directory to free memory space
+            # Deleting the temporary Directory to free disk space
             shutil.rmtree(zip_dir, ignore_errors=True)
 
             # Reading zip file for response
@@ -2056,6 +2056,13 @@ def some_view(request):
             # writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
 
     return response
+
+
+@login_required()
+def create_persistence_benchmark(request):
+    context = {}
+
+    return render(request, 'statistics_calc/create_persistence_benchmark.html', context)
 
 
 @login_required()
@@ -2272,7 +2279,6 @@ def validate_forecast_ensemble_metrics(request):
     if request.method == "POST":
         try:
             # Parsing and processing the csv data
-
             csv_file_forecast = request.FILES.get('forecast_csv', None)
             csv_file_benchmark = request.FILES.get('benchmark_csv', None)
 

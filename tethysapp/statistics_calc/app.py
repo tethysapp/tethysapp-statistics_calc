@@ -122,6 +122,11 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.volume_table_ajax'
             ),
             UrlMap(
+                name='create_persistence_benchmark',
+                url='create_persistence_benchmark',
+                controller='statistics_calc.controllers.create_persistence_benchmark'
+            ),
+            UrlMap(
                 name='process_a_forecast',
                 url='process_a_forecast',
                 controller='statistics_calc.controllers.process_a_forecast'

@@ -1,0 +1,71 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Create Persistence Forecast</h1>
+    <div id="error_redirect_point"></div>
+  </div>
+
+  <!-- data form-->
+  <form id="persistence_benchmark" name="persistence_benchmark" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {# Contains error message if a form error is there #}
+    <div id="error_message"></div>
+
+    <hr>
+    <h2>Water Balance or Observed Data Upload</h2>
+    <hr>
+
+    <div class="input-group" id="merged_csv_file_input">
+      <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="water_bal_csv" id="water_bal_csv" style="display: none;">
+            </span>
+      </label>
+      <input type="text" id="water_bal_csv_name" class="form-control" readonly="">
+    </div>
+
+    <div id="merged_csv_error_message"></div>
+
+    <br><br><br>
+
+    <hr>
+    <h2>Lead Time</h2>
+    <hr>
+
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="day">Days</label>
+        <input type="number" class="form-control" id="day" name="day" placeholder="e.g. 3" step="1">
+      </div>
+      <div class="form-group col-md-4">
+        <label for="hours">Hours</label>
+        <input type="number" class="form-control" id="hours" name="hours" min="0" max="23" placeholder="e.g. 0" step="1">
+      </div>
+      <div class="form-group col-md-4">
+        <label for="minutes">Minutes</label>
+        <input type="number" class="form-control" id="minutes" name="minutes" min="0" max="59" placeholder="e.g. 0" step="1">
+      </div>
+    </div>
+
+    <br><br><br><br><br><br>
+
+    <hr>
+    <h2>Visualize and Download</h2>
+    <hr>
+
+    <button type="button" class="btn btn-default btn-block" id="visualize_persistence">
+      Visualize the Persistence Forecast
+    </button>
+    {# Visualize the persistence forecast compared to the water balance (or observed data) #}
+    <div id="visualization_results"></div>
+
+    <br>
+
+    <button type="button" class="btn btn-default btn-block" id="download_persistence">
+      Download the Persistence Forecast
+    </button>
+
+{% endblock %}
