@@ -127,6 +127,16 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.create_persistence_benchmark'
             ),
             UrlMap(
+                name='visualize_persistence_benchmark',
+                url='visualize_persistence_benchmark',
+                controller='statistics_calc.controllers.visualize_persistence_benchmark'
+            ),
+            UrlMap(
+                name='persistence_benchmark_download',
+                url='persistence_benchmark_download',
+                controller='statistics_calc.controllers.persistence_benchmark_download'
+            ),
+            UrlMap(
                 name='process_a_forecast',
                 url='process_a_forecast',
                 controller='statistics_calc.controllers.process_a_forecast'
@@ -150,6 +160,11 @@ class StatisticsCalc(TethysAppBase):
                 name='forecast_csv_ajax',
                 url='forecast_csv_ajax',
                 controller='statistics_calc.controllers.forecast_csv_ajax'
+            ),
+            UrlMap(
+                name='merge_forecast',
+                url='merge_forecast',
+                controller='statistics_calc.controllers.merge_forecast'
             ),
             UrlMap(
                 name='validate_forecast',

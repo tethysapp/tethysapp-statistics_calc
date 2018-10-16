@@ -1,0 +1,19 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <h1>Merge a Forecast for Analysis</h1>
+    <div id="error_redirect_point"></div>
+  </div>
+
+  <!-- data form-->
+  <form id="merge_forecast_form" name="merge_forecast" method="post" enctype="multipart/form-data"
+        action="/apps/statistics-calc/persistence_benchmark_download/">
+    {% csrf_token %}
+
+  </form>
+{% endblock %}
+
+
+{# TODO: Complete this page #}

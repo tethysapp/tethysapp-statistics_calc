@@ -2066,6 +2066,122 @@ def create_persistence_benchmark(request):
 
 
 @login_required()
+def visualize_persistence_benchmark(request):
+    try:
+        if request.method == "POST":
+
+            # Getting the Persistence info
+            days = request.POST.get('day', None)
+            hours = request.POST.get('hours', None)
+            minutes = request.POST.get('minutes', None)
+
+            # Getting CSV and reading it
+            csv_file = request.FILES.get('water_bal_csv', None)
+            water_balance_df = pd.read_csv(csv_file, index_col=0)
+            # Changing index to datetime type
+            water_balance_df.index = pd.to_datetime(
+                water_balance_df.index, infer_datetime_format=True, errors='coerce'
+            )
+            # Dropping bad time values if necessary
+            water_balance_df = water_balance_df[water_balance_df.index.notnull()]
+
+            # Getting the Data into JSON format for response
+            date_list = water_balance_df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = date_list.tolist()
+
+            timedelta_string = "{} days {} hours {} min".format(days, hours, minutes)
+            persistence_date_list = (water_balance_df.index +
+                                     pd.Timedelta(timedelta_string)).strftime("%Y-%m-%d %H:%M:%S")
+            persistence_date_list = persistence_date_list.tolist()
+
+            data_list = water_balance_df.iloc[:, 0].tolist()
+
+            response = {
+                "original_dates": date_list,
+                "data": data_list,
+                "persistence_dates": persistence_date_list,
+                "error_bool": False
+            }
+
+            return JsonResponse(response)
+
+        else:
+            response = {
+                "error_bool": True,
+                "error_message": "Request method was not POST."
+            }
+
+            return JsonResponse(response)
+
+    except Exception as e:
+        print(e)
+
+        response = {
+            "error_bool": True,
+            "error_message": e
+        }
+
+        return JsonResponse(response)
+
+
+@login_required()
+def persistence_benchmark_download(request):
+    print("In the download persistence benchmark controller")
+    try:
+        if request.method == "POST":
+
+            # Sanity Check
+            print("In the download persistence benchmark controller")
+
+            # Getting the Persistence info
+            days = request.POST.get('day', None)
+            hours = request.POST.get('hours', None)
+            minutes = request.POST.get('minutes', None)
+            timedelta_string = "{} days {} hours {} min".format(days, hours, minutes)
+
+            # Getting CSV and reading it
+            csv_file = request.FILES.get('water_bal_csv', None)
+            df = pd.read_csv(csv_file, index_col=0)
+            # Changing index to datetime type
+            df.index = pd.to_datetime(
+                df.index, infer_datetime_format=True, errors='coerce'
+            )
+            # Dropping bad time values if necessary
+            df = df[df.index.notnull()]
+
+            # Creating Persistence DF
+            df.index = (df.index + pd.Timedelta(timedelta_string))
+
+            # Returning CSV response to user
+            response = HttpResponse(content_type='text/csv')
+            time_stamp = str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "")
+            response['Content-Disposition'] = 'attachment; filename=persistence_forecasts_{}.csv'.format(time_stamp)
+            print('attachment; filename=persistence_forecasts_{}.csv'.format(time_stamp))
+
+            df.to_csv(path_or_buf=response, index_label="Datetime")
+
+            return response
+
+        else:
+            response = {
+                "error_bool": True,
+                "error_message": "Request method was not POST."
+            }
+
+            return JsonResponse(response)
+
+    except Exception as e:
+        print(e)
+
+        response = {
+            "error_bool": True,
+            "error_message": e
+        }
+
+        return JsonResponse(response)
+
+
+@login_required()
 def process_a_forecast(request):
     context = {}
 
@@ -2093,7 +2209,7 @@ def forecast_raw_data_ajax(request):
 
         num_of_days = len(df.index)
 
-        # Creating a list of the dates and appending it the the response
+        # Creating a list of the dates and appending it to the response
         date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
         date_list = date_list.tolist()
         resp['all_dates'] = date_list
@@ -2256,6 +2372,13 @@ def forecast_csv_ajax(request):
 
 
 @login_required()
+def merge_forecast(request):
+    context = {}
+
+    return render(request, 'statistics_calc/merge_forecast.html', context)
+
+
+@login_required()
 def validate_forecast(request):
     context = {}
 
@@ -2303,8 +2426,6 @@ def validate_forecast_ensemble_metrics(request):
                     "error_bool": True,
                     "error_message": e
                  })
-
-
 
 
 @login_required()

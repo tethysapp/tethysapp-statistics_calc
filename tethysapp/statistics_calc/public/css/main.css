@@ -50,6 +50,10 @@ hr {
     background-color: #333; /* Modern Browsers */
 }
 
+p.error_text {
+    color: red;
+}
+
 div.metric-table {
     background-color: white;
     width: 100%;
@@ -146,4 +150,9 @@ input.form-fixer {
     border-radius: 50%;
     background: #5cb85c; /* Green background */
     cursor: pointer; /* Cursor on hover */
+}
+
+.file_error_highlight {
+    "border": '#FF0000 1px solid',
+    "border-radius": '4px';
 }
