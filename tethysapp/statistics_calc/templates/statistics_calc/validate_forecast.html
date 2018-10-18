@@ -20,7 +20,7 @@
     <h2>
       Data Upload
       <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="Upload your merged data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
+            title="Upload your merged forecast data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
     </span>
     </h2>
     <hr>
@@ -37,7 +37,7 @@
 
     <br>
 
-    <div class="input-group" id="benchmark_file_inpu">
+    <div class="input-group" id="benchmark_file_input">
       <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
               Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv"
@@ -47,61 +47,64 @@
       <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
     </div>
 
-  </form>
+    <div id="merged_csv_error_message"></div>
 
-  <div id="merged_csv_error_message"></div>
+    <br><br><br>
 
-  <br><br><br>
-
-  <hr>
-  <h2>
-    Visualize
-    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-          title="Visualize the ensemble, observed (or water balance), and benchmark data.">
+    <hr>
+    <h2>
+      Visualize
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+            title="Visualize the ensemble, observed (or water balance), and benchmark data.">
     </span>
-  </h2>
-  <hr>
+    </h2>
+    <hr>
 
-  <button type="button" class="btn btn-default btn-block" id="visualize_button">Create Plot</button>
+    <button type="button" class="btn btn-default btn-block" id="visualize_button">Create Plot</button>
 
-  <br><br><br>
+    <br><br><br>
 
-  <hr>
-  <h2>
-    Validation
-    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-          title="Calculate ensemble metrics indicating the goodness of fit of the forecast compared to the observed (or water balance) data. Also calculate the skill score of the forecast compared to the benchmark.">
+    <hr>
+    <h2>
+      Validation
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+            title="Calculate ensemble metrics indicating the goodness of fit of the forecast compared to the observed (or water balance) data. Also calculate the skill score of the forecast compared to the benchmark.">
     </span>
-  </h2>
-  <hr>
+    </h2>
+    <hr>
 
-  <h3>
-    Ensemble Metric Validation
-  </h3>
-  <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
-    Validation
-  </button>
-  <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
+    <h3>
+      Ensemble Metric Validation
+    </h3>
+    <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
+      Validation
+    </button>
+    <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
 
-  <br><br><br>
+    <br><br><br>
 
-  <h3>
-    Binary Ensemble Metric Validation
-  </h3>
-  <form>
-    <div class="form-group row">
-      <label for="validation_threshhold" class="col-sm-2 col-form-label">Event Threshold</label>
-      <div class="col-sm-10">
-        <input type="password" class="form-control" id="validation_threshhold">
-      </div>
+    <h3>
+      Binary Ensemble Metric Validation
+    </h3>
+
+    <h4>
+      Event Threshold
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+            title="The threshold for the event that you are trying to validate. For example, if the return period for a two year flood was 100 cms, and you wanted to see if the forecast captured that event, you would put 100 for the threshold.">
+    </span>
+    </h4>
+    <div class="form-group col-md-4" id="threshold_form">
+      <input class="form-control" type="number" placeholder="Enter Threshold Here" id="threshold" name="threshold">
     </div>
+
+    <br>
+    <button type="button" class="btn btn-default btn-block" id="validate_button_binary">
+      Run Binary Ensemble Metrics Validation
+    </button>
+
+    <div id="validation_results_binary">{# HTML Table output goes here #}</div>
+
   </form>
-  <br>
-  <button type="button" class="btn btn-default btn-block" id="validate_button_binary">
-    Run Binary Ensemble Metrics Validation
-  </button>
-  
-  <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
 
 
 {% endblock %}

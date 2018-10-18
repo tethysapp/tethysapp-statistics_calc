@@ -57,78 +57,61 @@ $(document).ready(function () {
 });
 
 
-// Functions to hide and show the extra parameters for the metrics
+// Function for the select2 metric selection tool
 $(document).ready(function() {
-    $("#MASE").change(function () {
-        if (this.checked) {
-            $('#MASE_label').show();
-        } else {
-            $('#MASE_label').hide();
-        }
-    });
+    $('#metric_select2').select2({ width: 'resolve' });
 });
-$(document).ready(function() {
-    $("input[id='d (Mod.)']").change(function () {
-        if (this.checked) {
-            $("div[id='d (Mod.)_label']").show();
-        } else {
-            $("div[id='d (Mod.)_label']").hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $("input[id='NSE (Mod.)']").change(function () {
-        if (this.checked) {
-            $("div[id='NSE (Mod.)_label']").show();
-        } else {
-            $("div[id='NSE (Mod.)_label']").hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $("input[id='H6 (MHE)']").change(function () {
-        if (this.checked) {
-            $("div[id='H6 (MHE)_label']").show();
-        } else {
-            $("div[id='H6 (MHE)_label']").hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $("input[id='H6 (AHE)']").change(function () {
-        if (this.checked) {
-            $("div[id='H6 (AHE)_label']").show();
-        } else {
-            $("div[id='H6 (AHE)_label']").hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $("input[id='H6 (RMSHE)']").change(function () {
-        if (this.checked) {
-            $("div[id='H6 (RMSHE)_label']").show();
-        } else {
-            $("div[id='H6 (RMSHE)_label']").hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $(`input[id="E1'"]`).change(function () {
-        if (this.checked) {
-            $(`div[id="E1'_label"]`).show();
-        } else {
-            $(`div[id="E1'_label"]`).hide();
-        }
-    });
-});
-$(document).ready(function() {
-    $(`input[id="D1'"]`).change(function () {
-        if (this.checked) {
-            $(`div[id="D1'_label"]`).show();
-        } else {
-            $(`div[id="D1'_label"]`).hide();
-        }
-    });
+$('#metric_select2').on("select2:close", function(e) { // Display optional parameters
+    console.log("triggered!");
+    let select_val = $( '#metric_select2' ).val();
+
+    if ( select_val.includes("MASE") ) {
+        $('#mase_param_div').fadeIn()
+    } else {
+        $('#mase_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("d (Mod.)") ) {
+        $('#dmod_param_div').fadeIn()
+    } else {
+        $('#dmod_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("NSE (Mod.)") ) {
+        $('#nse_mod_param_div').fadeIn()
+    } else {
+        $('#nse_mod_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("E1'") ) {
+        $('#lm_eff_param_div').fadeIn()
+    } else {
+        $('#lm_eff_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("D1'") ) {
+        $('#d1_p_param_div').fadeIn()
+    } else {
+        $('#d1_p_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("H6 (MHE)") ) {
+        $('#mean_h6_param_div').fadeIn()
+    } else {
+        $('#mean_h6_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("H6 (MAHE)") ) {
+        $('#mean_abs_H6_param_div').fadeIn()
+    } else {
+        $('#mean_abs_H6_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("H6 (RMSHE)") ) {
+        $('#rms_H6_param_div').fadeIn()
+    } else {
+        $('#rms_H6_param_div').fadeOut()
+    }
 });
 
 
@@ -620,17 +603,9 @@ $(document).ready(function(){
             // handle a successful response
             success: function (resp) {
                 const abbreviations = resp["abbreviations"];
-                let selected_metrics = 0;
-                let current_metric;
+                let selected_metrics = $( '#metric_select2' ).val();
 
-                for (let abbr = 0; abbr < abbreviations.length; abbr++) {
-                    current_metric = abbreviations[abbr];
-                    if ($(`input[id="${current_metric}"]`).is(":checked")) {
-                        selected_metrics++
-                    }
-                }
-
-                if (selected_metrics === 0) {
+                if (selected_metrics.length === 0) {
                     $("#metric_select_error").html('<p style="color: #FF0000"><small>At least one metric must be selected.</small></p>');
                     $("#metric_overflow_div").css({"border": '#FF0000 1px solid'});
                     validation_error = true;

@@ -27,6 +27,7 @@ import hydrostats as hs
 from hydrostats.metrics import metric_names, metric_abbr
 import hydrostats.visual as hv
 import hydrostats.data as hd
+import hydrostats.ens_metrics as em
 from model import parse_api_request, convert_units
 
 # Various Python Standard Library Imports
@@ -897,12 +898,12 @@ def make_table_ajax(request):
             extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 
         # Indexing the metrics to get the abbreviations
-        selected_metric_abbr = []
+        selected_metric_abbr = request.POST.getlist("metrics", None)
 
-        for abbr in metric_abbr:
-            metric_post_boolean = request.POST.get(abbr, None)
-            if metric_post_boolean == 'on':
-                selected_metric_abbr.append(abbr)
+        # for abbr in metric_abbr:
+        #     metric_post_boolean = request.POST.get(abbr, None)
+        #     if metric_post_boolean == 'on':
+        #         selected_metric_abbr.append(abbr)
 
         # Getting the Units of the Simulated and Observed Data and Converting if Necessary
         obs_units = request.POST.get('observed-units')
@@ -2282,28 +2283,20 @@ def forecast_plot_ajax(request):
         df = df[df.index.notnull()]  # Dropping bad time values if necessary
 
         # Time Scaling
-
         time_scale_bool = request.POST.get('time_range_bool', None)
         begin_date = request.POST.get('begin_date', None)
         end_date = request.POST.get('end_date', None)
         begin_date = pd.to_datetime(begin_date)  # Convert to Datetime Object
         end_date = pd.to_datetime(end_date)
-        print("Begin date is {} and end date is {}.".format(begin_date, end_date))
-        print(type(begin_date))
 
         if time_scale_bool == "on":
-            print("Scaling the Time!")
             df = df.loc[begin_date: end_date]
 
         # Interpolation
-
         interp_bool = request.POST.get('interpolation_bool', None)
         interp_method = request.POST.get('interp_method', None)
         interp_hours = request.POST.get('interp_hours', None)
         interp_minutes = request.POST.get('interp_minutes', None)
-        print(interp_bool)
-        print(interp_method)
-        print(interp_hours, interp_minutes)
 
         if interp_bool == "on":
             print("Interpolating!")
@@ -2403,29 +2396,71 @@ def validate_forecast_ensemble_metrics(request):
         try:
             # Parsing and processing the csv data
             csv_file_forecast = request.FILES.get('forecast_csv', None)
-            csv_file_benchmark = request.FILES.get('benchmark_csv', None)
 
             df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
             df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
             df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
-            df_benchmark = pd.read_csv(csv_file_benchmark, index_col=0)
-            df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
-            df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
+            obs = df_forecast.iloc[:, 0].values
+            forecast = df_forecast.iloc[:, 1:].values
 
-            # Merge the two dataframes
-            merged_df = pd.DataFrame.join(df_benchmark, df_forecast).dropna()
+            response = {
+                "error_bool": False,
+                "ens_me": np.round(em.ens_me(obs, forecast), 3),
+                "ens_mae": np.round(em.ens_mae(obs, forecast), 3),
+                "ens_mse": np.round(em.ens_mse(obs, forecast), 3),
+                "ens_rmse": np.round(em.ens_rmse(obs, forecast), 3),
+                "ens_pearson_r": np.round(em.ens_pearson_r(obs, forecast), 3),
+                "ens_crps": np.round(em.ens_crps(obs, forecast)["crpsMean"], 3),
+            }
 
-            merged_df
-
-            return response
+            return JsonResponse(response)
 
         except Exception as e:
-            return JsonResponse(
-                {
-                    "error_bool": True,
-                    "error_message": e
-                 })
+
+            response = {
+                "error_bool": True,
+                "error_message": e
+             }
+
+            return JsonResponse(response)
+
+
+@login_required()
+def validate_forecast_binary_metrics(request):
+    if request.method == "POST":
+        try:
+            print("in binary metrics controller")
+            # Parsing and processing the csv data
+            csv_file_forecast = request.FILES.get('forecast_csv', None)
+            threshold = float(request.POST.get("threshold", None))
+
+            df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
+            df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
+            df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
+
+            obs = df_forecast.iloc[:, 0].values
+            forecast = df_forecast.iloc[:, 1:].values
+
+            ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
+            auroc = em.auroc(forecast, obs, threshold)
+
+            response = {
+                "error_bool": False,
+                "ens_brier": np.round(ens_brier, 3),
+                "auroc": np.round(auroc[0], 3),
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+
+            response = {
+                "error_bool": True,
+                "error_message": e.args[0]
+            }
+
+            return JsonResponse(response)
 
 
 @login_required()

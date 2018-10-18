@@ -1,4 +1,5 @@
 import pandas as pd
+import hydrostats.ens_metrics as em
 # import zipfile
 # import io
 # from PIL import Image
@@ -11,18 +12,20 @@ import hydrostats.data as hd
 # import json
 # import requests
 
-date1 = pd.date_range(start='1990-01-01', periods=100)
-date2 = pd.date_range(start='1990-03-01', periods=100)
+example_data_path = r"/home/wade/Documents/Data_to_Test_App/Merged_Forecast_DataFrame_South_Asia_55234.csv"
+out_path = r"/home/wade/Documents/Data_to_Test_App/Example_Benchmark_Forecast.csv"
+example_df = pd.read_csv(example_data_path, index_col=0)
+obs = example_df.iloc[:, 0].values
+ens_forecasts = example_df.iloc[:, 1:].values
+threshold = 2000
 
-data1 = np.random.rand(100)
-data2 = np.random.rand(100)
+ens_brier = np.mean(em.ens_brier(ens_forecasts, obs, threshold))
+auroc = em.auroc(ens_forecasts, obs, threshold)
 
-sim = pd.DataFrame(data1, index=date1, columns=['Simulated'])
-obs = pd.DataFrame(data2, index=date2, columns=['Observed'])
+print(ens_brier)
+print(auroc)
 
-merged_df = hd.merge_data(sim_df=sim, obs_df=obs)
-
-print(merged_df)
+# bench_df.to_csv(out_path)
 
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
