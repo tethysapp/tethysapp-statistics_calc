@@ -2396,22 +2396,98 @@ def validate_forecast_ensemble_metrics(request):
         try:
             # Parsing and processing the csv data
             csv_file_forecast = request.FILES.get('forecast_csv', None)
+            benchmark_file = request.FILES.get('benchmark_csv', None)
 
             df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
             df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
             df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
-            obs = df_forecast.iloc[:, 0].values
-            forecast = df_forecast.iloc[:, 1:].values
+            num_col_forecast = len(df_forecast.columns)
+
+            if benchmark_file is not None:
+                skill_score_bool = True
+                df_benchmark = pd.read_csv(benchmark_file, index_col=0)
+                df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
+                df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
+
+                merged_df = pd.DataFrame.join(df_forecast, df_benchmark, lsuffix='_forecast', rsuffix='_benchmark')
+                obs = merged_df.iloc[:, 0].values
+                forecast = merged_df.iloc[:, 1:num_col_forecast].values
+                benchmark_forecast = merged_df.iloc[:, num_col_forecast:].values
+
+                if forecast.ndim == 1:
+                    forecast = forecast.reshape((-1, 1))
+
+                if benchmark_forecast.ndim == 1:
+                    benchmark_forecast = benchmark_forecast.reshape((-1, 1))
+
+            else:
+                skill_score_bool = False
+
+                obs = df_forecast.iloc[:, 0].values
+                forecast = df_forecast.iloc[:, 1:].values
+
+                if forecast.ndim == 1:
+                    forecast = forecast.reshape((-1, 1))
+
+            ens_me_forecast = em.ens_me(obs, forecast)
+            ens_mae_forecast = em.ens_mae(obs, forecast)
+            ens_mse_forecast = em.ens_mse(obs, forecast)
+            ens_rmse_forecast =  em.ens_rmse(obs, forecast)
+            ens_pearson_r_forecast = em.ens_pearson_r(obs, forecast)
+            ens_crps_mean_forecast = em.ens_crps(obs, forecast)["crpsMean"]
+
+            if benchmark_file is not None:
+                ens_me_benchmark = em.ens_me(obs, benchmark_forecast)
+                ens_mae_benchmark = em.ens_mae(obs, benchmark_forecast)
+                ens_mse_benchmark = em.ens_mse(obs, benchmark_forecast)
+                ens_rmse_benchmark = em.ens_rmse(obs, benchmark_forecast)
+                ens_pearson_r_benchmark = em.ens_pearson_r(obs, benchmark_forecast)
+                ens_crps_mean_benchmark = em.ens_crps(obs, benchmark_forecast)["crpsMean"]
+
+                # TODO: Once Hydrostats is fixed remove the manual solution workaround for more robustness
+                me_ss = 1 - ens_me_forecast / ens_me_benchmark
+                mae_ss = 1 - ens_mae_forecast / ens_mae_benchmark
+                mse_ss = 1 - ens_mse_forecast / ens_mse_benchmark
+                rmse_ss = 1 - ens_rmse_forecast / ens_rmse_benchmark
+                pearson_r_ss = 1 - (ens_pearson_r_forecast - 1) / (ens_pearson_r_benchmark - 1)
+                crps_ss = 1 - ens_crps_mean_forecast / ens_crps_mean_benchmark
+            else:
+                ens_me_benchmark = None
+                ens_mae_benchmark = None
+                ens_mse_benchmark = None
+                ens_rmse_benchmark = None
+                ens_pearson_r_benchmark = None
+                ens_crps_mean_benchmark = None
+
+                me_ss = None
+                mae_ss = None
+                mse_ss = None
+                rmse_ss = None
+                pearson_r_ss = None
+                crps_ss = None
 
             response = {
                 "error_bool": False,
-                "ens_me": np.round(em.ens_me(obs, forecast), 3),
-                "ens_mae": np.round(em.ens_mae(obs, forecast), 3),
-                "ens_mse": np.round(em.ens_mse(obs, forecast), 3),
-                "ens_rmse": np.round(em.ens_rmse(obs, forecast), 3),
-                "ens_pearson_r": np.round(em.ens_pearson_r(obs, forecast), 3),
-                "ens_crps": np.round(em.ens_crps(obs, forecast)["crpsMean"], 3),
+                "skill_score_bool": skill_score_bool,
+                "ens_me": np.round(ens_me_forecast, 3),
+                "ens_mae": np.round(ens_mae_forecast, 3),
+                "ens_mse": np.round(ens_mse_forecast, 3),
+                "ens_rmse": np.round(ens_rmse_forecast, 3),
+                "ens_pearson_r": np.round(ens_pearson_r_forecast, 3),
+                "ens_crps": np.round(ens_crps_mean_forecast, 3),
+                "ens_me_bench": np.round(ens_me_benchmark, 3),
+                "ens_mae_bench": np.round(ens_mae_benchmark, 3),
+                "ens_mse_bench": np.round(ens_mse_benchmark, 3),
+                "ens_rmse_bench": np.round(ens_rmse_benchmark, 3),
+                "ens_pearson_r_bench": np.round(ens_pearson_r_benchmark, 3),
+                "ens_crps_bench": np.round(ens_crps_mean_benchmark, 3),
+                "me_ss": np.round(me_ss, 3),
+                "mae_ss": np.round(mae_ss, 3),
+                "mse_ss": np.round(mse_ss, 3),
+                "rmse_ss": np.round(rmse_ss, 3),
+                "pearson_r_ss": np.round(pearson_r_ss, 3),
+                "crps_ss": np.round(crps_ss, 3)
             }
 
             return JsonResponse(response)

@@ -70,7 +70,7 @@ $(document).ready(function () {
         validateEnsemble();
     })
 });
-function validateEnsemble () {
+function validateEnsemble () { // TODO: Make sure that the controller is formatted correctly and that error are checked for.
     let formData = new FormData(document.getElementsByName('validate_forecast')[0]);// getting the data from the form
     console.log(formData); // another sanity check
 
@@ -99,7 +99,7 @@ function validateEnsemble () {
                                 <td align="left">${resp["ens_mae"]}</td>
                               </tr>
                               <tr>
-                                <td>Ensembe Mean Error</td>
+                                <td>Ensemble Mean Error</td>
                                 <td align="left">${resp["ens_me"]}</td>
                               </tr>
                               <tr>
@@ -116,9 +116,84 @@ function validateEnsemble () {
                               </tr>
                             </tbody></table>`;
 
-            console.log(table);
+            let benchmark_table = null;
+            let skill_score_table = null;
+
+            if (resp["skill_score_bool"]) {
+                benchmark_table =   `<br><table class="table table-bordered table-hover">
+                                       <thead>
+                                         <tr><th title="Field #1">Benchmark Metric</th>
+                                           <th title="Field #2">Value</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>Continuous Ranked Probablity Score (Mean)</td>
+                                            <td align="left">${resp["ens_crps_bench"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Absolute Error</td>
+                                            <td align="left">${resp["ens_mae_bench"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Error</td>
+                                            <td align="left">${resp["ens_me_bench"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Squared Error</td>
+                                            <td align="left">${resp["ens_mse_bench"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Pearson R</td>
+                                            <td align="left">${resp["ens_pearson_r_bench"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Root Mean Square Error</td>
+                                            <td align="left">${resp["ens_rmse_bench"]}</td>
+                                          </tr>
+                                        </tbody></table>`;
+                skill_score_table = `<br><table class="table table-bordered table-hover">
+                                       <thead>
+                                         <tr><th title="Field #1">Skill Score</th>
+                                           <th title="Field #2">Value</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>Continuous Ranked Probablity Skill Score</td>
+                                            <td align="left">${resp["crps_ss"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Absolute Error Skill Score</td>
+                                            <td align="left">${resp["mae_ss"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Error Skill Score</td>
+                                            <td align="left">${resp["me_ss"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Mean Squared Error Skill Score</td>
+                                            <td align="left">${resp["mse_ss"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Pearson R Skill Score</td>
+                                            <td align="left">${resp["pearson_r_ss"]}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Ensemble Root Mean Square Error Skill Score</td>
+                                            <td align="left">${resp["rmse_ss"]}</td>
+                                          </tr>
+                                        </tbody></table>`;
+            }
+
             $('#validation_results_ensemble').html(table);
-            console.log(resp) // TODO: Make sure that the controller is formatted correctly and that error are checked for.
+
+            if (resp["skill_score_bool"]) {
+                $('#validation_benchmark_ensemble').html(benchmark_table);
+                $('#validation_skill_score_ensemble').html(skill_score_table);
+            }
+
+            console.log(resp);
         },
 
         // handle a non-successful response
@@ -131,8 +206,8 @@ function validateEnsemble () {
 
 
 // Function to perform analysis of the binary ensemble metrics
-$(document).ready(function () {
-    $("#validate_button_binary").click(function() { // TODO: Add error checks
+$(document).ready(function () { // TODO: Add error checks
+    $("#validate_button_binary").click(function() {
         validateBinary();
     })
 });

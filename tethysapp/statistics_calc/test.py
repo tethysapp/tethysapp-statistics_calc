@@ -18,15 +18,18 @@ example_df = pd.read_csv(example_data_path, index_col=0)
 obs = example_df.iloc[:, 0].values
 ens_forecasts = example_df.iloc[:, 1:].values
 threshold = 2000
+benchmark_forecast = example_df.iloc[:, 1:3]
 
-ens_brier = np.mean(em.ens_brier(ens_forecasts, obs, threshold))
-auroc = em.auroc(ens_forecasts, obs, threshold)
+num_col_forecast = len(example_df.columns)
+num_col_bench = len(benchmark_forecast.columns)
 
-print(ens_brier)
-print(auroc)
+merged_df = pd.DataFrame.join(example_df, benchmark_forecast, lsuffix='_forecast', rsuffix='_benchmark')
 
-# bench_df.to_csv(out_path)
+obs = merged_df.iloc[:, 0].values
 
+if obs.ndim == 1:
+    obs = obs.reshape((-1, 1))
+    print(obs)
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
 #

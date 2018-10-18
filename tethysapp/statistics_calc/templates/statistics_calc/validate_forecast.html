@@ -47,9 +47,11 @@
       <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
     </div>
 
+    <p>Note: If no benchmark forecast is given, then skill scores will not be calculated.</p>
+
     <div id="merged_csv_error_message"></div>
 
-    <br><br><br>
+    <br><br>
 
     <hr>
     <h2>
@@ -79,7 +81,10 @@
     <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
       Validation
     </button>
+
     <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
+    <div id="validation_benchmark_ensemble">{# HTML Table output goes here #}</div>
+    <div id="validation_skill_score_ensemble">{# HTML Table output goes here #}</div>
 
     <br><br><br>
 

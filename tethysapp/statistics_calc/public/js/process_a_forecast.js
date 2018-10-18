@@ -78,7 +78,9 @@ function plotRawData() {
             function fillArray(value, len) {
                 if (len === 0) return [];
                 let a = [value];
-                while (a.length * 2 <= len) a = a.concat(a);
+                while (a.length * 2 <= len) {
+                    a = a.concat(a);
+                }
                 if (a.length < len) a = a.concat(a.slice(0, len - a.length));
                 return a;
             }
@@ -131,9 +133,9 @@ function plotRawData() {
             // let d3 = Plotly.d3;
             // let img_jpg = d3.select('#jpg-export');
 
-            Plotly.newPlot("raw_data_plot", data, layout)
+            Plotly.newPlot("raw_data_plot", data, layout);
 
-            $("#clear_raw_data_plot").show()
+            $("#clear_raw_data_plot").show() // Shows the button that allows user to clear the plot
         },
 
         // handle a non-successful response
@@ -143,7 +145,7 @@ function plotRawData() {
         }
     });
 }
-$(document).ready(function () {
+$(document).ready(function () { // Clears the plot
     $("#clear_raw_data_plot").click(function (evt) {
         evt.preventDefault();
         $("#raw_data_plot").empty();
