@@ -31,6 +31,7 @@ import hydrostats.ens_metrics as em
 from model import parse_api_request, convert_units
 
 # Various Python Standard Library Imports
+import traceback
 import requests
 import os
 import shutil
@@ -581,84 +582,60 @@ def merged_csv_download(request):
     """
     AJAX Controller for the merge_two_datasets page to plot a hydrograph of the datasets when merged.
     """
-    if request.method == 'POST':
+    try:
+        if request.method == 'POST':
 
-        resp = {
-            "backend_error": False,
-            "error_message": ""
-        }
+            # Gathering POST data
+            predicted_radio_value = request.POST.get("predicted_radio", None)
+            timezone_boolean = request.POST.get('time_zone_bool', None)
+            obs = request.FILES.get('obs_csv', None)
 
-        # getting the observed and simulated data
-        obs = request.FILES.get('obs_csv', None)
-
-        if request.POST.get("predicted_radio", None) == "upload":
-            sim = request.FILES.get('sim_csv', None)
-        elif request.POST.get("predicted_radio", None) == "sfpt":
-            try:
+            if predicted_radio_value == "upload":
+                sim = request.FILES.get('sim_csv', None)
+            elif predicted_radio_value == "sfpt":
                 reach_id = request.POST.get("reach_id", None)
                 watershed = request.POST.get("watershed", None)
-                sim = parse_api_request(watershed=watershed, reach=reach_id)
-            except Exception as e:
-                print(e)
-                resp['backend_error'] = True
-                resp['error_message'] = 'There was an error requesting the simulated data from the API.'
+                sim = parse_api_request(watershed=watershed, reach=reach_id)  # TODO: add the token from custom settings
 
-            if not resp['backend_error']:
-                try:
-                    obs = pd.read_csv(obs, index_col=0)
-                    obs.index = pd.to_datetime(obs.index, errors="coerce")
-                except Exception as e:
-                    print(e)
-                    resp['backend_error'] = True
-                    resp['error_message'] = 'There was an error parsing the observed data CSV.'
+                # Parsing the observed CSV data
+                obs = pd.read_csv(obs, index_col=0)
+                obs.index = pd.to_datetime(obs.index, errors="coerce")
 
-        # Getting the timezone information
-        timezone_boolean = request.POST.get('time_zone_bool', None)
+            if timezone_boolean == 'on':
+                simulated_tz = request.POST.get('sim_tz', None)
+                observed_tz = request.POST.get('obs_tz', None)
+                interpolate = request.POST.get('interpolate_radio')
+            else:
+                simulated_tz = None
+                observed_tz = None
+                interpolate = None
 
-        if timezone_boolean == 'on':
-            simulated_tz = request.POST.get('sim_tz', None)
-            observed_tz = request.POST.get('obs_tz', None)
-            interpolate = request.POST.get('interpolate_radio')
-        else:
-            simulated_tz = None
-            observed_tz = None
-            interpolate = None
+            if predicted_radio_value == "upload":
+                merged_df = hd.merge_data(
+                    sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=('Simulated', 'Observed'),
+                    simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+                )
 
-        if request.POST.get("predicted_radio", None) == "upload":
-            if not resp["backend_error"]:
-                try:
-                    merged_df = hd.merge_data(
-                        sim_fpath=sim, obs_fpath=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-                        simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-                    )
-                except Exception as e:
-                    print(e)
-                    resp['backend_error'] = True
-                    resp['error_message'] = 'There was an merging the simulated and observed CSV files. ' \
-                                            'Please make sure that all of the times exist in their respective timezone.'
+            elif request.POST.get("predicted_radio", None) == "sfpt":
+                pass  # TODO: Fix the SPT function to correctly get information from API and fix here
+                # merged_df = hd.merge_data(
+                #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
+                #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
+                # )
 
-        elif request.POST.get("predicted_radio", None) == "sfpt":
-            pass  # Need to change this
-            # merged_df = hd.merge_data(
-            #     sim_df=sim, obs_df=obs, interpolate=interpolate, column_names=['Simulated', 'Observed'],
-            #     simulated_tz=simulated_tz, observed_tz=observed_tz, interp_type='pchip'
-            # )
+            response = HttpResponse(content_type='text/csv')
+            time_stamp = str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "")
+            response['Content-Disposition'] = 'attachment; filename=merged_data_{}.csv'.format(time_stamp)
 
-        if not resp['backend_error']:
-            try:
-                resp = HttpResponse(content_type='text/csv')
-                resp['Content-Disposition'] = 'attachment; filename=merged_data.csv'
+            merged_df.to_csv(path_or_buf=response, index_label="Datetime", header=["Simulated Data", "Observed Data"])
 
-                merged_df.to_csv(path_or_buf=resp, index_label="Datetime", header=["Simulated Data", "Observed Data"])
-            except Exception as e:
-                print(e)
-                resp['backend_error'] = True
-                resp['error_message'] = 'There was an creating the CSV response.'
+            return response
 
-        if not resp['backend_error']:
-            return resp
-        else:
-            return HttpResponse(resp['error_message'])
+    except Exception:
+        traceback.print_exc()
+
+        return HttpResponse("<p>Something wrong happened, please make sure that both CSVs are formatted correctly "
+                            "and the timezones in the CSVs exist.</p>")
 
 
 @login_required()
@@ -736,32 +713,36 @@ def get_metric_names_abbr(request):
 
 @login_required()
 def hydrograph_ajax_plotly(request):
-    if request.method == 'POST':
+    try:
+        if request.method == 'POST':
 
-        import time
-        time.sleep(5)
-
-        resp = {
-            "backend_error": False,
-            "error_message": ""
-        }
-
-        try:
             merged_csv = request.FILES.get('merged_csv', None)
             merged_df = pd.read_csv(merged_csv, index_col=0)
+            merged_df.index = pd.to_datetime(merged_df.index, errors="coerce")
+            merged_df = merged_df[merged_df.index.notnull()]
+
             date_list = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
             date_list = date_list.tolist()
 
             sim_list = merged_df.iloc[:, 0].tolist()
             obs_list = merged_df.iloc[:, 1].tolist()
 
-            resp['dates'] = date_list
-            resp['simulated'] = sim_list
-            resp['observed'] = obs_list
-        except Exception as e:
-            print(e)
-            resp['backend_error'] = True
-            resp['error_message'] = 'Error while parsing the CSV.'
+            resp = {
+                "backend_error": False,
+                "dates": date_list,
+                "simulated": sim_list,
+                "observed": obs_list
+            }
+
+            return JsonResponse(resp)
+
+    except Exception:
+        traceback.print_exc()
+
+        resp = {
+            "backend_error": True,
+            "error_message": 'Error while parsing the CSV.'
+        }
 
         return JsonResponse(resp)
 
@@ -2394,18 +2375,20 @@ def validate_forecast_plot(request):
 def validate_forecast_ensemble_metrics(request):
     if request.method == "POST":
         try:
-            # Parsing and processing the csv data
+            # Retrieving form data
             csv_file_forecast = request.FILES.get('forecast_csv', None)
             benchmark_file = request.FILES.get('benchmark_csv', None)
+            skill_score_bool = request.POST.get('skill_score_bool', None)
+            skill_score_bool = (skill_score_bool == "on")  # Change to boolean type
 
+            # Parsing and processing the csv data
             df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
             df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
             df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
             num_col_forecast = len(df_forecast.columns)
 
-            if benchmark_file is not None:
-                skill_score_bool = True
+            if skill_score_bool:
                 df_benchmark = pd.read_csv(benchmark_file, index_col=0)
                 df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
                 df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
@@ -2422,8 +2405,6 @@ def validate_forecast_ensemble_metrics(request):
                     benchmark_forecast = benchmark_forecast.reshape((-1, 1))
 
             else:
-                skill_score_bool = False
-
                 obs = df_forecast.iloc[:, 0].values
                 forecast = df_forecast.iloc[:, 1:].values
 
@@ -2433,11 +2414,11 @@ def validate_forecast_ensemble_metrics(request):
             ens_me_forecast = em.ens_me(obs, forecast)
             ens_mae_forecast = em.ens_mae(obs, forecast)
             ens_mse_forecast = em.ens_mse(obs, forecast)
-            ens_rmse_forecast =  em.ens_rmse(obs, forecast)
+            ens_rmse_forecast = em.ens_rmse(obs, forecast)
             ens_pearson_r_forecast = em.ens_pearson_r(obs, forecast)
             ens_crps_mean_forecast = em.ens_crps(obs, forecast)["crpsMean"]
 
-            if benchmark_file is not None:
+            if skill_score_bool:
                 ens_me_benchmark = em.ens_me(obs, benchmark_forecast)
                 ens_mae_benchmark = em.ens_mae(obs, benchmark_forecast)
                 ens_mse_benchmark = em.ens_mse(obs, benchmark_forecast)
@@ -2452,42 +2433,76 @@ def validate_forecast_ensemble_metrics(request):
                 rmse_ss = 1 - ens_rmse_forecast / ens_rmse_benchmark
                 pearson_r_ss = 1 - (ens_pearson_r_forecast - 1) / (ens_pearson_r_benchmark - 1)
                 crps_ss = 1 - ens_crps_mean_forecast / ens_crps_mean_benchmark
-            else:
-                ens_me_benchmark = None
-                ens_mae_benchmark = None
-                ens_mse_benchmark = None
-                ens_rmse_benchmark = None
-                ens_pearson_r_benchmark = None
-                ens_crps_mean_benchmark = None
 
-                me_ss = None
-                mae_ss = None
-                mse_ss = None
-                rmse_ss = None
-                pearson_r_ss = None
-                crps_ss = None
+                data_dict = {
+                    'Metric Name': ["Continuous Ranked Probablity Score", "Ensemble Mean Error",
+                                    "Ensemble Mean Absolute Error", "Ensemble Mean Squared Error",
+                                    "Ensemble Root Mean Square Error", "Ensemble Pearson R"],
+                    'Value': [ens_crps_mean_forecast, ens_me_forecast, ens_mae_forecast, ens_mse_forecast,
+                              ens_rmse_forecast, ens_pearson_r_forecast],
+                    'Benchmark Value': [ens_crps_mean_benchmark, ens_me_benchmark, ens_mae_benchmark, ens_mse_benchmark,
+                                        ens_rmse_benchmark, ens_pearson_r_benchmark],
+                    'Skill Score': [crps_ss, me_ss, mae_ss, mse_ss, rmse_ss, pearson_r_ss]
+                }
+
+                table_df = pd.DataFrame.from_dict(
+                    data_dict
+                )
+                # Reordering columns to be correct
+                table_df = table_df[['Metric Name', 'Value', 'Benchmark Value', 'Skill Score']]
+                # Rounding all table values
+                table_df = table_df.round(3)
+
+                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
+                table_df = table_df.replace('border="1"', 'border="0"')
+
+            else:
+                data_dict = {
+                    'Metric Name': ["Continuous Ranked Probablity Score", "Ensemble Mean Error",
+                                    "Ensemble Mean Absolute Error", "Ensemble Mean Squared Error",
+                                    "Ensemble Root Mean Square Error", "Ensemble Pearson R"],
+                    'Value': [ens_crps_mean_forecast, ens_me_forecast, ens_mae_forecast, ens_mse_forecast,
+                              ens_rmse_forecast, ens_pearson_r_forecast],
+                }
+                table_df = pd.DataFrame.from_dict(
+                    data_dict
+                )
+                # Reordering columns to be correct
+                table_df = table_df[['Metric Name', 'Value']]
+                # Rounding all table values
+                table_df = table_df.round(3)
+
+                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
+                table_df = table_df.replace('border="1"', 'border="0"')
+
+
+
+            # response = {
+            #     "error_bool": False,
+            #     "skill_score_bool": skill_score_bool,
+            #     "ens_me": np.round(ens_me_forecast, 3),
+            #     "ens_mae": np.round(ens_mae_forecast, 3),
+            #     "ens_mse": np.round(ens_mse_forecast, 3),
+            #     "ens_rmse": np.round(ens_rmse_forecast, 3),
+            #     "ens_pearson_r": np.round(ens_pearson_r_forecast, 3),
+            #     "ens_crps": np.round(ens_crps_mean_forecast, 3),
+            #     "ens_me_bench": np.round(ens_me_benchmark, 3),
+            #     "ens_mae_bench": np.round(ens_mae_benchmark, 3),
+            #     "ens_mse_bench": np.round(ens_mse_benchmark, 3),
+            #     "ens_rmse_bench": np.round(ens_rmse_benchmark, 3),
+            #     "ens_pearson_r_bench": np.round(ens_pearson_r_benchmark, 3),
+            #     "ens_crps_bench": np.round(ens_crps_mean_benchmark, 3),
+            #     "me_ss": np.round(me_ss, 3),
+            #     "mae_ss": np.round(mae_ss, 3),
+            #     "mse_ss": np.round(mse_ss, 3),
+            #     "rmse_ss": np.round(rmse_ss, 3),
+            #     "pearson_r_ss": np.round(pearson_r_ss, 3),
+            #     "crps_ss": np.round(crps_ss, 3)
+            # }
 
             response = {
                 "error_bool": False,
-                "skill_score_bool": skill_score_bool,
-                "ens_me": np.round(ens_me_forecast, 3),
-                "ens_mae": np.round(ens_mae_forecast, 3),
-                "ens_mse": np.round(ens_mse_forecast, 3),
-                "ens_rmse": np.round(ens_rmse_forecast, 3),
-                "ens_pearson_r": np.round(ens_pearson_r_forecast, 3),
-                "ens_crps": np.round(ens_crps_mean_forecast, 3),
-                "ens_me_bench": np.round(ens_me_benchmark, 3),
-                "ens_mae_bench": np.round(ens_mae_benchmark, 3),
-                "ens_mse_bench": np.round(ens_mse_benchmark, 3),
-                "ens_rmse_bench": np.round(ens_rmse_benchmark, 3),
-                "ens_pearson_r_bench": np.round(ens_pearson_r_benchmark, 3),
-                "ens_crps_bench": np.round(ens_crps_mean_benchmark, 3),
-                "me_ss": np.round(me_ss, 3),
-                "mae_ss": np.round(mae_ss, 3),
-                "mse_ss": np.round(mse_ss, 3),
-                "rmse_ss": np.round(rmse_ss, 3),
-                "pearson_r_ss": np.round(pearson_r_ss, 3),
-                "crps_ss": np.round(crps_ss, 3)
+                "table": table_df
             }
 
             return JsonResponse(response)

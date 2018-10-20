@@ -12,24 +12,31 @@ import hydrostats.data as hd
 # import json
 # import requests
 
-example_data_path = r"/home/wade/Documents/Data_to_Test_App/Merged_Forecast_DataFrame_South_Asia_55234.csv"
-out_path = r"/home/wade/Documents/Data_to_Test_App/Example_Benchmark_Forecast.csv"
-example_df = pd.read_csv(example_data_path, index_col=0)
-obs = example_df.iloc[:, 0].values
-ens_forecasts = example_df.iloc[:, 1:].values
-threshold = 2000
-benchmark_forecast = example_df.iloc[:, 1:3]
+import traceback
 
-num_col_forecast = len(example_df.columns)
-num_col_bench = len(benchmark_forecast.columns)
+try:
+    1/0
+except Exception:
+    traceback.print_exc()
 
-merged_df = pd.DataFrame.join(example_df, benchmark_forecast, lsuffix='_forecast', rsuffix='_benchmark')
-
-obs = merged_df.iloc[:, 0].values
-
-if obs.ndim == 1:
-    obs = obs.reshape((-1, 1))
-    print(obs)
+# example_data_path = r"/home/wade/Documents/Data_to_Test_App/Merged_Forecast_DataFrame_South_Asia_55234.csv"
+# out_path = r"/home/wade/Documents/Data_to_Test_App/Example_Benchmark_Forecast.csv"
+# example_df = pd.read_csv(example_data_path, index_col=0)
+# obs = example_df.iloc[:, 0].values
+# ens_forecasts = example_df.iloc[:, 1:].values
+# threshold = 2000
+# benchmark_forecast = example_df.iloc[:, 1:3]
+#
+# num_col_forecast = len(example_df.columns)
+# num_col_bench = len(benchmark_forecast.columns)
+#
+# merged_df = pd.DataFrame.join(example_df, benchmark_forecast, lsuffix='_forecast', rsuffix='_benchmark')
+#
+# obs = merged_df.iloc[:, 0].values
+#
+# if obs.ndim == 1:
+#     obs = obs.reshape((-1, 1))
+#     print(obs)
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
 #

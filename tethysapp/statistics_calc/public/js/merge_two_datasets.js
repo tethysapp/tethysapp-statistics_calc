@@ -247,59 +247,18 @@ $(document).ready(function() {
 
         // Checking the observed data csv
         validation_error = checkObsCsv();
+        validation_error = checkSimulatedInput();
+        checkSimulatedInput();
 
         // Checking if the simulated data forms were filled and if no parsing errors exist
         if (!validation_error) {
-            validation_error = checkSimulatedInput();
+
         } else {
-            checkSimulatedInput()
+
         }
 
         if (!validation_error) {
-            if ($('#merged_hydrograph').is(':empty')) {
-                console.log("Submitting the form");
-                $("#merge_form").submit();
-            } else {
-                // Creating CSV response with the data that is already contained in the plot
-                let graphDiv = document.getElementById('merged_hydrograph');
-                let traceOneData = graphDiv.data[0];
-                let traceTwoData = graphDiv.data[0];
-
-                let dates = traceOneData['x'];
-                let simulated_array = traceOneData['y'];
-                let observed_array = traceTwoData['y'];
-
-                let csvContent = "Date,Simulated Data,Observed Data\n";
-                let row;
-
-                for (let i = 0; i < dates.length; i++) {
-                    row = `${dates[i]},${simulated_array[i]},${observed_array[i]}\n`;
-                    csvContent += row;
-                }
-
-                let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-                let filename = "merged_data.csv";
-
-                if (navigator.msSaveBlob) { // IE 10+
-                    navigator.msSaveBlob(blob, filename);
-                } else {
-                    let link = document.createElement("a");
-                    if (link.download !== undefined) { // feature detection
-                        // Browsers that support HTML5 download attribute
-                        let url = URL.createObjectURL(blob);
-                        link.setAttribute("href", url);
-                        link.setAttribute("download", filename);
-                        link.style.visibility = 'hidden';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    } else { // Not compatible
-                        $("#merge_form").submit();
-                    }
-                }
-            }
-
+            $("#merge_form").submit();
         } else {
             window.location.assign("#error_redirect_point");
             $("#form_error_message").show();
@@ -342,14 +301,19 @@ function checkObsCsv() {
 
 function checkSimulatedInput() {
 
-    let radio_value = $('input[name=predicted_radio]:checked').val();
+    // language=JQuery-CSS
+    let radio_value = $("input[name=predicted_radio]:checked").val();
+
+    // Retrieving Elements from DOM
+    // language=JQuery-CSS
+    let sim_csv_error_message = $("#sim_csv_error_message");
 
     if (radio_value === "upload") {
-        if (!($("#sim_csv_error_message").html() === "")) { // parsing error
+        if (!(sim_csv_error_message.html() === "")) { // parsing error
             return true;
         } else if (!(typeof document.getElementById("sim_csv").files[0] === "object")) { // No CSV provided
             $('#sim_file_upload_div').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            $("#sim_csv_error_message").html('<p style="color: #FF0000"><small>The simulated data csv is a required input.</small></p>');
+            sim_csv_error_message.html('<p style="color: #FF0000"><small>The simulated data csv is a required input.</small></p>');
             return true;
         } else {
             return false;

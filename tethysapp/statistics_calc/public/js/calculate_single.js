@@ -165,6 +165,9 @@ function createHydrograph() {
 
         // handle a successful response
         success : function(resp) {
+            // TODO: create an if statement to utilize the error response if there is an error parsing
+            console.log(resp);
+
             let trace1 = {
                 type: "scatter",
                 mode: "lines",

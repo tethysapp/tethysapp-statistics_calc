@@ -20,7 +20,7 @@
     <h2>
       Data Upload
       <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="Upload your merged forecast data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
+            title="Upload your merged forecast and possibly benchmark forecast data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
     </span>
     </h2>
     <hr>
@@ -37,17 +37,27 @@
 
     <br>
 
-    <div class="input-group" id="benchmark_file_input">
-      <label class="input-group-btn">
+    <h3>
+      Calculate Skill Scores
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+            title="If yes, then a benchmark forecast must be given to compare.">
+      </span>
+    </h3>
+    <input type="checkbox" id="skill_score_bool" name="skill_score_bool" data-toggle="toggle" data-on="Yes" data-off="No"
+           data-onstyle="success" data-offstyle="danger" data-size="mini">
+    <br><br>
+
+    <div id="benchmark_input_div" style="display: none;">
+      <div class="input-group" id="benchmark_file_input">
+        <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
               Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv"
                                                        style="display: none;">
             </span>
-      </label>
-      <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
+        </label>
+        <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
+      </div>
     </div>
-
-    <p>Note: If no benchmark forecast is given, then skill scores will not be calculated.</p>
 
     <div id="merged_csv_error_message"></div>
 
@@ -82,9 +92,8 @@
       Validation
     </button>
 
+    <br>
     <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
-    <div id="validation_benchmark_ensemble">{# HTML Table output goes here #}</div>
-    <div id="validation_skill_score_ensemble">{# HTML Table output goes here #}</div>
 
     <br><br><br>
 
@@ -110,6 +119,5 @@
     <div id="validation_results_binary">{# HTML Table output goes here #}</div>
 
   </form>
-
 
 {% endblock %}
