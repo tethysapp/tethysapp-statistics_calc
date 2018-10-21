@@ -2182,14 +2182,10 @@ def forecast_raw_data_ajax(request):
         csv_file = request.FILES.get('forecast_csv', None)
 
         df = pd.read_csv(csv_file, index_col=0)
-
         # Changing index to datetime type
         df.index = pd.to_datetime(df.index, infer_datetime_format=True, errors='coerce')
-
         # Dropping bad time values if necessary
         df = df[df.index.notnull()]
-
-        num_of_days = len(df.index)
 
         # Creating a list of the dates and appending it to the response
         date_list = df.index.strftime("%Y-%m-%d %H:%M:%S")
@@ -2361,14 +2357,70 @@ def validate_forecast(request):
 
 @login_required()
 def validate_forecast_plot(request):
-    forecast_csv = request.FILES.get('forecast_csv', None)
-    benchmark_csv = request.FILES.get('benchmark_csv', None)
-    forecast_data = pd.read_csv(forecast_csv, index_col=0)
-    benchmark_data = pd.read_csv(benchmark_csv, index_col=0)
-    print(forecast_data)
-    print(benchmark_data)
+    try:
+        forecast_csv = request.FILES.get('forecast_csv', None)
+        benchmark_csv = request.FILES.get('benchmark_csv', None)
+        skill_score_bool = request.POST.get('skill_score_bool', None)
+        skill_score_bool = (skill_score_bool == "on")  # Change to boolean type
 
-    return JsonResponse({"hello": 123})
+        forecast_df = pd.read_csv(forecast_csv, index_col=0)
+        forecast_df.index = pd.to_datetime(forecast_df.index, infer_datetime_format=True, errors='coerce')
+        forecast_df = forecast_df[forecast_df.index.notnull()]  # Dropping bad time values if necessary
+
+        if skill_score_bool:
+            benchmark_df = pd.read_csv(benchmark_csv, index_col=0)
+            benchmark_df.index = pd.to_datetime(benchmark_df.index, infer_datetime_format=True, errors='coerce')
+            benchmark_df = benchmark_df[benchmark_df.index.notnull()]  # Dropping bad time values if necessary
+
+            # TODO: Finish the processing that I need to for this
+
+        else:
+            obs = forecast_df.iloc[:, 0].values
+            forecast = forecast_df.iloc[:, 1:].values
+            dates = forecast_df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = dates.tolist()
+
+            print(forecast)
+
+            if forecast.shape[1] == 1:
+                forecast_error = False
+            else:
+                forecast_error = True
+
+            if forecast_error:
+                ens_mean = np.mean(forecast, axis=1)
+                error = np.std(forecast, axis=1, ddof=1)
+
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error,
+                    "observed_data": obs.tolist(),
+                    "forecast": ens_mean.tolist(),
+                    "forecast_error": error.tolist(),
+                    "dates": date_list
+                }
+
+            else:
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error,
+                    "observed_data": obs.tolist(),
+                    "forecast": forecast.flatten().tolist(),
+                    "dates": date_list
+                }
+
+        return JsonResponse(response)
+
+    except Exception:
+        traceback.print_exc()
+
+        response = {
+            "error_bool": True
+        }
+
+        return JsonResponse(response)
 
 
 @login_required()
@@ -2445,9 +2497,8 @@ def validate_forecast_ensemble_metrics(request):
                     'Skill Score': [crps_ss, me_ss, mae_ss, mse_ss, rmse_ss, pearson_r_ss]
                 }
 
-                table_df = pd.DataFrame.from_dict(
-                    data_dict
-                )
+                # Creating DataFrame from Dictionary
+                table_df = pd.DataFrame.from_dict(data_dict)
                 # Reordering columns to be correct
                 table_df = table_df[['Metric Name', 'Value', 'Benchmark Value', 'Skill Score']]
                 # Rounding all table values
@@ -2464,9 +2515,11 @@ def validate_forecast_ensemble_metrics(request):
                     'Value': [ens_crps_mean_forecast, ens_me_forecast, ens_mae_forecast, ens_mse_forecast,
                               ens_rmse_forecast, ens_pearson_r_forecast],
                 }
+
                 table_df = pd.DataFrame.from_dict(
                     data_dict
                 )
+
                 # Reordering columns to be correct
                 table_df = table_df[['Metric Name', 'Value']]
                 # Rounding all table values
@@ -2475,30 +2528,6 @@ def validate_forecast_ensemble_metrics(request):
                 table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
                 table_df = table_df.replace('border="1"', 'border="0"')
 
-
-
-            # response = {
-            #     "error_bool": False,
-            #     "skill_score_bool": skill_score_bool,
-            #     "ens_me": np.round(ens_me_forecast, 3),
-            #     "ens_mae": np.round(ens_mae_forecast, 3),
-            #     "ens_mse": np.round(ens_mse_forecast, 3),
-            #     "ens_rmse": np.round(ens_rmse_forecast, 3),
-            #     "ens_pearson_r": np.round(ens_pearson_r_forecast, 3),
-            #     "ens_crps": np.round(ens_crps_mean_forecast, 3),
-            #     "ens_me_bench": np.round(ens_me_benchmark, 3),
-            #     "ens_mae_bench": np.round(ens_mae_benchmark, 3),
-            #     "ens_mse_bench": np.round(ens_mse_benchmark, 3),
-            #     "ens_rmse_bench": np.round(ens_rmse_benchmark, 3),
-            #     "ens_pearson_r_bench": np.round(ens_pearson_r_benchmark, 3),
-            #     "ens_crps_bench": np.round(ens_crps_mean_benchmark, 3),
-            #     "me_ss": np.round(me_ss, 3),
-            #     "mae_ss": np.round(mae_ss, 3),
-            #     "mse_ss": np.round(mse_ss, 3),
-            #     "rmse_ss": np.round(rmse_ss, 3),
-            #     "pearson_r_ss": np.round(pearson_r_ss, 3),
-            #     "crps_ss": np.round(crps_ss, 3)
-            # }
 
             response = {
                 "error_bool": False,
@@ -2511,7 +2540,7 @@ def validate_forecast_ensemble_metrics(request):
 
             response = {
                 "error_bool": True,
-                "error_message": e
+                "error_message": e.args[0]
              }
 
             return JsonResponse(response)
@@ -2524,22 +2553,87 @@ def validate_forecast_binary_metrics(request):
             print("in binary metrics controller")
             # Parsing and processing the csv data
             csv_file_forecast = request.FILES.get('forecast_csv', None)
+            benchmark_file = request.FILES.get('benchmark_csv', None)
             threshold = float(request.POST.get("threshold", None))
+            skill_score_bool = request.POST.get('skill_score_bool', None)
+            skill_score_bool = (skill_score_bool == "on")  # Change to boolean type
 
             df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
             df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
             df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
-            obs = df_forecast.iloc[:, 0].values
-            forecast = df_forecast.iloc[:, 1:].values
+            num_col_forecast = len(df_forecast.columns)
+
+            if skill_score_bool:
+                df_benchmark = pd.read_csv(benchmark_file, index_col=0)
+                df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
+                df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
+
+                merged_df = pd.DataFrame.join(df_forecast, df_benchmark, lsuffix='_forecast', rsuffix='_benchmark')
+                obs = merged_df.iloc[:, 0].values
+                forecast = merged_df.iloc[:, 1:num_col_forecast].values
+                benchmark_forecast = merged_df.iloc[:, num_col_forecast:].values
+
+                if forecast.ndim == 1:
+                    forecast = forecast.reshape((-1, 1))
+
+                if benchmark_forecast.ndim == 1:
+                    benchmark_forecast = benchmark_forecast.reshape((-1, 1))
+
+            else:
+                obs = df_forecast.iloc[:, 0].values
+                forecast = df_forecast.iloc[:, 1:].values
+
+                if forecast.ndim == 1:
+                    forecast = forecast.reshape((-1, 1))
 
             ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
-            auroc = em.auroc(forecast, obs, threshold)
+            auroc = em.auroc(forecast, obs, threshold)[0]
+
+            if skill_score_bool:
+                ens_brier_benchmark = np.mean(em.ens_brier(benchmark_forecast, obs, threshold))
+                auroc_benchmark = em.auroc(benchmark_forecast, obs, threshold)[0]
+
+                # TODO: Once Hydrostats is fixed remove the manual solution workaround for more robustness
+                brier_ss = 1 - ens_brier / ens_brier_benchmark
+                auroc_ss = 1 - (auroc - 1) / (auroc_benchmark - 1)
+
+                data_dict = {
+                    'Metric Name': ["Brier Score", "Area Under the Relative Operating Characteristic curve (AUROC)"],
+                    'Value': [ens_brier, auroc],
+                    'Benchmark Value': [ens_brier_benchmark, auroc_benchmark],
+                    'Skill Score': [brier_ss, auroc_ss]
+                }
+
+                # Creating DataFrame from dict
+                table_df = pd.DataFrame.from_dict(data_dict)
+                # Reordering columns to be correct
+                table_df = table_df[['Metric Name', 'Value', 'Benchmark Value', 'Skill Score']]
+                # Rounding all table values
+                table_df = table_df.round(3)
+
+                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
+                table_df = table_df.replace('border="1"', 'border="0"')
+
+            else:
+                data_dict = {
+                    'Metric Name': ["Brier Score", "Area Under the Relative Operating Characteristic curve (AUROC)"],
+                    'Value': [ens_brier, auroc],
+                 }
+
+                # Creating DataFrame from dict
+                table_df = pd.DataFrame.from_dict(data_dict)
+                # Reordering columns to be correct
+                table_df = table_df[['Metric Name', 'Value']]
+                # Rounding all table values
+                table_df = table_df.round(3)
+
+                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
+                table_df = table_df.replace('border="1"', 'border="0"')
 
             response = {
                 "error_bool": False,
-                "ens_brier": np.round(ens_brier, 3),
-                "auroc": np.round(auroc[0], 3),
+                "table": table_df
             }
 
             return JsonResponse(response)

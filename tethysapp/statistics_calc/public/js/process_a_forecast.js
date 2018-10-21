@@ -75,13 +75,18 @@ function plotRawData() {
             let dataElement;
             let data = [];
 
+
             function fillArray(value, len) {
-                if (len === 0) return [];
+                if (len === 0) {
+                    return []
+                }
                 let a = [value];
                 while (a.length * 2 <= len) {
                     a = a.concat(a);
                 }
-                if (a.length < len) a = a.concat(a.slice(0, len - a.length));
+                if (a.length < len) {
+                    a = a.concat(a.slice(0, len - a.length));
+                }
                 return a;
             }
 
@@ -123,6 +128,8 @@ function plotRawData() {
                 mode: "lines",
                 line: {color: '#000000'}
             });
+
+            console.log(data);
 
             let layout = {
                 title: "Ensamble Forecast Data",
