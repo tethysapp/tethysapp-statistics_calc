@@ -66,13 +66,176 @@ function plotData() {
         contentType: false,
 
         // handle a successful response
-        success: function (resp) {
-            console.log(resp); // TODO: Make sure that the controller is formatted correctly and that error are checked for.
+        success: function (resp) { // TODO: Make sure that error are checked for.
+            console.log(resp);
 
             let skill_score_bool = resp["skill_score_bool"];
 
             if (skill_score_bool) {
-                // TODO: Finish the plotting when a benchmark forecast is given.
+                let forecast_error_bool = resp["forecast_error_bool"];
+                let benchmark_error_bool = resp["benchmark_error_bool"];
+
+                if ( benchmark_error_bool && forecast_error_bool ) {
+                    // Plot forecasts and observed data with error bars
+                    let trace1 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: 'Observed Data',
+                        x: resp["dates"],
+                        y: resp["observed_data"],
+                        line: {color: '#7F7F7F'}
+                    };
+                    let trace2 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Ensemble Mean Data",
+                        x: resp["dates"],
+                        y: resp["forecast"],
+                        error_y: {
+                            type: 'data',
+                            array: resp["forecast_error"],
+                            visible: true,
+                            color: '#17BECF'
+                        },
+                        line: {color: '#17BECF'}
+                    };
+                    let trace3 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Ensemble Benchmark Forecast",
+                        x: resp["dates"],
+                        y: resp["benchmark"],
+                        error_y: {
+                            type: 'data',
+                            array: resp["benchmark_error_bars"],
+                            visible: true,
+                            color: '#49cf35'
+                        },
+                        line: {color: '#49cf35'}
+                    };
+
+                    let data = [trace1, trace2, trace3];
+                    let layout = {
+                        title: 'Observed data, Ensemble Forecast, and Benchmark Forecast Hydrographs',
+                    };
+
+                    Plotly.newPlot('plot', data, layout);
+
+                } else if ( benchmark_error_bool && (!forecast_error_bool) ) {
+                    // Plot forecasts and observed data with error bars
+                    let trace1 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: 'Observed Data',
+                        x: resp["dates"],
+                        y: resp["observed_data"],
+                        line: {color: '#7F7F7F'}
+                    };
+                    let trace2 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Forecast Data",
+                        x: resp["dates"],
+                        y: resp["forecast"],
+                        line: {color: '#17BECF'}
+                    };
+                    let trace3 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Ensemble Benchmark Forecast",
+                        x: resp["dates"],
+                        y: resp["benchmark"],
+                        error_y: {
+                            type: 'data',
+                            array: resp["benchmark_error_bars"],
+                            visible: true
+                        },
+                        line: {color: '#17BECF'}
+                    };
+
+                    let data = [trace1, trace2, trace3];
+                    let layout = {
+                        title: 'Observed data, Forecast, and Benchmark Forecast Hydrographs',
+                    };
+
+                    Plotly.newPlot('plot', data, layout);
+
+                } else if ( (!benchmark_error_bool) && forecast_error_bool ) {
+                    // Plot forecasts and observed data with error bars
+                    let trace1 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: 'Observed Data',
+                        x: resp["dates"],
+                        y: resp["observed_data"],
+                        line: {color: '#7F7F7F'}
+                    };
+                    let trace2 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Ensemble Mean Data",
+                        x: resp["dates"],
+                        y: resp["forecast"],
+                        error_y: {
+                            type: 'data',
+                            array: resp["forecast_error"],
+                            visible: true,
+                            color: '#17BECF'
+                        },
+                        line: {color: '#17BECF'}
+                    };
+                    let trace3 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Benchmark Forecast",
+                        x: resp["dates"],
+                        y: resp["benchmark"],
+                        line: {color: '#67cf65'}
+                    };
+
+                    let data = [trace1, trace2, trace3];
+                    let layout = {
+                        title: 'Observed data, Ensemble Forecast, and Benchmark Forecast Hydrographs',
+                    };
+
+                    Plotly.newPlot('plot', data, layout);
+
+                } else if ( (!benchmark_error_bool) && (!forecast_error_bool) ) {
+                    // Plot forecasts and observed data with error bars
+                    let trace1 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: 'Observed Data',
+                        x: resp["dates"],
+                        y: resp["observed_data"],
+                        line: {color: '#7F7F7F'}
+                    };
+                    let trace2 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Forecast Data",
+                        x: resp["dates"],
+                        y: resp["forecast"],
+                        line: {color: '#17BECF'}
+                    };
+                    let trace3 = {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Benchmark Forecast",
+                        x: resp["dates"],
+                        y: resp["benchmark"],
+                        line: {color: '#17BECF'}
+                    };
+
+                    let data = [trace1, trace2, trace3];
+                    let layout = {
+                        title: 'Observed data, Forecast, and Benchmark Forecast Hydrographs',
+                    };
+
+                    Plotly.newPlot('plot', data, layout);
+
+                }
+
             } else {
                 if (resp["forecast_error"]) {
                     // Plot forecasts and observed data with error bars

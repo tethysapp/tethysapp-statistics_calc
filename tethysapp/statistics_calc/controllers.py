@@ -2372,7 +2372,90 @@ def validate_forecast_plot(request):
             benchmark_df.index = pd.to_datetime(benchmark_df.index, infer_datetime_format=True, errors='coerce')
             benchmark_df = benchmark_df[benchmark_df.index.notnull()]  # Dropping bad time values if necessary
 
-            # TODO: Finish the processing that I need to for this
+            num_col_forecast = len(forecast_df.columns)
+
+            merged_df = pd.DataFrame.join(forecast_df, benchmark_df, lsuffix='_forecast', rsuffix='_benchmark')
+            obs = merged_df.iloc[:, 0].values
+            forecast = merged_df.iloc[:, 1:num_col_forecast].values
+            benchmark_forecast = merged_df.iloc[:, num_col_forecast:].values
+            dates = merged_df.index.strftime("%Y-%m-%d %H:%M:%S")
+            date_list = dates.tolist()
+
+            # Checking if the forecast is ensemble of single time series
+            if forecast.shape[1] == 1:
+                forecast_error_bool = False
+            else:
+                forecast_error_bool = True
+
+            # Checking if the benchmark is ensemble of single time series
+            if benchmark_forecast.shape[1] == 1:
+                benchmark_error_bool = False
+            else:
+                benchmark_error_bool = True
+
+            if benchmark_error_bool and forecast_error_bool:
+                forecast_mean = np.mean(forecast, axis=1)
+                forecast_error = np.std(forecast, axis=1, ddof=1)
+
+                benchmark_mean = np.mean(benchmark_forecast, axis=1)
+                benchmark_error_bars = np.mean(benchmark_forecast, axis=1)
+
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error_bool,
+                    "benchmark_error_bool": benchmark_error_bool,
+                    "observed_data": obs.tolist(),
+                    "forecast": forecast_mean.tolist(),
+                    "forecast_error": forecast_error.tolist(),
+                    "benchmark": benchmark_mean.tolist(),
+                    "benchmark_error_bars": benchmark_error_bars.tolist(),
+                    "dates": date_list
+                }
+
+            if benchmark_error_bool and not forecast_error_bool:
+                benchmark_mean = np.mean(benchmark_forecast, axis=1)
+                benchmark_error_bars = np.mean(benchmark_forecast, axis=1)
+
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error_bool,
+                    "benchmark_error_bool": benchmark_error_bool,
+                    "observed_data": obs.tolist(),
+                    "forecast": forecast.tolist(),
+                    "benchmark": benchmark_mean.tolist(),
+                    "benchmark_error_bars": benchmark_error_bars.tolist(),
+                    "dates": date_list
+                }
+
+            if not benchmark_error_bool and forecast_error_bool:
+                forecast_mean = np.mean(forecast, axis=1)
+                forecast_error = np.std(forecast, axis=1, ddof=1)
+
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error_bool,
+                    "benchmark_error_bool": benchmark_error_bool,
+                    "observed_data": obs.tolist(),
+                    "forecast": forecast_mean.tolist(),
+                    "forecast_error": forecast_error.tolist(),
+                    "benchmark": benchmark_forecast.flatten().tolist(),
+                    "dates": date_list
+                }
+
+            if not benchmark_error_bool and not forecast_error_bool:
+                response = {
+                    "error_bool": False,
+                    "skill_score_bool": skill_score_bool,
+                    "forecast_error_bool": forecast_error_bool,
+                    "benchmark_error_bool": benchmark_error_bool,
+                    "observed_data": obs.tolist(),
+                    "forecast": forecast.flatten().tolist(),
+                    "benchmark": benchmark_forecast.tolist(),
+                    "dates": date_list
+                }
 
         else:
             obs = forecast_df.iloc[:, 0].values
@@ -2383,18 +2466,18 @@ def validate_forecast_plot(request):
             print(forecast)
 
             if forecast.shape[1] == 1:
-                forecast_error = False
+                forecast_error_bool = False
             else:
-                forecast_error = True
+                forecast_error_bool = True
 
-            if forecast_error:
+            if forecast_error_bool:
                 ens_mean = np.mean(forecast, axis=1)
                 error = np.std(forecast, axis=1, ddof=1)
 
                 response = {
                     "error_bool": False,
                     "skill_score_bool": skill_score_bool,
-                    "forecast_error_bool": forecast_error,
+                    "forecast_error_bool": forecast_error_bool,
                     "observed_data": obs.tolist(),
                     "forecast": ens_mean.tolist(),
                     "forecast_error": error.tolist(),
@@ -2405,7 +2488,7 @@ def validate_forecast_plot(request):
                 response = {
                     "error_bool": False,
                     "skill_score_bool": skill_score_bool,
-                    "forecast_error_bool": forecast_error,
+                    "forecast_error_bool": forecast_error_bool,
                     "observed_data": obs.tolist(),
                     "forecast": forecast.flatten().tolist(),
                     "dates": date_list
@@ -2551,6 +2634,7 @@ def validate_forecast_binary_metrics(request):
     if request.method == "POST":
         try:
             print("in binary metrics controller")
+
             # Parsing and processing the csv data
             csv_file_forecast = request.FILES.get('forecast_csv', None)
             benchmark_file = request.FILES.get('benchmark_csv', None)
@@ -2593,6 +2677,9 @@ def validate_forecast_binary_metrics(request):
             if skill_score_bool:
                 ens_brier_benchmark = np.mean(em.ens_brier(benchmark_forecast, obs, threshold))
                 auroc_benchmark = em.auroc(benchmark_forecast, obs, threshold)[0]
+
+                print(ens_brier, ens_brier_benchmark)
+                print(auroc, auroc_benchmark)
 
                 # TODO: Once Hydrostats is fixed remove the manual solution workaround for more robustness
                 brier_ss = 1 - ens_brier / ens_brier_benchmark
