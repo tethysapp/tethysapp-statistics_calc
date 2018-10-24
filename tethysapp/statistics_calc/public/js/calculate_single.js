@@ -187,6 +187,12 @@ function createHydrograph() {
             let data = [trace1,trace2];
             let layout = {
                 title: 'Hydrograph',
+                xaxis: {
+                    title: 'Datetime'
+                },
+                yaxis: {
+                    title: 'Streamflow Values'
+                }
             };
 
             Plotly.newPlot('hydrograph', data, layout);
@@ -208,16 +214,19 @@ function createHydrograph() {
 // Create hydrograph of daily averages on button click
 $(document).ready(function(){
     $("#create-hydrograph-daily-avg").click(function(){
+        // Declare DOM elements I need
+        let merged_csv_error_message = $("#merged_csv_error_message");
+        let merged_csv_file_input = $('#merged_csv_file_input');
         // Validation
         let validation_error = false;
 
         // Checking if an observed data was provided and if no parsing errors exist
-        if ($("#merged_csv_error_message").html() !== "") { // parsing error
+        if (merged_csv_error_message.html() !== "") { // parsing error
             window.location.assign("#error_redirect_point");
             validation_error = true;
-        } else if (!(typeof document.getElementById("merged_csv").files[0] === "object")) {
-            $('#merged_csv_file_input').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            $("#merged_csv_error_message").html('<p style="color: #FF0000"><small>The merged data CSV is a required input.</small></p>');
+        } else if ( !(typeof document.getElementById("merged_csv").files[0] === "object") ) {
+            merged_csv_file_input.css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            merged_csv_error_message.html('<p style="color: #FF0000"><small>The merged data CSV is a required input.</small></p>');
             window.location.assign("#error_redirect_point");
             validation_error = true;
         }
@@ -225,7 +234,6 @@ $(document).ready(function(){
         if (!validation_error) {
             createHydrographDailyAvg();
         }
-
         console.log('Hydrograph Daily Avg Button Event Triggered');
     });
 });
@@ -265,13 +273,16 @@ function createHydrographDailyAvg() {
             let data = [trace1,trace2];
             let layout = {
                 title: 'Hydrograph of Daily Averages',
-
                 xaxis: {
+                    title: 'Datetime',
                     autotick: false,
                     tick0: 0,
                     dtick: 10,
                     tickangle: 45,
-                 },
+                },
+                yaxis: {
+                    title: 'Streamflow Values',
+                }
              };
 
             Plotly.newPlot('hydrograph-daily-avg', data, layout);
@@ -339,14 +350,33 @@ function createScatter() {
                 y: resp["observed"],
                 mode: 'markers',
                 type: 'scatter',
+                name: 'Streamflow Scatter Points',
                 hoverinfo: 'none',
                 marker: {color: '#119dff', size: 5, opacity: 0.5},
             };
 
-            const data = [trace1];
+            const trace2 = {
+                type: "scatter",
+                mode: "lines",
+                name: resp['best_fit_equation'],
+                x: resp["x_best_fit"],
+                y: resp["y_best_fit"],
+                line: {
+                    dash: 'dash',
+                    color: '#7F7F7F'
+                }
+            };
+
+            const data = [trace1, trace2];
 
             const layout = {
-                title: 'Scatter Plot',
+                title: 'Scatter Plot with Linear Best Fit Line',
+                xaxis: {
+                    title: 'Simulated Streamflow Values',
+                },
+                yaxis: {
+                    title: 'Observed Streamflow Values',
+                }
             };
 
             Plotly.newPlot('scatter', data, layout);
@@ -413,18 +443,34 @@ function createScatterLog() {
                 y: resp["observed"],
                 mode: 'markers',
                 type: 'scatter',
+                name: 'Streamflow Scatter Points',
                 marker: {color: '#119dff', size: 5, opacity: 0.5},
+                hoverinfo: 'none',
             };
 
-            const data = [trace1];
+            const trace2 = {
+                type: "scatter",
+                mode: "lines",
+                name: '45 Degree Line',
+                x: resp["coords_45_deg"],
+                y: resp["coords_45_deg"],
+                line: {
+                    dash: 'dash',
+                    color: '#7F7F7F'
+                }
+            };
+
+            const data = [trace1, trace2];
 
             const layout = {
                     title: 'Scatter Plot',
                     xaxis: {
+                        title: 'Simulated Streamflow Values (Log)',
                         type: 'log',
                         autorange: true
                     },
                     yaxis: {
+                        title: 'Observed Streamflow Values (Log)',
                         type: 'log',
                         autorange: true
                     },
@@ -468,25 +514,51 @@ $(document).ready(function() {
     } else {
       let form_inputs = "";
         for (let i=1; i<=number; i++) {
-            form_inputs += `<h3>Date Range ${i}</h3>\
-                              <div class="form-row">\
-                                  <div class="form-group col-md-3">\
-                                    <label for="start_day_${i}">Start Day</label>\
-                                    <input type="number" class="form-control" id="start_day_${i}" name="start_day_${i}">\
-                                  </div>\
-                                <div class="form-group col-md-3">\
-                                    <label for="start_month_${i}">Start Month</label>\
-                                    <input type="number" class="form-control" id="start_month_${i}" name="start_month_${i}">\
-                                  </div>\
-                                <div class="form-group col-md-3">\
-                                  <label for="end_day_${i}">End Day</label>\
-                                  <input type="number" class="form-control" id="end_day_${i}" name="end_day_${i}">\
-                                </div>\
-                                <div class="form-group col-md-3">\
-                                  <label for="end_month_${i}">End Month</label>\
-                                  <input type="number" class="form-control" id="end_month_${i}" name="end_month_${i}">\
-                                </div>\
-                              </div>`;
+            form_inputs += `<h4>Date Range ${i}</h4>\
+                            <div class="row">
+                              <div class="col-md-2">
+                                <label for="start_month_${i}">Start Month</label>
+                                <select id="start_month_${i}" name="start_month_${i}">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                  </select>
+                              </div>
+                              <div class="col-md-2">
+                                <label for="start_day_${i}">Start Day</label>
+                                <input type="number" id="start_day_${i}" name="start_day_${i}" min=1 max=31>
+                              </div>
+                              <div class="col-md-2">
+                                <label for="end_month_${i}">End Month</label>
+                                <select id="start_day_${i}" id="end_month_${i}" name="end_month_${i}">
+                                  <option value="1">January</option>
+                                  <option value="2">February</option>
+                                  <option value="3">March</option>
+                                  <option value="4">April</option>
+                                  <option value="5">May</option>
+                                  <option value="6">June</option>
+                                  <option value="7">July</option>
+                                  <option value="8">August</option>
+                                  <option value="9">September</option>
+                                  <option value="10">October</option>
+                                  <option value="11">November</option>
+                                  <option value="12">December</option>
+                                </select>
+                              </div>
+                              <div class="col-md-2">
+                                <label for="end_day_${i}">End Day</label>
+                                <input type="number" id="end_day_${i}" name="end_day_${i}" min=1 max=31>
+                              </div>
+                            </div>`;
         }
       $( "#date-ranges" ).html( form_inputs );
     }
@@ -567,26 +639,26 @@ $(document).ready(function(){
             }
 
             // Checking if the inputs are integers
-            if (!(Number.isInteger(Number($(`#start_day_${counter}`).val())))) {
-                $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-                $(`#start_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                validation_error = true;
-            }
-            if (!(Number.isInteger(Number($(`#start_month_${counter}`).val())))) {
-                $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-                $(`#start_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                validation_error = true;
-            }
-            if (!(Number.isInteger(Number($(`#end_day_${counter}`).val())))) {
-                $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-                $(`#end_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                validation_error = true;
-            }
-            if (!(Number.isInteger(Number($(`#end_month_${counter}`).val())))) {
-                $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-                $(`#end_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-                validation_error = true;
-            }
+            // if (!(Number.isInteger(Number($(`#start_day_${counter}`).val())))) {
+            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
+            //     $(`#start_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            //     validation_error = true;
+            // }
+            // if (!(Number.isInteger(Number($(`#start_month_${counter}`).val())))) {
+            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
+            //     $(`#start_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            //     validation_error = true;
+            // }
+            // if (!(Number.isInteger(Number($(`#end_day_${counter}`).val())))) {
+            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
+            //     $(`#end_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            //     validation_error = true;
+            // }
+            // if (!(Number.isInteger(Number($(`#end_month_${counter}`).val())))) {
+            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
+            //     $(`#end_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+            //     validation_error = true;
+            // }
 
             counter++
         }

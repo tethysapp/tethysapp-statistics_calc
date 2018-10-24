@@ -795,11 +795,35 @@ def scatter_ajax_plotly(request):
             merged_csv = request.FILES.get('merged_csv', None)
             merged_df = pd.read_csv(merged_csv, index_col=0)
 
+            sim = merged_df.iloc[:, 0].values
+            obs = merged_df.iloc[:, 1].values
+
             sim_list = merged_df.iloc[:, 0].tolist()
             obs_list = merged_df.iloc[:, 1].tolist()
 
+            # Getting a polynomial fit and defining a function with it
+            p = np.polyfit(sim, obs, 1)
+            f = np.poly1d(p)
+
+            # Calculating new x's and y's
+            x_best_fit = np.array([0, sim.max()])
+            y_best_fit = f(x_best_fit)
+
+            # Formatting the best fit equation to a string
+            equation = "{} x + {}".format(np.round(p[0], 4), np.round(p[1], 4))
+
+            # Data to plot a 45 degree line
+            max_both = max([np.max(sim), np.max(obs)])
+            min_both = min([np.min(sim), np.min(obs)])
+            coords_45_deg = np.array([min_both, max_both + 1])
+
             resp['simulated'] = sim_list
             resp['observed'] = obs_list
+            resp['x_best_fit'] = x_best_fit.tolist()
+            resp['y_best_fit'] = y_best_fit.tolist()
+            resp['best_fit_equation'] = equation
+            resp['coords_45_deg'] = coords_45_deg.tolist()
+
         except Exception as e:
             print(e)
             resp['backend_error'] = True
@@ -815,177 +839,176 @@ def make_table_ajax(request):
     print('In the make table AJAX controller!')  # Sanity check
 
     if request.method == 'POST':
+        try:
+            # Retrieving all of the form data
+            merged_csv = request.FILES.get('merged_csv', None)
 
-        # Retrieving all of the form data
-        merged_csv = request.FILES.get('merged_csv', None)
+            # Retrieving the extra optional parameters
+            extra_param_dict = {}
 
-        # Retrieving the extra optional parameters
-        extra_param_dict = {}
+            if request.POST.get('mase_m', None) is not None:
+                mase_m = float(request.POST.get('mase_m', None))
+                extra_param_dict['mase_m'] = mase_m
+            else:
+                mase_m = 1
+                extra_param_dict['mase_m'] = mase_m
 
-        if request.POST.get('mase_m', None) is not None:
-            mase_m = float(request.POST.get('mase_m', None))
-            extra_param_dict['mase_m'] = mase_m
-        else:
-            mase_m = 1
-            extra_param_dict['mase_m'] = mase_m
+            if request.POST.get('dmod_j', None) is not None:
+                dmod_j = float(request.POST.get('dmod_j', None))
+                extra_param_dict['dmod_j'] = dmod_j
+            else:
+                dmod_j = 1
+                extra_param_dict['dmod_j'] = dmod_j
 
-        if request.POST.get('dmod_j', None) is not None:
-            dmod_j = float(request.POST.get('dmod_j', None))
-            extra_param_dict['dmod_j'] = dmod_j
-        else:
-            dmod_j = 1
-            extra_param_dict['dmod_j'] = dmod_j
+            if request.POST.get('nse_mod_j', None) is not None:
+                nse_mod_j = float(request.POST.get('nse_mod_j', None))
+                extra_param_dict['nse_mod_j'] = nse_mod_j
+            else:
+                nse_mod_j = 1
+                extra_param_dict['nse_mod_j'] = nse_mod_j
 
-        if request.POST.get('nse_mod_j', None) is not None:
-            nse_mod_j = float(request.POST.get('nse_mod_j', None))
-            extra_param_dict['nse_mod_j'] = nse_mod_j
-        else:
-            nse_mod_j = 1
-            extra_param_dict['nse_mod_j'] = nse_mod_j
+            if request.POST.get('h6_k_MHE', None) is not None:
+                h6_mhe_k = float(request.POST.get('h6_k_MHE', None))
+                extra_param_dict['h6_mhe_k'] = h6_mhe_k
+            else:
+                h6_mhe_k = 1
+                extra_param_dict['h6_mhe_k'] = h6_mhe_k
 
-        if request.POST.get('h6_k_MHE', None) is not None:
-            h6_mhe_k = float(request.POST.get('h6_k_MHE', None))
-            extra_param_dict['h6_mhe_k'] = h6_mhe_k
-        else:
-            h6_mhe_k = 1
-            extra_param_dict['h6_mhe_k'] = h6_mhe_k
+            if request.POST.get('h6_k_AHE', None) is not None:
+                h6_ahe_k = float(request.POST.get('h6_k_AHE', None))
+                extra_param_dict['h6_ahe_k'] = h6_ahe_k
+            else:
+                h6_ahe_k = 1
+                extra_param_dict['h6_ahe_k'] = h6_ahe_k
 
-        if request.POST.get('h6_k_AHE', None) is not None:
-            h6_ahe_k = float(request.POST.get('h6_k_AHE', None))
-            extra_param_dict['h6_ahe_k'] = h6_ahe_k
-        else:
-            h6_ahe_k = 1
-            extra_param_dict['h6_ahe_k'] = h6_ahe_k
+            if request.POST.get('h6_k_RMSHE', None) is not None:
+                h6_rmshe_k = float(request.POST.get('h6_k_RMSHE', None))
+                extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+            else:
+                h6_rmshe_k = 1
+                extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
 
-        if request.POST.get('h6_k_RMSHE', None) is not None:
-            h6_rmshe_k = float(request.POST.get('h6_k_RMSHE', None))
-            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
-        else:
-            h6_rmshe_k = 1
-            extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
+            if float(request.POST.get('lm_x_bar', None)) != 1:
+                lm_x_bar_p = float(request.POST.get('lm_x_bar', None))
+                extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+            else:
+                lm_x_bar_p = None
+                extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
 
-        if float(request.POST.get('lm_x_bar', None)) != 1:
-            lm_x_bar_p = float(request.POST.get('lm_x_bar', None))
-            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
-        else:
-            lm_x_bar_p = None
-            extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
+            if float(request.POST.get('d1_p_x_bar', None)) != 1:
+                d1_p_x_bar_p = float(request.POST.get('d1_p_x_bar', None))
+                extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+            else:
+                d1_p_x_bar_p = None
+                extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 
-        if float(request.POST.get('d1_p_x_bar', None)) != 1:
-            d1_p_x_bar_p = float(request.POST.get('d1_p_x_bar', None))
-            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
-        else:
-            d1_p_x_bar_p = None
-            extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
+            # Indexing the metrics to get the abbreviations
+            selected_metric_abbr = request.POST.getlist("metrics", None)
 
-        # Indexing the metrics to get the abbreviations
-        selected_metric_abbr = request.POST.getlist("metrics", None)
+            # Getting the Units of the Simulated and Observed Data and Converting if Necessary
+            obs_units = request.POST.get('observed-units')
+            sim_radio = request.POST.get('predicted_radio')
 
-        # for abbr in metric_abbr:
-        #     metric_post_boolean = request.POST.get(abbr, None)
-        #     if metric_post_boolean == 'on':
-        #         selected_metric_abbr.append(abbr)
+            if sim_radio == 'upload':
+                sim_units = request.POST.get('simulated-units-upload')
+            else:
+                sim_units = request.POST.get('simulated_units_sfpt')
 
-        # Getting the Units of the Simulated and Observed Data and Converting if Necessary
-        obs_units = request.POST.get('observed-units')
-        sim_radio = request.POST.get('predicted_radio')
+            # Getting the form data to see of the user wants to remove zeros and negatives
+            remove_neg_bool = request.POST.get('remove_neg_bool')
 
-        if sim_radio == 'upload':
-            sim_units = request.POST.get('simulated-units-upload')
-        else:
-            sim_units = request.POST.get('simulated_units_sfpt')
+            if remove_neg_bool == 'on':
+                remove_neg = True
+            else:
+                remove_neg = False
 
-        # Getting the form data to see of the user wants to remove zeros and negatives
-        remove_neg_bool = request.POST.get('remove_neg_bool')
+            remove_zero_bool = request.POST.get('remove_zero_bool')
 
-        if remove_neg_bool == 'on':
-            remove_neg = True
-        else:
-            remove_neg = False
+            if remove_zero_bool == 'on':
+                remove_zero = True
+            else:
+                remove_zero = False
 
-        remove_zero_bool = request.POST.get('remove_zero_bool')
+            # Retrieving any date ranges the user wishes to analyze
+            date_range_bool = request.POST.get('date_range_bool')
 
-        if remove_zero_bool == 'on':
-            remove_zero = True
-        else:
-            remove_zero = False
+            if date_range_bool == 'on':
+                all_date_range_list = []
+                date_counter = 1
 
-        # Retrieving any date ranges the user wishes to analyze
-        date_range_bool = request.POST.get('date_range_bool')
+                while True:
+                    date_list = []
 
-        if date_range_bool == 'on':
-            all_date_range_list = []
-            date_counter = 1
+                    begin_day = str(request.POST.get('start_day_{}'.format(date_counter), None))
+                    if len(begin_day) == 1:
+                        begin_day = '0' + begin_day
 
-            while True:
-                date_list = []
+                    begin_month = str(request.POST.get('start_month_{}'.format(date_counter), None))
+                    if len(begin_month) == 1:
+                        begin_month = '0' + begin_month
 
-                begin_day = str(request.POST.get('start_day_{}'.format(date_counter), None))
-                if len(begin_day) == 1:
-                    begin_day = '0' + begin_day
+                    end_day = str(request.POST.get('end_day_{}'.format(date_counter), None))
+                    if len(end_day) == 1:
+                        end_day = '0' + end_day
 
-                begin_month = str(request.POST.get('start_month_{}'.format(date_counter), None))
-                if len(begin_month) == 1:
-                    begin_month = '0' + begin_month
+                    end_month = str(request.POST.get('end_month_{}'.format(date_counter), None))
+                    if len(end_month) == 1:
+                        end_month = '0' + end_month
 
-                end_day = str(request.POST.get('end_day_{}'.format(date_counter), None))
-                if len(end_day) == 1:
-                    end_day = '0' + end_day
+                    if begin_day == 'None':
+                        break
 
-                end_month = str(request.POST.get('end_month_{}'.format(date_counter), None))
-                if len(end_month) == 1:
-                    end_month = '0' + end_month
+                    begin_date = '{}-{}'.format(begin_month, begin_day)
+                    end_date = '{}-{}'.format(end_month, end_day)
+                    date_list.append(begin_date)
+                    date_list.append(end_date)
 
-                if begin_day == 'None':
-                    break
+                    all_date_range_list.append(date_list)
 
-                begin_date = '{}-{}'.format(begin_month, begin_day)
-                end_date = '{}-{}'.format(end_month, end_day)
-                date_list.append(begin_date)
-                date_list.append(end_date)
+                    date_counter += 1
 
-                all_date_range_list.append(date_list)
+            else:
+                all_date_range_list = None
 
-                date_counter += 1
+            # Parsing the csv
+            merged_df = pd.read_csv(merged_csv, index_col=0)
+            merged_df.index = pd.to_datetime(merged_df.index)
 
-        else:
-            all_date_range_list = None
+            # Converting Units
+            if obs_units is None and sim_units is None:
+                pass
+            elif obs_units == 'on' and sim_units == 'on':
+                pass
+            elif sim_units is None and obs_units == 'on':
+                merged_df.iloc[:, 0] *= 35.314666212661
+            else:
+                merged_df.iloc[:, 1] *= 35.314666212661
 
-        # Parsing the csv
-        merged_df = pd.read_csv(merged_csv, index_col=0)
-        merged_df.index = pd.to_datetime(merged_df.index)
+            # Creating the Table Based on User Input
+            table = hs.make_table(
+                merged_dataframe=merged_df,
+                metrics=selected_metric_abbr,
+                remove_neg=remove_neg,
+                remove_zero=remove_zero,
+                mase_m=extra_param_dict['mase_m'],
+                dmod_j=extra_param_dict['dmod_j'],
+                nse_mod_j=extra_param_dict['nse_mod_j'],
+                h6_mhe_k=extra_param_dict['h6_mhe_k'],
+                h6_ahe_k=extra_param_dict['h6_ahe_k'],
+                h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
+                d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
+                lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
+                seasonal_periods=all_date_range_list
+            )
+            table_html = table.transpose()
+            table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
 
-        # Converting Units
-        if obs_units is None and sim_units is None:
-            pass
-        elif obs_units == 'on' and sim_units == 'on':
-            pass
-        elif sim_units is None and obs_units == 'on':
-            merged_df.iloc[:, 0] *= 35.314666212661
-        else:
-            merged_df.iloc[:, 1] *= 35.314666212661
+            return HttpResponse(table_html)
 
-        # Creating the Table Based on User Input
-        table = hs.make_table(
-            merged_dataframe=merged_df,
-            metrics=selected_metric_abbr,
-            remove_neg=remove_neg,
-            remove_zero=remove_zero,
-            mase_m=extra_param_dict['mase_m'],
-            dmod_j=extra_param_dict['dmod_j'],
-            nse_mod_j=extra_param_dict['nse_mod_j'],
-            h6_mhe_k=extra_param_dict['h6_mhe_k'],
-            h6_ahe_k=extra_param_dict['h6_ahe_k'],
-            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
-            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
-            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
-            seasonal_periods=all_date_range_list
-        )
-        table_html = table.transpose()
-        table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+        except Exception:
+            traceback.print_exc()
 
-        return HttpResponse(table_html)
-
+            return HttpResponse("An error occured")
 
 @login_required()
 def volume_table_ajax(request):
