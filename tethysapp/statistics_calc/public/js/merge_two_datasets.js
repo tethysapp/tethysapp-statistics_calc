@@ -172,7 +172,6 @@ $(document).ready(function() {
     });
 });
 function plotMergedData() {
-
     // Show the loader
     $("#plot_loader").fadeIn();
 
@@ -190,32 +189,37 @@ function plotMergedData() {
         success : function(resp) {
             console.log(resp);
 
-            let trace1 = {
-                type: "scatter",
-                mode: "lines",
-                name: "Simulated Data",
-                x: resp["dates"],
-                y: resp["simulated"],
-                line: {color: '#17BECF'}
-            };
+            if (resp["backend_error"]) {
+                $("#merged_hydrograph").html(`<p style="color:red">${resp["error_message"]}</p>`);
+                $("#plot_loader").hide();
+            } else {
+                let trace1 = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Simulated Data",
+                    x: resp["dates"],
+                    y: resp["simulated"],
+                    line: {color: '#17BECF'}
+                };
 
-            let trace2 = {
-                type: "scatter",
-                mode: "lines",
-                name: "Observed Data",
-                x: resp["dates"],
-                y: resp["observed"],
-                line: {color: '#7F7F7F'}
-            };
+                let trace2 = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Observed Data",
+                    x: resp["dates"],
+                    y: resp["observed"],
+                    line: {color: '#7F7F7F'}
+                };
 
-            let data = [trace1, trace2];
-            let layout = {
-                title: 'Hydrograph',
-            };
+                let data = [trace1, trace2];
+                let layout = {
+                    title: 'Hydrograph',
+                };
 
-            Plotly.newPlot('merged_hydrograph', data, layout);
-            $("#clear_plot_button").show();
-            $("#plot_loader").hide();
+                Plotly.newPlot('merged_hydrograph', data, layout);
+                $("#clear_plot_button").show();
+                $("#plot_loader").hide();
+            }
         },
 
         // handle a non-successful response

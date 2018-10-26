@@ -77,16 +77,6 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.calculate_single'
             ),
             UrlMap(
-                name='validate_multiple_streams',
-                url='validate_multiple_streams',
-                controller='statistics_calc.controllers.validate_multiple_streams'
-            ),
-            UrlMap(
-                name='some_view',
-                url='some_view',
-                controller='statistics_calc.controllers.some_view'
-            ),
-            UrlMap(
                 name='get_metric_names_abbr',
                 url='get_metric_names_abbr',
                 controller='statistics_calc.controllers.get_metric_names_abbr'
@@ -180,16 +170,6 @@ class StatisticsCalc(TethysAppBase):
                 name='validate_forecast_binary_metrics',
                 url='validate_forecast_binary_metrics',
                 controller='statistics_calc.controllers.validate_forecast_binary_metrics'
-            ),
-            UrlMap(
-                name='test_template',
-                url='test_template',
-                controller='statistics_calc.controllers.test_template'
-            ),
-            UrlMap(
-                name='test_ajax',
-                url='test_ajax',
-                controller='statistics_calc.controllers.test_ajax'
             ),
 
             # Examples

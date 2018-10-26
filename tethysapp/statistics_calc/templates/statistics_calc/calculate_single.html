@@ -118,10 +118,14 @@
 
     <!--begin date-->
     <div id="date_range_form" style="display:none">
-      <h4>How many Date Ranges Would You Like to Analyze?
-        <input type="number" id="Num_of_Date_Ranges" min="0" max="100"
-               step="1" value="0">
-      </h4>
+      <h4>Number of Date Ranges to Analyze</h4>
+      <div class="row">
+        <div class="col-sm-3">
+          <input type="number" id="Num_of_Date_Ranges" min="0" max="100" step="1" value="0" class="form-control">
+        </div>
+        <div class="col-sm-9"></div> {# Empty #}
+      </div>
+
     </div>
 
     <div id="empty_date_range_error"></div>

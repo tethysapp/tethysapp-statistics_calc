@@ -514,7 +514,7 @@ $(document).ready(function() {
     } else {
       let form_inputs = "";
         for (let i=1; i<=number; i++) {
-            form_inputs += `<h4>Date Range ${i}</h4>\
+            form_inputs += `<h5>Date Range ${i}</h5>\
                             <div class="row">
                               <div class="col-md-2">
                                 <label for="start_month_${i}">Start Month</label>

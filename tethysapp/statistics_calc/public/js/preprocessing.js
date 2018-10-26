@@ -446,7 +446,7 @@ $(document).ready(function() {
 
             let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
 
-            $.ajax({
+            $.ajax({  // Checking to make sure that the given dates fit into the timeseries
                 url: "/apps/statistics-calc/pps_check_dates_ajax/", // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
@@ -464,65 +464,8 @@ $(document).ready(function() {
                         window.location.assign("#form_error_ref_point");
                         $("#form_error_message").show();
                     } else {
-
-                        // Submiting the form data to return a csv if plot is empty
-                        if ($('#pps_hydrograph').is(':empty')) {
-                            console.log("Submitting the form");
-                            $("#pps_form").submit();
-                        } else {
-                            // Creating CSV response with the data that is already contained in the plot
-                            let graphDiv = document.getElementById('pps_hydrograph');
-                            let traceOneData = graphDiv.data[0];
-
-                            let dates = traceOneData['x'];
-                            let data_array = traceOneData['y'];
-
-                            // Parsing the CSV for the first line headers
-                            let theFile = document.getElementById("pps_csv").files[0];
-
-                            Papa.parse(
-                                theFile,
-                                {
-                                    preview: 1,
-                                    complete: function (results) {
-
-                                        console.log(results);
-                                        let csvContent = `${results.data[0][0]},${results.data[0][1]}\n`;
-                                        let row;
-
-                                        for (let i = 0; i < dates.length; i++) {
-                                            row = `${dates[i]},${data_array[i]}\n`;
-                                            csvContent += row;
-                                        }
-
-                                        let blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-
-                                        console.log("Returning csv client side!");
-                                        console.log(blob);
-
-                                        let filename = "preprocessed_data.csv";
-
-                                        if (navigator.msSaveBlob) { // IE 10+
-                                            navigator.msSaveBlob(blob, filename);
-                                        } else {
-                                            let link = document.createElement("a");
-                                            if (link.download !== undefined) { // feature detection
-                                                // Browsers that support HTML5 download attribute
-                                                let url = URL.createObjectURL(blob);
-                                                link.setAttribute("href", url);
-                                                link.setAttribute("download", filename);
-                                                link.style.visibility = 'hidden';
-                                                document.body.appendChild(link);
-                                                link.click();
-                                                document.body.removeChild(link);
-                                            } else { // If the internet browser is not compatible with this feature
-                                                $("#merge_form").submit();
-                                            }
-                                        }
-
-                                    }
-                                });
-                        }
+                        console.log("Submitting the form");
+                        $("#pps_form").submit();
                     }
                 },
 
@@ -569,11 +512,13 @@ function clearPreviousPlots() {
 }
 
 function checkFileInput() {
-    if ($("#csv_error").html() !== "") { // parsing error
+    let csv_error = $("#csv_error");
+
+    if (csv_error.html() !== "") { // parsing error
         return true;
     } else if (!(typeof document.getElementById("pps_csv").files[0] === "object")) {
         $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-        $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+        csv_error.html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
         return true;
     } else {
         return false;
