@@ -614,18 +614,29 @@ def calculate_single(request):
 
 @login_required()
 def get_metric_names_abbr(request):
-    if request.method == 'GET':
+    # noinspection PyBroadException
+    try:
+        if request.method == 'GET':
 
-        result = {}
+            result = {}
 
-        if request.GET.get('names', False):
-            result["names"] = metric_names
+            if request.GET.get('names', False):
+                result["names"] = metric_names
 
-        if request.GET.get('abbreviations', False):
-            result["abbreviations"] = metric_abbr
+            if request.GET.get('abbreviations', False):
+                result["abbreviations"] = metric_abbr
 
-        return JsonResponse(result)
+            return JsonResponse(result)
 
+    except Exception:
+        traceback.print_exc()
+
+        response = {
+            "backend_error": True,
+            "error_message": "There was an error retrieving the metric names and abbreviations",
+        }
+
+        return JsonResponse(response)
 
 @login_required()
 def hydrograph_ajax_plotly(request):
