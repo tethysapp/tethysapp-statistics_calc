@@ -151,6 +151,16 @@ class StatisticsCalc(TethysAppBase):
                 url='merge_forecast',
                 controller='statistics_calc.controllers.merge_forecast'
             ),
+           UrlMap(
+               name='merge_forecast_plot_ajax',
+               url='merge_forecast_plot_ajax',
+               controller='statistics_calc.controllers.merge_forecast_plot_ajax'
+            ),
+            UrlMap(
+                name='merge_forecast_download_ajax',
+                url='merge_forecast_download_ajax',
+                controller='statistics_calc.controllers.merge_forecast_download_ajax'
+            ),
             UrlMap(
                 name='validate_forecast',
                 url='validate_forecast',

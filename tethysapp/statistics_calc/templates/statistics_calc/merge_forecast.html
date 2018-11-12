@@ -7,13 +7,56 @@
     <div id="error_redirect_point"></div>
   </div>
 
-  <!-- data form-->
-  <form id="merge_forecast_form" name="merge_forecast" method="post" enctype="multipart/form-data"
-        action="/apps/statistics-calc/persistence_benchmark_download/">
+  <hr>
+    <h2>Ensemble Forecast and Observed Data Upload</h2>
+  <hr>
+
+  {# data form #}
+  <form id="merge_forecast_form" name="merge_forecast_form" method="post" enctype="multipart/form-data"
+        action="/apps/statistics-calc/merge_forecast_download_ajax/">
     {% csrf_token %}
 
+    {# File Input Button #}
+    <div class="input-group" id="ens_csv_file_upload">
+      <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            Ensemble Forecast CSV File Upload<input type="file" name="ens_csv" id="ens_csv" style="display: none;">
+            </span>
+      </label>
+      <input type="text" id="ens_csv_name" class="form-control is-invalid" readonly="">
+    </div>
+
+    <br><br>
+
+    {# File Input Button #}
+    <div class="input-group" id="obs_csv_file_upload">
+      <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            Observed (or Proxy Observed) Data CSV File Upload<input type="file" name="obs_csv" id="obs_csv" style="display: none;">
+            </span>
+      </label>
+      <input type="text" id="obs_csv_name" class="form-control is-invalid" readonly="">
+    </div>
+
+    <br><br><br>
+
+    <hr>
+    <h2>Visualize and Download</h2>
+    <hr>
+
+    <button type="button" class="btn btn-default btn-block" id="visualize">
+      Visualize the Result of Merging the Forecast and Observed Data
+    </button>
+
+    <div id="plot">{# Plotly plot goes here #}</div>
+
+    <br>
+
+    <button type="button" class="btn btn-default btn-block" id="download">
+      Download the Merged Data
+    </button>
+
   </form>
+
 {% endblock %}
-
-
 {# TODO: Complete this page #}

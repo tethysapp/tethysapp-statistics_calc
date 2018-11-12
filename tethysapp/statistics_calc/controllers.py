@@ -46,16 +46,7 @@ def home(request):
     Controller for the app home page.
     """
 
-    first_name = request.user.get_short_name()
-
-    print(first_name)
-
-    if first_name == "":
-        first_name = "there"
-
-    context = {
-        "first_name": first_name,
-    }
+    context = {}
 
     return render(request, 'statistics_calc/home.html', context)
 
@@ -638,6 +629,7 @@ def get_metric_names_abbr(request):
 
         return JsonResponse(response)
 
+
 @login_required()
 def hydrograph_ajax_plotly(request):
     try:
@@ -774,7 +766,7 @@ def make_table_ajax(request):
             extra_param_dict = {}
 
             if request.POST.get('mase_m', None) is not None:
-                mase_m = float(request.POST.get('mase_m', None))
+                mase_m = int(request.POST.get('mase_m', None))
                 extra_param_dict['mase_m'] = mase_m
             else:
                 mase_m = 1
@@ -1267,6 +1259,90 @@ def merge_forecast(request):
     context = {}
 
     return render(request, 'statistics_calc/merge_forecast.html', context)
+
+
+@login_required()
+def merge_forecast_plot_ajax(request):
+    # noinspection PyBroadException
+    try:
+        if request.method == "POST":
+
+            ens_csv = request.FILES.get('ens_csv', None)
+            obs_csv = request.FILES.get('obs_csv', None)
+
+            ens_df = pd.read_csv(ens_csv, index_col=0)
+            ens_df.index = pd.to_datetime(ens_df.index, infer_datetime_format=True, errors='coerce')
+            ens_df = ens_df[ens_df.index.notnull()]  # Dropping bad time values if necessary
+
+            obs_df = pd.read_csv(obs_csv, index_col=0)
+            obs_df.index = pd.to_datetime(obs_df.index, infer_datetime_format=True, errors='coerce')
+            obs_df = obs_df[obs_df.index.notnull()]  # Dropping bad time values if necessary
+
+            merged_df = pd.DataFrame.join(obs_df, ens_df, lsuffix="_obs").dropna()
+
+            dates_list = merged_df.index.tolist()
+            water_balance_list = merged_df.iloc[:, 0].values.tolist()
+            ensemble_mean = merged_df.iloc[:, 1:].values.mean(axis=1)
+            ensemble_mean_list = ensemble_mean.tolist()
+            ensemble_std_dev = merged_df.iloc[:, 1:].values.std(axis=1)
+            ensemble_std_dev_list = ensemble_std_dev.tolist()
+
+            response = {
+                "dates_list": dates_list,
+                "water_balance_list": water_balance_list,
+                "ensemble_mean_list": ensemble_mean_list,
+                "ensemble_std_dev_list": ensemble_std_dev_list
+            }
+
+            return JsonResponse(response)
+
+    except Exception:
+        traceback.print_exc()
+
+        response = {
+            "backend_error": True,
+            "error_message": "Something went wrong while merging the files. Please make sure the files are formatted "
+                             "correctly"
+        }
+
+        return JsonResponse(response)
+
+
+def merge_forecast_download_ajax(request):
+    # noinspection PyBroadException
+    try:
+        if request.method == "POST":
+            ens_csv = request.FILES.get('ens_csv', None)
+            obs_csv = request.FILES.get('obs_csv', None)
+
+            ens_df = pd.read_csv(ens_csv, index_col=0)
+            ens_df.index = pd.to_datetime(ens_df.index, infer_datetime_format=True, errors='coerce')
+            ens_df = ens_df[ens_df.index.notnull()]  # Dropping bad time values if necessary
+
+            obs_df = pd.read_csv(obs_csv, index_col=0)
+            obs_df.index = pd.to_datetime(obs_df.index, infer_datetime_format=True, errors='coerce')
+            obs_df = obs_df[obs_df.index.notnull()]  # Dropping bad time values if necessary
+
+            merged_df = pd.DataFrame.join(obs_df, ens_df, lsuffix="_obs").dropna()
+
+            time_stamp = str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "")
+            content_disposition = 'attachment; filename=merged_forecast_data_{}.csv'.format(time_stamp)
+
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = content_disposition
+
+            merged_df.to_csv(path_or_buf=response, index_label="Datetime")
+
+            return response
+
+    except Exception:
+        traceback.print_exc()
+
+        error_message = "<h1>Something went wrong in the form submission, please make sure that your files are " \
+                        "formatted correctly.</h1>"
+
+        return HttpResponse(error_message)
+
 
 
 @login_required()
