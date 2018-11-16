@@ -70,7 +70,7 @@ def pps_hydrograph_raw_data_ajax(request):
     print("In the raw data ajax controller!")
     try:
         if request.method == "POST":
-            # Try to read the CSV and convert units
+            print(request.POST)
 
             # POST data collection
             csv_file = request.FILES.get('pps_csv', None)

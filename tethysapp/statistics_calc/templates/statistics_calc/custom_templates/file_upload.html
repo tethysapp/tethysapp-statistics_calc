@@ -1,0 +1,25 @@
+{# Parameters: div_id, csv_name, csv_id, display_box_id #}
+{# div_id: the id of the div that surrounds the file upload #}
+{# csv_name: the name property of the file input #}
+{# csv_name: the id property of the file input #}
+{# display_box_id: the id property of the read-only text input for displaying file name #}
+
+<script>
+    // Function for the file upload
+    $(document).ready(function () {
+        $("{{ csv_id }}").change(function () {
+            const label = $("{{ csv_id }}").val().replace(/\\/g, '/').replace(/.*\//, '');
+            $("{{ display_box_id }}").val(label);
+        });
+    });
+</script>
+
+<div class="input-group" id="{{ div_id }}">
+  <label class="input-group-btn">
+            <span class="btn btn-default waves-effect waves-light">
+            CSV File Upload<input type="file" name="{{ csv_name }}" id="{{ csv_id }}" style="display: none;"
+                                  accept=".csv">
+            </span>
+  </label>
+  <input type="text" id="{{ display_box_id }}" class="form-control is-invalid" readonly="">
+</div>

@@ -14,12 +14,12 @@ $.ajaxSetup({
 
 
 // Function for the file upload
-$(document).ready(function() {
-    $("#pps_csv").change(function () {
-        const label = $("#pps_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
-        $("#pps_csv_name").val(label);
-    });
-});
+// $(document).ready(function() {
+//     $("#pps_csv").change(function () {
+//         const label = $("#pps_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
+//         $("#pps_csv_name").val(label);
+//     });
+// });
 
 
 // Function to validate the File Upload on change

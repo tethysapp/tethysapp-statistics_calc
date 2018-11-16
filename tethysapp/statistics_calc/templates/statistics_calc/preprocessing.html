@@ -3,7 +3,7 @@
 {% block app_content %}
 
   <div class="jumbotron jumbotron-fluid">
-    <h1>Process a Time Series Dataset</h1>
+    <h1>Process a Time Series</h1>
     <p>
       This page is for preprocessing a single time series dataset before merging it. You can view, interpolate,
       truncate, and download the preprocessed time series data here so that it can be used in either of the
@@ -27,14 +27,15 @@
     <hr>
 
     {# File Input Button #}
-    <div class="input-group" id="csv_file_upload">
-      <label class="input-group-btn">
-            <span class="btn btn-default waves-effect waves-light">
-            CSV File Upload<input type="file" name="pps_csv" id="pps_csv" style="display: none;">
-            </span>
-      </label>
-      <input type="text" id="pps_csv_name" class="form-control is-invalid" readonly="">
-    </div>
+{#    <div class="input-group" id="csv_file_upload">#}
+{#      <label class="input-group-btn">#}
+{#            <span class="btn btn-default waves-effect waves-light">#}
+{#            CSV File Upload<input type="file" name="pps_csv" id="pps_csv" style="display: none;">#}
+{#            </span>#}
+{#      </label>#}
+{#      <input type="text" id="pps_csv_name" class="form-control is-invalid" readonly="">#}
+{#    </div>#}
+    {% include "./custom_templates/file_upload.html" with div_id="csv_file_upload" csv_name="pps_csv" csv_id="pps_csv" display_box_id="pps_csv_name" %}
 
     <div id="csv_error"></div>
 
