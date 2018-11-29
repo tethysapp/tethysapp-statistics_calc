@@ -74,12 +74,19 @@ $(document).ready(function() {
         // Run plotting function if no errors
         if (!validation_error) {
             plotRawData();
+        } else {
+            $("#raw_data_plot_loader").fadeOut();
         }
     });
 });
 function plotRawData() {
-    let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
-    console.log(formData); // another sanity check
+    let formData = new FormData(); // Creating a form object to hold the data
+
+    let userFile = document.getElementById("pps_csv").files[0];
+
+    formData.append('pps_csv', userFile);
+    formData.append('current_units', $("#current_units").val());
+    formData.append('desired_units', $("#desired_units").val());
 
     $.ajax({
         url: "/apps/statistics-calc/pps_hydrograph_raw_data_ajax/", // the endpoint
@@ -92,52 +99,12 @@ function plotRawData() {
         success: function (resp) {
             console.log(resp);
             if (resp['backend_error'] === false) {
-                let trace = {
-                    x: resp["dates"],
-                    y: resp["data"],
-                    mode: 'lines',
-                    type: 'scatter'
-                };
 
-                let data = [trace];
+                PlotlyRawData(resp['units'], resp["dates"], resp["data"]);
 
-                // Changing the y axis label based on the units selected
-                let y_axis_label = "";
-
-                if (resp['units'] === 'si') {
-                    y_axis_label = 'Streamflow (cms)';
-                } else {
-                    y_axis_label = 'Streamflow (cfs)';
-                }
-
-                let layout = {
-                    title: 'Hydrograph',
-                    titlefont: {
-                        family: 'Arial',
-                        size: 24,
-                        color: '#000000'
-                    },
-
-                    xaxis: {
-                        title: "Datetime",
-                        titlefont: {
-                            family: 'Arial',
-                            size: 18,
-                            color: '#000000'
-                        },
-                    },
-                    yaxis: {
-                        title: y_axis_label,
-                        titlefont: {
-                            family: 'Arial',
-                            size: 18,
-                            color: '#000000'
-                        },
-                    },
-                };
-
-                Plotly.newPlot('raw_data_plot', data, layout);
+                // Fill the div with preprocessing info
                 $('#raw_data_results').html(resp['information']);
+
                 $("#clear_raw_data_plot_button").show();
                 $("#raw_data_plot_loader").fadeOut();
             } else {
@@ -154,7 +121,7 @@ function plotRawData() {
         }
     });
 }
-$(document).ready(function () {
+$(document).ready(function () { // Button that clears the plot and data
     $("#clear_raw_data_plot_button").click( function(evt) {
         evt.preventDefault();
         $("#clear_raw_data_plot_button").hide();
@@ -230,7 +197,7 @@ $(document).ready(function () {
         // Validation
         let validation_error = false;
 
-        ClearPreviousErrors();
+        ClearPreviousErrors(); // TODO: There is a bug here, because it clears the parsing error
         $('#pps_hydrograph').empty();
         $("#clear_plot").hide();
 
@@ -405,7 +372,7 @@ $(document).ready(function() {
         // Validation
         let validation_error;
 
-        ClearPreviousErrors();
+        ClearPreviousErrors(); // TODO: There is a bug here, because it clears the parsing error
 
         // Checking the file
         validation_error = checkFileInput();
@@ -542,7 +509,7 @@ function ClearPreviousPlots() {
     $("#clear_raw_data_plot_button").hide();
 }
 
-function checkFileInput() {
+function checkFileInput() { // TODO: Fix this bad method, make it into two seperate methods
     let csv_error = $("#csv_error");
 
     if (csv_error.html() !== "") { // parsing error
@@ -615,4 +582,50 @@ function checkOptions() {
     } else {
         return false;
     }
+}
+
+function PlotlyRawData(units, dates, data) {
+    let trace = {
+        x: dates,
+        y: data,
+        mode: 'lines',
+        type: 'scatter'
+    };
+
+    // Changing the y axis label based on the units selected
+    let y_axis_label = "";
+
+    if (units === 'si') {
+        y_axis_label = 'Streamflow (cms)';
+    } else {
+        y_axis_label = 'Streamflow (cfs)';
+    }
+
+    let layout = {
+        title: 'Hydrograph',
+        titlefont: {
+            family: 'Arial',
+            size: 24,
+            color: '#000000'
+        },
+
+        xaxis: {
+            title: "Datetime",
+            titlefont: {
+                family: 'Arial',
+                size: 18,
+                color: '#000000'
+            },
+        },
+        yaxis: {
+            title: y_axis_label,
+            titlefont: {
+                family: 'Arial',
+                size: 18,
+                color: '#000000'
+            },
+        },
+    };
+
+    Plotly.newPlot('raw_data_plot', [trace], layout);
 }

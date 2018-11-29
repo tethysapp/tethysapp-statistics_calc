@@ -71,6 +71,7 @@ def pps_hydrograph_raw_data_ajax(request):
     try:
         if request.method == "POST":
             print(request.POST)
+            print(request.FILES)
 
             # POST data collection
             csv_file = request.FILES.get('pps_csv', None)
