@@ -7,7 +7,7 @@ class StatisticsCalc(TethysAppBase):
     Tethys app class for Statistics Calculator.
     """
 
-    name = 'Statistics Calculator'
+    name = 'Hydrostats App'
     index = 'statistics_calc:home'
     icon = 'statistics_calc/images/icon.gif'
     package = 'statistics_calc'

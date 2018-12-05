@@ -822,6 +822,36 @@ def make_table_ajax(request):
                 d1_p_x_bar_p = None
                 extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 
+            # KGE 2009 S Paramters
+            kge2009_s = [1, 1, 1]
+
+            if float(request.POST.get('kge_2009_s1', None)) != 1:
+                kge_2009_s1 = float(request.POST.get('kge_2009_s1', None))
+                kge2009_s[0] = kge_2009_s1
+
+            if float(request.POST.get('kge_2009_s2', None)) != 1:
+                kge_2009_s2 = float(request.POST.get('kge_2009_s2', None))
+                kge2009_s[1] = kge_2009_s2
+
+            if float(request.POST.get('kge_2009_s3', None)) != 1:
+                kge_2009_s3 = float(request.POST.get('kge_2009_s3', None))
+                kge2009_s[2] = kge_2009_s3
+
+            # KGE 2012 S Paramters
+            kge2012_s = [1, 1, 1]
+
+            if float(request.POST.get('kge_2012_s1', None)) != 1:
+                kge_2012_s1 = float(request.POST.get('kge_2012_s1', None))
+                kge2012_s[0] = kge_2012_s1
+
+            if float(request.POST.get('kge_2012_s2', None)) != 1:
+                kge_2012_s2 = float(request.POST.get('kge_2012_s2', None))
+                kge2012_s[1] = kge_2012_s2
+
+            if float(request.POST.get('kge_2012_s3', None)) != 1:
+                kge_2012_s3 = float(request.POST.get('kge_2012_s3', None))
+                kge2012_s[2] = kge_2012_s3
+
             # Indexing the metrics to get the abbreviations
             selected_metric_abbr = request.POST.getlist("metrics", None)
 
@@ -918,6 +948,8 @@ def make_table_ajax(request):
                 h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
                 d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
                 lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
+                kge2009_s=tuple(kge2009_s),
+                kge2012_s=tuple(kge2012_s),
                 seasonal_periods=all_date_range_list
             )
             table_html = table.transpose()

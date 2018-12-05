@@ -61,7 +61,11 @@ $(document).ready(function () {
 $(document).ready(function() {
     $('#metric_select2').select2({ width: 'resolve' });
 });
-$('#metric_select2').on("select2:close", function(e) { // Display optional parameters
+
+// Display optional parameters when user's select certain metrics
+$('#metric_select2').on("select2:close", function(e) {
+    e.preventDefault();
+
     console.log("triggered!");
     let select_val = $( '#metric_select2' ).val();
 
@@ -112,12 +116,27 @@ $('#metric_select2').on("select2:close", function(e) { // Display optional param
     } else {
         $('#rms_H6_param_div').fadeOut()
     }
+
+     if ( select_val.includes("KGE (2009)") ) {
+        $('#kge_2009_param_div').fadeIn()
+    } else {
+        $('#kge_2009_param_div').fadeOut()
+    }
+
+    if ( select_val.includes("KGE (2012)") ) {
+        $('#kge_2012_param_div').fadeIn()
+    } else {
+        $('#kge_2012_param_div').fadeOut()
+    }
+
 });
 
 
 // Function for the file upload
 $(document).ready(function() {
-    $("#merged_csv").change(function () {
+    $("#merged_csv").change(function (evt) {
+        evt.preventDefault();
+
         const label = $("#merged_csv").val().replace(/\\/g, '/').replace(/.*\//, '');
         $("#merged_csv_name").val(label);
     });
@@ -638,39 +657,14 @@ $(document).ready(function(){
                 validation_error = true;
             }
 
-            // Checking if the inputs are integers
-            // if (!(Number.isInteger(Number($(`#start_day_${counter}`).val())))) {
-            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-            //     $(`#start_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            //     validation_error = true;
-            // }
-            // if (!(Number.isInteger(Number($(`#start_month_${counter}`).val())))) {
-            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-            //     $(`#start_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            //     validation_error = true;
-            // }
-            // if (!(Number.isInteger(Number($(`#end_day_${counter}`).val())))) {
-            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-            //     $(`#end_day_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            //     validation_error = true;
-            // }
-            // if (!(Number.isInteger(Number($(`#end_month_${counter}`).val())))) {
-            //     $("#non_integer_error").html('<p style="color: #FF0000"><small>One or more date range inputs were not integers.</small></p>');
-            //     $(`#end_month_${counter}`).css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-            //     validation_error = true;
-            // }
-
             counter++
         }
 
         // Retrieving the metric abbreviations to make sure that the user selected at least one metric
-        let data = {
-            "abbreviations": true
-        };
         $.ajax({
-            url: "/apps/statistics-calc/get_metric_names_abbr/", // the endpoint
-            type: "GET", // http method
-            data: data, // data sent with the post request, the form data from above
+            url: "/apps/statistics-calc/get_metric_names_abbr/",
+            type: "GET",
+            data: { "abbreviations": true },
             headers: {
                 'Accept': 'application/json',
             },

@@ -7,7 +7,7 @@
     <div id="error_redirect_point"></div>
   </div>
 
-  <!-- data form-->
+  {# data form#}
   <form id="validate_stream" name="validate_stream" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -32,7 +32,12 @@
     <h2>Visualization</h2>
     <hr>
 
-    <h3>Hydrograph of Entire Time Series</h3>
+    <h3>
+      Hydrograph of Entire Time Series
+      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.visual.plot.html" target="_blank">
+        [Docs]
+      </a>
+    </h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-hydrograph">Create Hydrograph</button>
 
@@ -41,9 +46,14 @@
       <div class="loader"></div>
     </div>
 
-    <div id="hydrograph"><!-- Hydrograph will be drawn inside this DIV --></div>
+    <div id="hydrograph">{# Hydrograph will be drawn inside this DIV #}</div>
 
-    <h3>Hydrograph of Daily Averages</h3>
+    <h3>
+      Hydrograph of Daily Averages
+      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.data.daily_average.html" target="_blank">
+        [Docs]
+      </a>
+    </h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-hydrograph-daily-avg">
       Create Hydrograph of Daily Averages
@@ -54,9 +64,14 @@
       <div class="loader"></div>
     </div>
 
-    <div id="hydrograph-daily-avg"><!-- Hydrograph of daily averages will be drawn inside this DIV --></div>
+    <div id="hydrograph-daily-avg">{# Hydrograph of daily averages will be drawn inside this DIV #}</div>
 
-    <h3>Scatter Plot</h3>
+    <h3>
+      Scatter Plot
+      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.visual.scatter.html" target="_blank">
+        [Docs]
+      </a>
+    </h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter">Create Scatter Plot</button>
 
@@ -65,10 +80,14 @@
       <div class="loader"></div>
     </div>
 
-    <div id="scatter"><!-- Scatter Plot will be drawn inside this DIV --></div>
-    <img id="jpg-export" height="100%" width="100%">
-    <!--Static Scatter Plot will be drawn here if the timeseries is more than 1000 points-->
-    <h3>Scatter Plot with Log-Log Scale</h3>
+    <div id="scatter">{# Scatter Plot will be drawn inside this DIV #}</div>
+
+    <h3>
+      Scatter Plot with Log-Log Scale
+      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.visual.scatter.html" target="_blank">
+        [Docs]
+      </a>
+    </h3>
 
     <button type="button" class="btn btn-default btn-block" id="create-scatter-log">
       Create Scatter Plot with Log-Log Scale
@@ -79,12 +98,17 @@
       <div class="loader"></div>
     </div>
 
-    <div id="scatter_log"><!-- Scatter Log Plot will be drawn inside this DIV --></div>
+    <div id="scatter_log">{# Scatter Log Plot will be drawn inside this DIV #}</div>
 
     <br><br><br>
 
     <hr>
-    <h2>Table</h2>
+    <h2>
+      Table
+      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.analyze.make_table.html" target="_blank">
+        [Docs]
+      </a>
+    </h2>
     <hr>
 
     <h3>
@@ -105,7 +129,7 @@
     <input type="checkbox" name="remove_zero_bool" data-toggle="toggle" data-on="Yes" data-off="No"
            data-onstyle="success" data-offstyle="danger" data-size="mini">
 
-    <!--Optional: Date Range-->
+    {#Optional: Date Range#}
     <h3>
       Include Analysis of Date Range(s) in Table
       <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
@@ -116,7 +140,7 @@
            data-off="No"
            data-onstyle="success" data-offstyle="danger" data-size="mini">
 
-    <!--begin date-->
+    {#begin date#}
     <div id="date_range_form" style="display:none">
       <h4>Number of Date Ranges to Analyze</h4>
       <div class="row">
@@ -135,7 +159,12 @@
     <br><br>
 
 
-    <h3>Select the Metrics to Include in the Table:</h3>
+    <h3>
+      Select the Metrics to Include in the Table:
+      <a href="https://byu-hydroinformatics.github.io/HydroErr/list_of_metrics.html" target="_blank">
+        [Docs]
+      </a>
+    </h3>
 
     <div id="metric_select_error"></div>
 
@@ -212,13 +241,42 @@
       </div>
     </div>
 
+    <div class="form-row" id="kge_2009_param_div" style="display: none">
+      <div class="form-group col-md-12" id="kge_2009_form">
+        <label for="kge_2009_s1">Kling Gupta Efficiency (2009) S[1]</label>
+        <input type="number" class="form-control" id="kge_2009_s1" name="kge_2009_s1" value=1>
+        <label for="kge_2009_s2">Kling Gupta Efficiency (2009) S[2]</label>
+        <input type="number" class="form-control" id="kge_2009_s2" name="kge_2009_s2" value=1>
+        <label for="kge_2009_s3">Kling Gupta Efficiency (2009) S[3]</label>
+        <input type="number" class="form-control" id="kge_2009_s3" name="kge_2009_s3" value=1>
+      </div>
+    </div>
+
+    <div class="form-row" id="kge_2012_param_div" style="display: none">
+      <div class="form-group col-md-12" id="kge_2012_form">
+        <label for="kge_2012_s1">Kling Gupta Efficiency (2012) S[1]</label>
+        <input type="number" class="form-control" id="kge_2012_s1" name="kge_2012_s1" value=1>
+        <label for="kge_2012_s2">Kling Gupta Efficiency (2012) S[2]</label>
+        <input type="number" class="form-control" id="kge_2012_s2" name="kge_2012_s2" value=1>
+        <label for="kge_2012_s3">Kling Gupta Efficiency (2012) S[3]</label>
+        <input type="number" class="form-control" id="kge_2012_s3" name="kge_2012_s3" value=1>
+      </div>
+    </div>
+
+    <div class="form-row" id="d1_p_param_div" style="display: none">
+      <div class="form-group col-md-12" id="d1_p_form">
+        <label for="d1_p_x_bar">Legate-McCabe Index of Agreement x-bar Value</label>
+        <input type="number" class="form-control" id="d1_p_x_bar" name="d1_p_x_bar" value=1>
+      </div>
+    </div>
+
     <br><br>
   </form>
 
   <button type="button" class="btn btn-success" id="make-table">Make Table</button><br><br>
 
   <div class="metric-table" id="metric-table" style="display:none">
-    <div id="table"><!-- The table or errors go here --></div>
+    <div id="table">{# The table or errors go here #}</div>
   </div>
 
   <br><br><br>
@@ -229,6 +287,9 @@
     <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
           title="Calculate the volume of the simulated and observed hydrographs and compare them.">
     </span>
+    <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.simps.html" target="_blank">
+      [Docs]
+    </a>
   </h2>
   <hr>
 
@@ -237,7 +298,7 @@
   <br>
 
   <div class="metric-table" id="volume_table_div" style="display:none">
-    <div id="volume_table"><!-- The table or errors go here --></div>
+    <div id="volume_table">{# The table or errors go here #}</div>
   </div>
 
 {% endblock %}

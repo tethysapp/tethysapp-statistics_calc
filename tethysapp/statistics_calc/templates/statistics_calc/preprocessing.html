@@ -53,6 +53,9 @@
     <br><br><br><br>
 
     <button class="btn btn-success" id="raw_data_plot_button">Plot and Analyze Raw Data</button>
+    <a href="https://pandas.pydata.org/pandas-docs/stable/timedeltas.html" target="_blank">
+      [Docs]
+    </a>
     <div id="raw_data_plot_loader" style="display: none;">
       <br>
       <div class="loader"></div>
@@ -71,10 +74,12 @@
 
     <h3>
       Interpolation
-        <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
               title="Select yes if you would like to interpolate your data to either change the time frequency or fill in missing data.">
-        </span>
-
+      </span>
+      <a href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.interpolate.html" target="_blank">
+        [Docs]
+      </a>
     </h3>
 
     <input type="checkbox" id="interpolation_bool" name="interpolation_bool" data-toggle="toggle"
@@ -134,8 +139,12 @@
     <h3>
       Truncate Time Series
       <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-              title="Select yes if you would like to only use a certain time range. e.g. if your timeseries spanned from 1992 to 2015 and you only wanted the data from the year 2002.">
-        </span>
+            title="Select yes if you would like to only use a certain time range. e.g. if your timeseries spanned from 1992 to 2015 and you only wanted the data from the year 2002.">
+      </span>
+      <a href="https://waderoberts123.github.io/Hydrostats/api/hydrostats.data.seasonal_period.html#hydrostats.data.seasonal_period"
+         target="_blank">
+        [Docs]
+      </a>
     </h3>
 
     <input type="checkbox" id="time_range_bool" name="time_range_bool" data-toggle="toggle" data-on="Yes"

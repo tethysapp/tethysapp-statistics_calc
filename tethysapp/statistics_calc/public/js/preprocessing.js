@@ -24,13 +24,14 @@ $(document).ready(function() {
 
 // Function to validate the File Upload on change
 $(document).ready(function () {
-    $("#pps_csv").change(function () {
+    $("#pps_csv").change(function (evt) {
+        evt.preventDefault();
 
         ClearPreviousPlots(); // Refresh things when new data is entered
         ClearPreviousErrors();
 
         if (FileExists()) {
-            let theFile = document.getElementById("pps_csv").files[0];
+            let theFile = evt.currentTarget.files[0];
 
             PapaParsePromise(theFile)
                 .then(results => {
@@ -41,7 +42,7 @@ $(document).ready(function () {
                 })
                 .catch(rejectReason => {
                     console.log(rejectReason); // Amount of columns are incorrect
-                    ParseError(rejectReason);
+                    SetParseError(rejectReason);
                 });
         }
     })
@@ -50,37 +51,37 @@ $(document).ready(function () {
 
 // Creating a raw data plot with the button click
 $(document).ready(function() {
+
     $("#raw_data_plot_button").click( function(evt) {
         evt.preventDefault();
 
         // Show Loader
-        $("#raw_data_plot_loader").fadeIn();
+        const plotRawDataLoader = $("#raw_data_plot_loader");
+        plotRawDataLoader.fadeIn();
 
         // Validate
         let validation_error = false;
 
         if (!FileExists()) {
-
-            MissingFileError();
+            SetMissingFileError();
             validation_error = true;
-
         } else if ($('#csv_error').html() !== "") {
-
             window.location.assign("#h2_raw_data_checks");
             validation_error = true;
-
         }
 
         // Run plotting function if no errors
         if (!validation_error) {
             plotRawData();
         } else {
-            $("#raw_data_plot_loader").fadeOut();
+            window.location.assign("#form_error_ref_point");
+            $("#form_error_message").show();
+            plotRawDataLoader.fadeOut();
         }
     });
 });
 function plotRawData() {
-    let formData = new FormData(); // Creating a form object to hold the data
+    let formData = new FormData();
 
     let userFile = document.getElementById("pps_csv").files[0];
 
@@ -89,15 +90,18 @@ function plotRawData() {
     formData.append('desired_units', $("#desired_units").val());
 
     $.ajax({
-        url: "/apps/statistics-calc/pps_hydrograph_raw_data_ajax/", // the endpoint
-        type: "POST", // http method
-        data: formData, // data sent with the post request, the form data from above
+        url: "/apps/statistics-calc/pps_hydrograph_raw_data_ajax/",
+        type: "POST",
+        data: formData,
         processData: false,
         contentType: false,
+        dataType: 'json',
 
         // handle a successful response
         success: function (resp) {
-            console.log(resp);
+
+            console.log(resp.units);
+
             if (resp['backend_error'] === false) {
 
                 PlotlyRawData(resp['units'], resp["dates"], resp["data"]);
@@ -197,7 +201,7 @@ $(document).ready(function () {
         // Validation
         let validation_error = false;
 
-        ClearPreviousErrors(); // TODO: There is a bug here, because it clears the parsing error
+        ClearPreviousErrors(false);
         $('#pps_hydrograph').empty();
         $("#clear_plot").hide();
 
@@ -367,12 +371,11 @@ $(document).ready(function () {
 $(document).ready(function() {
     $("#csv_button").click( function(evt) {
         evt.preventDefault();
-        console.log('Plot preprocessed data Event Triggered'); // sanity check
+
+        ClearPreviousErrors(false); // Omitting the parsing error
 
         // Validation
         let validation_error;
-
-        ClearPreviousErrors(); // TODO: There is a bug here, because it clears the parsing error
 
         // Checking the file
         validation_error = checkFileInput();
@@ -439,8 +442,11 @@ $(document).ready(function() {
 });
 
 
-// VALIDATION HELPER FUNCTIONS
+// ****************
+// HELPER FUNCTIONS
+// ****************
 
+// Promises
 function PapaParsePromise(file) {
     return new Promise((complete, error) => {
         Papa.parse(file, {preview: 50, complete, error});
@@ -465,11 +471,19 @@ function ParseCsv(csvArray) {
     })
 }
 
-function ParseError(errorMsg) {
+// Methods to set errors for elements
+function SetParseError(errorMsg) {
     $('#csv_error').html(`<p style="color: #FF0000"><small>${errorMsg}</small></p>`);
     $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
 }
 
+function SetMissingFileError() {
+    $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+    $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
+    window.location.assign("#h2_raw_data_checks");
+}
+
+// Methods to check if form elements have been filled out
 /**
  * @return {boolean}
  */
@@ -477,16 +491,19 @@ function FileExists() {
     return (typeof document.getElementById("pps_csv").files[0] === "object");
 }
 
-function MissingFileError() {
-    $('#csv_file_upload').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
-    $("#csv_error").html('<p style="color: #FF0000"><small>The raw data CSV is a required input.</small></p>');
-    window.location.assign("#h2_raw_data_checks");
+/**
+ * @return {boolean}
+ */
+function CsvErrorExists() {
+    return ($("#csv_error") !== "");
 }
 
-function ClearPreviousErrors() {
+function ClearPreviousErrors(csvError=true) {
     // Clear the error messages
-    $('#csv_error').empty();
-    $('#csv_file_upload').css({"border": 'hidden'});
+    if (csvError) {
+        $('#csv_error').empty();
+        $('#csv_file_upload').css({"border": 'hidden'});
+    }
 
     $("#preprocessing_error").empty();
     $('#h2_preprocessing').css({"border": 'hidden'});
