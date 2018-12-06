@@ -2,40 +2,139 @@
 # Define your REST API endpoints here.
 # In the comments below is an example.
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from hydrostats import kge_2012
-from hydrostats.metrics import metric_names, metric_abbr
+from hydrostats.metrics import metric_names, metric_abbr, list_of_metrics
 from hydrostats.analyze import make_table
 import json
 import numpy as np
+import pandas as pd
+import traceback
 
 
+# noinspection PyBroadException
 @api_view(['POST'])
 @authentication_classes((TokenAuthentication,))
-def get_metrics(request):
+def calculate_metrics(request):
     """
     API Controller for getting data
     """
-    print("In the get_metrics api controller.")
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"status": "fail", "reason": "Json could not be parsed."})
 
-    data = json.loads(request.body)
+    # Retrieving the metrics that the user wants to compute
+    try:
+        metrics = data['metrics']
+    except Exception:
+        traceback.print_exc()
+        return JsonResponse({"status": "fail", "reason": "No metrics specified."})
 
-    sim = data['simulated']
-    obs = data['observed']
+    # Retrieving the simulated and observed data
+    try:
+        sim = data['simulated']
+        obs = data['observed']
+    except Exception:
+        return JsonResponse({"status": "fail", "reason": "simulated and observed parameters not provided."})
 
-    sim = np.array(sim)
-    obs = np.array(obs)
+    # Retrieving the Extra Parameters
+    try:
+        mase_m = int(data['mase_m'])
+    except Exception:
+        mase_m = 1
 
-    kge = kge_2012(sim, obs)
+    try:
+        dmod_j = data['dmod_j']
+    except Exception:
+        dmod_j = 1
 
-    result = {
-        "kge_2012": kge,
-        "status": "success"
-    }
+    try:
+        nse_mod_j = data['nse_mod_j']
+    except Exception:
+        nse_mod_j = 1
 
-    return JsonResponse(result)
+    try:
+        h6_mhe_k = data['h6_mhe_k']
+    except Exception:
+        h6_mhe_k = 1
+
+    try:
+        h6_ahe_k = data['h6_ahe_k']
+    except:
+        h6_ahe_k = 1
+
+    try:
+        h6_rmshe_k = data['h6_rmshe_k']
+    except Exception:
+        h6_rmshe_k = 1
+
+    try:
+        lm_x_bar_p = data['lm_x_bar_p']
+    except:
+        lm_x_bar_p = None
+
+    try:
+        d1_p_x_bar_p = data['d1_p_x_bar_p']
+    except:
+        d1_p_x_bar_p = None
+
+    try:
+        kge2009_s = tuple(data['kge2009_s'])
+    except:
+        kge2009_s = (1, 1, 1)
+
+    try:
+        kge2012_s = tuple(data['kge2012_s'])
+    except:
+        kge2012_s = (1, 1, 1)
+
+    # Checking to see of the user wants to remove zeros and negatives
+    try:
+        remove_neg = data['remove_neg']
+    except Exception:
+        remove_neg = False
+
+    try:
+        remove_zero = data['remove_zero']
+    except Exception:
+        remove_zero = False
+
+    # Calculating the metrics wanted
+    try:
+        calculated_list_of_metrics = list_of_metrics(
+            metrics=metrics,
+            sim_array=np.array(sim),
+            obs_array=np.array(obs),
+            abbr=True,
+            mase_m=mase_m,
+            dmod_j=dmod_j,
+            nse_mod_j=nse_mod_j,
+            h6_mhe_k=h6_mhe_k,
+            h6_ahe_k=h6_ahe_k,
+            h6_rmshe_k=h6_rmshe_k,
+            d1_p_obs_bar_p=d1_p_x_bar_p,
+            lm_x_obs_bar_p=lm_x_bar_p,
+            kge2009_s=kge2009_s,
+            kge2012_s=kge2012_s,
+            remove_neg=remove_neg,
+            remove_zero=remove_zero
+        )
+    except Exception:
+        return JsonResponse({"status": "fail", "reason": "There was an error while calculating the metrics."})
+
+    try:
+        return_dict = {}
+
+        for i in range(len(metrics)):
+            return_dict[metrics[i]] = calculated_list_of_metrics[i]
+
+        return JsonResponse(return_dict)
+
+    except Exception:
+        return JsonResponse({"status": "fail", "reason": "There was an error returning the Json response."})
 
 
 @api_view(['GET'])
@@ -61,7 +160,8 @@ def get_metrics_names_and_abbr(request):
     return JsonResponse(result)
 
 
-@api_view(['GET'])
+# noinspection PyBroadException
+@api_view(['POST'])
 @authentication_classes((TokenAuthentication,))
 def create_metrics_table(request):
     """
@@ -80,7 +180,7 @@ def create_metrics_table(request):
         An array of simulated data. Must be the same length as sim or an error will be returned.
 
     dates: 1D array
-        An array of
+        An array of dates corresponding to the given simulated and observed data
 
     seasonal_periods: 2D array, optional
         If given, specifies the seasonal periods that the user wants to analyze (e.g. [[‘06-01’, ‘06-30’],
@@ -100,10 +200,10 @@ def create_metrics_table(request):
         Parameter for the H6 (MHE) metric.
 
     h6_ahe_k: int or float, optional
-        Parameter for the H6 (AHE) metric
+        Parameter for the H6 (AHE) metric.
 
     h6_rmshe_k: int or float, optional
-        Parameter for the H6 (RMSHE) metric
+        Parameter for the H6 (RMSHE) metric.
 
     d1_p_obs_bar_p: float, optional
         Parameter fot the Legate McCabe Index of Agreement (d1_p).
@@ -111,128 +211,157 @@ def create_metrics_table(request):
     lm_x_obs_bar_p: float, optional
         Parameter for the Lagate McCabe Efficiency Index (lm_index).
 
-    kge2009_s: tuple of floats
+    kge2009_s: tuple of floats, optional
         A tuple of floats of length three signifying how to weight the three values used in the Kling Gupta (2009) metric.
 
-    kge2012_s: tuple of floats
+    kge2012_s: tuple of floats, optional
         A tuple of floats of length three signifying how to weight the three values used in the Kling Gupta (2012) metric.
+
+    return_type: str
+        A string representing how the user would like to have the data returned. Default is 'json'. Alternatives are
+        'html' which returns a json response with the html for the table in it. 'csv' can also be used to return a
+        json object with a csv string in it for the table.
+
+    Returns
+    -------
+    JsonResponse
+        A json response with different properties, depending on the return_type parameter
 
     """
 
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"status": "fail", "reason": "Json could not be parsed."})
+
     # Retrieving the metrics that the user wants to compute
-    metrics = request.GET.getlist('metrics', None)
+    try:
+        metrics = data['metrics']
+    except Exception:
+        traceback.print_exc()
+        return JsonResponse({"status": "fail", "reason": "No metrics specified."})
 
     # Retrieving the data and constructing a DataFrame from it
-    sim = request.GET.getlist('metrics', None)
-    obs = request.GET.getlist('obs', None)
-    dates = request.GET.getlist('dates', None)
+    try:
+        sim = data['simulated']
+        obs = data['observed']
+        dates = pd.to_datetime(data['dates'], errors='coerce')
+
+        df = pd.DataFrame(np.column_stack((sim, obs)), index=dates, columns=["Simulated", "Observed"])
+
+        # Drop bad time values if they exist
+        df = df[df.index.notnull()]
+
+    except Exception:
+        traceback.print_exc()
+        return JsonResponse({"status": "fail", "reason": "simulated, observed, or dates parameters not sent."})
 
     # Retrieving the seasonal periods if the user wants them
-    seasonal_periods = request.GET.getlist('seasonal_periods', None)
+    try:
+        seasonal_periods = data['seasonal_periods']
+    except Exception:
+        seasonal_periods = None
 
     # Retrieving the Extra Parameters
-    extra_param_dict = {}
-
-    if request.GET.get('mase_m', None) is not None:
-        mase_m = int(request.GET.get('mase_m', None))
-        extra_param_dict['mase_m'] = mase_m
-    else:
+    try:
+        mase_m = int(data['mase_m'])
+    except Exception:
         mase_m = 1
-        extra_param_dict['mase_m'] = mase_m
 
-    if request.GET.get('dmod_j', None) is not None:
-        dmod_j = float(request.GET.get('dmod_j', None))
-        extra_param_dict['dmod_j'] = dmod_j
-    else:
+    try:
+        dmod_j = data['dmod_j']
+    except Exception:
         dmod_j = 1
-        extra_param_dict['dmod_j'] = dmod_j
 
-    if request.GET.get('nse_mod_j', None) is not None:
-        nse_mod_j = float(request.GET.get('nse_mod_j', None))
-        extra_param_dict['nse_mod_j'] = nse_mod_j
-    else:
+    try:
+        nse_mod_j = data['nse_mod_j']
+    except Exception:
         nse_mod_j = 1
-        extra_param_dict['nse_mod_j'] = nse_mod_j
 
-    if request.GET.get('h6_mhe_k', None) is not None:
-        h6_mhe_k = float(request.GET.get('h6_mhe_k', None))
-        extra_param_dict['h6_ahe_k'] = h6_mhe_k
-    else:
+    try:
+        h6_mhe_k = data['h6_mhe_k']
+    except Exception:
         h6_mhe_k = 1
-        extra_param_dict['h6_mhe_k'] = h6_mhe_k
 
-    if request.GET.get('h6_ahe_k', None) is not None:
-        h6_ahe_k = float(request.GET.get('h6_ahe_k', None))
-        extra_param_dict['h6_ahe_k'] = h6_ahe_k
-    else:
+    try:
+        h6_ahe_k = data['h6_ahe_k']
+    except:
         h6_ahe_k = 1
-        extra_param_dict['h6_ahe_k'] = h6_ahe_k
 
-    if request.GET.get('h6_rmshe_k', None) is not None:
-        h6_rmshe_k = float(request.GET.get('h6_rmshe_k', None))
-        extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
-    else:
+    try:
+        h6_rmshe_k = data['h6_rmshe_k']
+    except Exception:
         h6_rmshe_k = 1
-        extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
 
-    if float(request.GET.get('lm_x_obs_bar_p', None)) != 1:  # TODO: Fix these to be set to use the mean as default
-        lm_x_bar_p = float(request.GET.get('lm_x_obs_bar_p', None))
-        extra_param_dict['lm_x_obs_bar_p'] = lm_x_bar_p
-    else:
+    try:
+        lm_x_bar_p = data['lm_x_bar_p']
+    except:
         lm_x_bar_p = None
-        extra_param_dict['lm_x_obs_bar_p'] = lm_x_bar_p
 
-    if float(request.GET.get('d1_p_obs_bar_p', None)) != 1:
-        d1_p_x_bar_p = float(request.GET.get('d1_p_obs_bar_p', None))
-        extra_param_dict['d1_p_obs_bar_p'] = d1_p_x_bar_p
-    else:
+    try:
+        d1_p_x_bar_p = data['d1_p_x_bar_p']
+    except:
         d1_p_x_bar_p = None
-        extra_param_dict['d1_p_obs_bar_p'] = d1_p_x_bar_p
 
-    if float(request.GET.get('kge2009_s', None)) is not None:
-        kge2009_s = float(request.GET.get('kge2009_s', None))
-    else:
+    try:
+        kge2009_s = tuple(data['kge2009_s'])
+    except:
         kge2009_s = (1, 1, 1)
-        extra_param_dict['kge2009_s'] = kge2009_s
 
-    if float(request.GET.get('kge2012_s', None)) is not None:
-        kge2012_s = float(request.GET.get('kge2012_s', None))
-    else:
+    try:
+        kge2012_s = tuple(data['kge2012_s'])
+    except:
         kge2012_s = (1, 1, 1)
-        extra_param_dict['kge2012_s'] = kge2012_s
 
     # Checking to see of the user wants to remove zeros and negatives
-    if request.POST.get('remove_neg_bool', None) is not None:
-        remove_neg_bool = request.POST.get('remove_neg_bool') == 'on'
+    try:
+        remove_neg = data['remove_neg']
+    except Exception:
+        remove_neg = False
 
-    if request.POST.get('remove_zero_bool') is not None:
-        remove_zero_bool = request.POST.get('remove_zero_bool') == 'on'
-
+    try:
+        remove_zero = data['remove_zero']
+    except Exception:
+        remove_zero = False
 
     # Creating the Table Based on User Input
     table = make_table(
-        merged_dataframe=merged_df,
-        metrics=selected_metric_abbr,
+        merged_dataframe=df,
+        metrics=metrics,
         remove_neg=remove_neg,
         remove_zero=remove_zero,
-        mase_m=extra_param_dict['mase_m'],
-        dmod_j=extra_param_dict['dmod_j'],
-        nse_mod_j=extra_param_dict['nse_mod_j'],
-        h6_mhe_k=extra_param_dict['h6_mhe_k'],
-        h6_ahe_k=extra_param_dict['h6_ahe_k'],
-        h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
-        d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
-        lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
-        seasonal_periods=all_date_range_list
+        mase_m=mase_m,
+        dmod_j=dmod_j,
+        nse_mod_j=nse_mod_j,
+        h6_mhe_k=h6_mhe_k,
+        h6_ahe_k=h6_ahe_k,
+        h6_rmshe_k=h6_rmshe_k,
+        d1_p_obs_bar_p=d1_p_x_bar_p,
+        lm_x_obs_bar_p=lm_x_bar_p,
+        kge2009_s=kge2009_s,
+        kge2012_s=kge2012_s,
+        seasonal_periods=seasonal_periods
     )
-    table_html = table.transpose()
-    table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+    table_transposed = table.transpose()
 
-    # TODO: Finish this API function, as I think it will be quite useful for other developers
+    # Getting the return type that the user specified
+    try:
+        return_type = data['return_type']
+    except Exception:
+        return_type = 'json'
 
-    result = {
-        "hello": 123,
-        "error": False
-    }
+    # Returning a response to the user
+    if return_type == 'json':
+        json_string = table_transposed.to_json(orient='split')
+        return_value = '{"status":"success",' + json_string[1:]
+        return HttpResponse(return_value)
 
-    return JsonResponse(result)
+    elif return_type == 'html':
+        table_html = table_transposed.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+        return JsonResponse({"status": "success", "html_table": table_html})
+
+    elif return_type == 'csv':
+        return JsonResponse({"status": "success", "csv_table": table_transposed.to_csv(index=True)})
+
+    else:
+        return JsonResponse({"status": "fail", "reason": "Invalid return type given."})

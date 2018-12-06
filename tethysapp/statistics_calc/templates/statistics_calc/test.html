@@ -1,0 +1,47 @@
+{% extends "statistics_calc/base.html" %}
+
+{% block app_title %}
+
+  <script>
+
+      $(document).ready(function () {
+          const apiKey = 'ea2b3343d5d9dbf7453d9871a34f07e12686820d';
+
+          let data = {
+              metrics: ["ACC", "ME", "RMSE"],
+              simulated: [1.2, 3.5, 7.6, 5.5, 2.8],
+              observed: [1.5, 3.2, 7.8, 5.0, 3.0],
+          };
+
+          $.ajax({
+              url: "http://localhost:8000/apps/statistics-calc/api/calculate_metrics/", // the endpoint
+              type: "POST", // http method
+              data: JSON.stringify(data), // data sent with the post request, the form data from above
+              dataType: 'json',
+              headers: {
+                  'Authorization': `Token ${apiKey}`,
+                  'Content-type': 'application/json'
+              },
+
+              // handle a successful response
+              success: function (resp) {
+                  console.log(resp);
+                  $('#results').html(JSON.stringify(resp));
+              },
+
+              // handle a non-successful response
+              error: function (xhr, errmsg, err) {
+                  console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+              }
+          });
+      });
+
+  </script>
+
+{% endblock %}
+
+{% block app_content %}
+
+  <div id="results"></div>
+
+{% endblock %}

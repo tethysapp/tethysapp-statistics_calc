@@ -203,18 +203,27 @@ class StatisticsCalc(TethysAppBase):
                 url='merged_forecast_csv_example',
                 controller='statistics_calc.controllers.merged_forecast_csv_example'
             ),
-
+            UrlMap(
+                name='test',
+                url='test',
+                controller='statistics_calc.controllers.test'
+            ),
 
             # API Controllers
             UrlMap(
-                name='get_metrics',
-                url='api/get_metrics',
-                controller='statistics_calc.api.get_metrics'
+                name='calculate_metrics',
+                url='api/calculate_metrics',
+                controller='statistics_calc.api.calculate_metrics'
             ),
             UrlMap(
                 name='get_metrics_names_and_abbr',
                 url='api/get_metrics_names_and_abbr',
                 controller='statistics_calc.api.get_metrics_names_and_abbr'
+            ),
+            UrlMap(
+                name='create_metrics_table',
+                url='api/create_metrics_table',
+                controller='statistics_calc.api.create_metrics_table'
             )
         )
 

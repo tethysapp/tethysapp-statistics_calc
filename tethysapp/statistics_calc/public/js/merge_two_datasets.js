@@ -22,42 +22,32 @@ $(document).ready(function() {
         $("#obs_csv_name").val(label);
     });
 });
+
 // Function to validate the observed data csv
 $(document).ready(function () {
-    $("#obs_csv").change(function () {
-        // Hide any previous error messages
-        $("#obs_csv_error_message").empty();
-        $('#obs_file_upload_div').css({ "border": 'hidden'});
+    $("#obs_csv").change(function (evt) {
+        evt.preventDefault();
 
-        let obsCSV = document.getElementById("obs_csv").files[0];
+        // Hide any previous error messages
+        clearPreviousErrors(); // TODO: Don't clear the other file upload error somehow
+        // TODO: Add a ClearPreviousPlots method here
 
         // Parsing the CSV to check for errors
-        if (typeof document.getElementById("obs_csv").files[0] === "object") {
-            Papa.parse(
-                obsCSV,
-                {
-                    preview: 50,
-                    complete: function (results) {
-                        let error = false;
-                        for (let i = 0; i < results.data.length; i++) {
-                            let row = results.data[i];
 
-                            if (row.length !== 2) {
-                                console.log("There was an error when parsing column " + i);
-                                error = true;
-                                break;
-                            }
-                        }
-                        if (error) {
-                            console.log("Error Protocol Running");
-                            $('#obs_csv_error_message').show();
-                            $('#obs_csv_error_message').html('<p style="color: #FF0000"><small>Please make sure that your CSV only has 2 columns.</small></p>');
-                            $('#obs_file_upload_div').css({ "border": '#FF0000 1px solid', "border-radius": '4px' });
-                        }
-                    }
+        if (ObsCsvFileExists()) {
+            let theFile = evt.currentTarget.files[0];
+
+            PapaParsePromise(theFile)
+                .then(results => {
+                    return ParseCsv(results);
+                })
+                .then(results => {
+                    console.log(results); // Amount of columns are correct
+                })
+                .catch(rejectReason => {
+                    console.log(rejectReason); // Amount of columns are incorrect
+                    SetParseErrorObsCsv(rejectReason);
                 });
-        } else {
-            $('#obs_file_upload_div').css({ "border": 'hidden'});
         }
     });
 });
@@ -72,7 +62,6 @@ $(document).ready(function() {
     });
 });
 
-
 // Function for the simulated file upload display name
 $(document).ready(function() {
     $("#sim_csv").change(function () {
@@ -80,44 +69,36 @@ $(document).ready(function() {
         $("#sim_csv_name").val(label);
     });
 });
+
 // Function to validate the simulated data csv
 $(document).ready(function () {
-    $("#sim_csv").change(function () {
-        // Hide any previous error messages
-        $("#sim_csv_error_message").empty();
-        $('#sim_file_upload_div').css({ "border": 'hidden'});
+    $("#sim_csv").change(function (evt) {
+        evt.preventDefault();
 
-        let obsCSV = document.getElementById("sim_csv").files[0];
+        // Hide any previous error messages
+        clearPreviousErrors(); // TODO: Don't clear the other file upload error somehow
+        // TODO: Add a ClearPreviousPlots method here
 
         // Parsing the CSV to check for errors
-        if (typeof document.getElementById("sim_csv").files[0] === "object") {
-            Papa.parse(
-                obsCSV,
-                {
-                    preview: 50,
-                    complete: function (results) {
-                        let error = false;
-                        for (let i = 0; i < results.data.length; i++) {
-                            let row = results.data[i];
+        if (SimCsvFileExists()) {
+            let theFile = evt.currentTarget.files[0];
 
-                            if (row.length !== 2) {
-                                console.log("There was an error when parsing column " + i);
-                                error = true;
-                                break;
-                            }
-                        }
-                        if (error) {
-                            console.log("Error Protocol Running");
-                            $('#sim_csv_error_message').html('<p style="color: #FF0000"><small>Please make sure that your CSV only has 2 columns.</small></p>');
-                            $('#sim_file_upload_div').css({ "border": '#FF0000 1px solid', "border-radius": '4px' });
-                        }
-                    }
+            PapaParsePromise(theFile)
+                .then(results => {
+                    return ParseCsv(results);
+                })
+                .then(results => {
+                    console.log(results); // Amount of columns are correct
+                })
+                .catch(rejectReason => {
+                    console.log(rejectReason); // Amount of columns are incorrect
+                    SetParseErrorSimCsv(rejectReason);
                 });
         }
     });
 });
 
-// Function to show the begin and end date inputs if the user wants them
+// Function to show the time zone inputs if the user wants them
 $(document).ready( function() {
     $("#time_zone_bool").change( function(evt) {
         evt.preventDefault();
@@ -126,7 +107,6 @@ $(document).ready( function() {
         } else {
             $("#timezone_form").fadeOut();
         }
-        console.log('Time Range Slider Clicked.'); // sanity check
     });
 });
 
@@ -144,13 +124,12 @@ $(document).ready(function() {
 $(document).ready(function() {
     $("#plot_merged").click( function(evt) {
         evt.preventDefault();
-        console.log('Plot merged data Event Triggered'); // sanity check
 
         // Validation
         let validation_error;
 
         // Clearing previous errors and plots
-        clearPreviousErrors();
+        clearPreviousErrors(); // TODO: Change this so that it doesn't clear the Parse Errors
         clearPreviousPlots();
 
         // Checking the observed data csv
@@ -270,8 +249,57 @@ $(document).ready(function() {
     });
 });
 
+// ********************
+// * HELPER FUNCTIONS *
+// ********************
 
-// HELPER FUNCTIONS
+/**
+ * @return {boolean}
+ */
+function ObsCsvFileExists() {
+    return (typeof document.getElementById("obs_csv").files[0] === "object");
+}
+
+/**
+ * @return {boolean}
+ */
+function SimCsvFileExists() {
+    return (typeof document.getElementById("sim_csv").files[0] === "object");
+}
+
+function PapaParsePromise(file) {
+    return new Promise((complete, error) => {
+        Papa.parse(file, {preview: 50, complete, error});
+    });
+}
+
+function ParseCsv(csvArray) {
+    return new Promise((resolve, reject) => {
+        let parseError = false;
+        for (let i = 0; i < csvArray.data.length - 1; i++) {
+            let row = csvArray.data[i];
+            if (row.length !== 2) {
+                parseError = true;
+                break;
+            }
+        }
+        if (!parseError) {
+            resolve('Columns look fine in the CSV');
+        } else {
+            reject('There are too many columns in the CSV provided.');
+        }
+    })
+}
+
+function SetParseErrorObsCsv(errorMsg) {
+    $('#obs_csv_error_message').html(`<p style="color: #FF0000"><small>${errorMsg}</small></p>`);
+    $('#obs_file_upload_div').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+}
+
+function SetParseErrorSimCsv(errorMsg) {
+    $('#sim_csv_error_message').html(`<p style="color: #FF0000"><small>${errorMsg}</small></p>`);
+    $('#sim_file_upload_div').css({"border": '#FF0000 1px solid', "border-radius": '4px'});
+}
 
 function clearPreviousErrors() {
 

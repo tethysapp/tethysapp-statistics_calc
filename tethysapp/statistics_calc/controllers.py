@@ -1792,3 +1792,7 @@ def merged_forecast_csv_example(request):
 
     return render(request, 'statistics_calc/merged_forecast_csv_example.html', context)
 
+
+@login_required()
+def test(request):
+    return render(request, 'statistics_calc/test.html', {})

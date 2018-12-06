@@ -14,6 +14,10 @@
     <div id="error_redirect_point"></div>
   </div>
 
+  <form name="merge_form" id="merge_form" method="post" enctype="multipart/form-data"
+        action="/apps/statistics-calc/merged_csv_download/">
+    {% csrf_token %}
+
   <div id="form_error_message" style="display: none">
     <div class="alert alert-danger" role="alert">
       There was an error in the submission
@@ -30,9 +34,6 @@
           title="Upload your observed timeseries data here in CSV format. The data should be formatted in two columns, with the left column containing the dates and the right column containing the observed data values. The CSV should also have the first row contain descriptive information (header).">
     </span>
   </h3>
-  <form name="merge_form" id="merge_form" method="post" enctype="multipart/form-data"
-        action="/apps/statistics-calc/merged_csv_download/">
-    {% csrf_token %}
 
     <div class="input-group" id="obs_file_upload_div">
       <label class="input-group-btn">
