@@ -5,7 +5,6 @@
 from django.http import JsonResponse, HttpResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
-from hydrostats import kge_2012
 from hydrostats.metrics import metric_names, metric_abbr, list_of_metrics
 from hydrostats.analyze import make_table
 import json

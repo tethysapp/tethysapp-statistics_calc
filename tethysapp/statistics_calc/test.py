@@ -1,42 +1,31 @@
-import pandas as pd
-import hydrostats.ens_metrics as em
-# import zipfile
-# import io
-# from PIL import Image
-import matplotlib.pyplot as plt
-import numpy as np
-# import hydrostats.visual as hv
-import hydrostats.data as hd
-# from helper_functions import parse_api_request
-# from ast import literal_eval
-# import json
-# import requests
+# import psycopg2
+# from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+#
+# conn = psycopg2.connect(database="tethys_default", user="tethys_default", password="pass",
+#                         host="localhost", port="5436")
+#
+# conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+#
+# cursor = conn.cursor()
+#
+# cursor.execute(
+#     """
+#         CREATE DATABASE forecast_db
+#    """)
+#
+# for table in cursor.fetchall():
+#     print(table)
+#
+# conn.close()
 
-import traceback
+"""Printing Traceback"""
+# import traceback
+#
+# try:
+#     1/0
+# except Exception:
+#     traceback.print_exc()
 
-try:
-    1/0
-except Exception:
-    traceback.print_exc()
-
-# example_data_path = r"/home/wade/Documents/Data_to_Test_App/Merged_Forecast_DataFrame_South_Asia_55234.csv"
-# out_path = r"/home/wade/Documents/Data_to_Test_App/Example_Benchmark_Forecast.csv"
-# example_df = pd.read_csv(example_data_path, index_col=0)
-# obs = example_df.iloc[:, 0].values
-# ens_forecasts = example_df.iloc[:, 1:].values
-# threshold = 2000
-# benchmark_forecast = example_df.iloc[:, 1:3]
-#
-# num_col_forecast = len(example_df.columns)
-# num_col_bench = len(benchmark_forecast.columns)
-#
-# merged_df = pd.DataFrame.join(example_df, benchmark_forecast, lsuffix='_forecast', rsuffix='_benchmark')
-#
-# obs = merged_df.iloc[:, 0].values
-#
-# if obs.ndim == 1:
-#     obs = obs.reshape((-1, 1))
-#     print(obs)
 """Timezone conversions"""
 # time_now = pd.Timestamp.now(tz='US/Mountain').strftime("%Y-%m-%d %H:%M:%S")
 #
