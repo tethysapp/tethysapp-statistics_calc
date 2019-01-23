@@ -9,6 +9,7 @@ tethysapp/statistics_calc/handoff.py
 tethysapp/statistics_calc/helper_functions.py
 tethysapp/statistics_calc/model.py
 tethysapp/statistics_calc/test.py
+tethysapp/statistics_calc/tests/__init__.py
 tethysapp/statistics_calc/tests/tests.py
 tethysapp_statistics_calc.egg-info/PKG-INFO
 tethysapp_statistics_calc.egg-info/SOURCES.txt

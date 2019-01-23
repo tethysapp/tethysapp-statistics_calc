@@ -25,7 +25,7 @@ import hydrostats as hs
 from hydrostats.metrics import metric_names, metric_abbr
 import hydrostats.data as hd
 import hydrostats.ens_metrics as em
-from model import parse_api_request, convert_units
+from .model import parse_api_request, convert_units
 
 # Various Python Standard Library Imports
 import traceback
