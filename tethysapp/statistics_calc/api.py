@@ -62,7 +62,7 @@ def calculate_metrics(request):
 
     try:
         h6_ahe_k = data['h6_ahe_k']
-    except:
+    except Exception:
         h6_ahe_k = 1
 
     try:
@@ -72,22 +72,22 @@ def calculate_metrics(request):
 
     try:
         lm_x_bar_p = data['lm_x_bar_p']
-    except:
+    except Exception:
         lm_x_bar_p = None
 
     try:
         d1_p_x_bar_p = data['d1_p_x_bar_p']
-    except:
+    except Exception:
         d1_p_x_bar_p = None
 
     try:
         kge2009_s = tuple(data['kge2009_s'])
-    except:
+    except Exception:
         kge2009_s = (1, 1, 1)
 
     try:
         kge2012_s = tuple(data['kge2012_s'])
-    except:
+    except Exception:
         kge2012_s = (1, 1, 1)
 
     # Checking to see of the user wants to remove zeros and negatives
