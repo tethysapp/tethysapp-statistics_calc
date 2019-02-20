@@ -1581,7 +1581,7 @@ def validate_forecast_ensemble_metrics(request):
             ens_mse_forecast = em.ens_mse(obs, forecast)
             ens_rmse_forecast = em.ens_rmse(obs, forecast)
             ens_pearson_r_forecast = em.ens_pearson_r(obs, forecast)
-            ens_crps_mean_forecast = em.ens_crps(obs, forecast)["crpsMean"]
+            ens_crps_mean_forecast = em.crps_hersbach(obs, forecast)["crpsMean1"]
 
             if skill_score_bool:
                 ens_me_benchmark = em.ens_me(obs, benchmark_forecast)
@@ -1589,7 +1589,7 @@ def validate_forecast_ensemble_metrics(request):
                 ens_mse_benchmark = em.ens_mse(obs, benchmark_forecast)
                 ens_rmse_benchmark = em.ens_rmse(obs, benchmark_forecast)
                 ens_pearson_r_benchmark = em.ens_pearson_r(obs, benchmark_forecast)
-                ens_crps_mean_benchmark = em.ens_crps(obs, benchmark_forecast)["crpsMean"]
+                ens_crps_mean_benchmark = em.crps_hersbach(obs, benchmark_forecast)["crpsMean1"]
 
                 # TODO: Once Hydrostats is fixed remove the manual solution workaround for more robustness
                 me_ss = 1 - ens_me_forecast / ens_me_benchmark
@@ -1653,7 +1653,7 @@ def validate_forecast_ensemble_metrics(request):
 
             response = {
                 "error_bool": True,
-                "error_message": e.args[0]
+                "error_message": e  # e.args[0]
              }
 
             return JsonResponse(response)
