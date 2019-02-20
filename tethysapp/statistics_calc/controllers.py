@@ -1653,7 +1653,7 @@ def validate_forecast_ensemble_metrics(request):
 
             response = {
                 "error_bool": True,
-                "error_message": e  # e.args[0]
+                "error_message": e.args[0]
              }
 
             return JsonResponse(response)
