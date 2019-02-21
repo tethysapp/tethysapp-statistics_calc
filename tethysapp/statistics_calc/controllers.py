@@ -1641,7 +1641,6 @@ def validate_forecast_ensemble_metrics(request):
                 table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
                 table_df = table_df.replace('border="1"', 'border="0"')
 
-
             response = {
                 "error_bool": False,
                 "table": table_df
