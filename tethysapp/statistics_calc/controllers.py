@@ -19,6 +19,7 @@ from .app import StatisticsCalc as App
 import pandas as pd
 import numpy as np
 from scipy import integrate
+from sklearn.metrics import roc_curve
 
 # Hydrostats Imports and helper functions
 import hydrostats as hs
@@ -1660,108 +1661,64 @@ def validate_forecast_ensemble_metrics(request):
 
 @login_required()
 def validate_forecast_binary_metrics(request):
-    if request.method == "POST":
-        try:
-            print("in binary metrics controller")
 
-            # Parsing and processing the csv data
-            csv_file_forecast = request.FILES.get('forecast_csv', None)
-            benchmark_file = request.FILES.get('benchmark_csv', None)
-            threshold = float(request.POST.get("threshold", None))
-            skill_score_bool = request.POST.get('skill_score_bool', None)
-            skill_score_bool = (skill_score_bool == "on")  # Change to boolean type
+    try:
+        # Parsing and processing the csv data
+        csv_file_forecast = request.FILES.get('forecast_csv', None)
+        threshold = float(request.POST.get("threshold", None))
+        skill_score_bool = request.POST.get('skill_score_bool', None)
 
-            df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
-            df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
-            df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
+        df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
+        df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
+        df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
-            num_col_forecast = len(df_forecast.columns)
+        obs = df_forecast.iloc[:, 0].values
 
-            if skill_score_bool:
-                df_benchmark = pd.read_csv(benchmark_file, index_col=0)
-                df_benchmark.index = pd.to_datetime(df_benchmark.index, infer_datetime_format=True, errors='coerce')
-                df_benchmark = df_benchmark[df_benchmark.index.notnull()]  # Dropping bad time values if necessary
+        forecast = df_forecast.iloc[:, 1:].values
+        if forecast.ndim == 1:
+            forecast = forecast.reshape((-1, 1))
 
-                merged_df = pd.DataFrame.join(df_forecast, df_benchmark, lsuffix='_forecast', rsuffix='_benchmark')
-                obs = merged_df.iloc[:, 0].values
-                forecast = merged_df.iloc[:, 1:num_col_forecast].values
-                benchmark_forecast = merged_df.iloc[:, num_col_forecast:].values
+        ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
+        auroc = em.auroc(forecast, obs, threshold)[0]
 
-                if forecast.ndim == 1:
-                    forecast = forecast.reshape((-1, 1))
+        data_dict = {
+            'Metric Name': ["Ensemble Adjusted Brier Score", "AUROC"],
+            'Value': [ens_brier, auroc],
+        }
 
-                if benchmark_forecast.ndim == 1:
-                    benchmark_forecast = benchmark_forecast.reshape((-1, 1))
+        # Creating DataFrame from dict
+        table_df = pd.DataFrame.from_dict(data_dict)
 
-            else:
-                obs = df_forecast.iloc[:, 0].values
-                forecast = df_forecast.iloc[:, 1:].values
+        # Reordering columns to be correct
+        table_df = table_df[['Metric Name', 'Value']]
+        # Rounding all table values
+        table_df = table_df.round(3)
 
-                if forecast.ndim == 1:
-                    forecast = forecast.reshape((-1, 1))
+        table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
+        table_df = table_df.replace('border="1"', 'border="0"')
 
-            ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
-            auroc = em.auroc(forecast, obs, threshold)[0]
+        observed_bin = (obs > threshold).astype(np.int)
+        forecast_bin = (forecast > threshold).astype(np.int).mean(axis=1)
 
-            if skill_score_bool:
-                ens_brier_benchmark = np.mean(em.ens_brier(benchmark_forecast, obs, threshold))
-                auroc_benchmark = em.auroc(benchmark_forecast, obs, threshold)[0]
+        fpr, tpr, _ = roc_curve(observed_bin, forecast_bin)
 
-                print(ens_brier, ens_brier_benchmark)
-                print(auroc, auroc_benchmark)
+        response = {
+            "error_bool": False,
+            "table": table_df,
+            "fpr": fpr.tolist(),
+            "tpr": tpr.tolist(),
+        }
 
-                # TODO: Once Hydrostats is fixed remove the manual solution workaround for more robustness
-                brier_ss = 1 - ens_brier / ens_brier_benchmark
-                auroc_ss = 1 - (auroc - 1) / (auroc_benchmark - 1)
+        return JsonResponse(response)
 
-                data_dict = {
-                    'Metric Name': ["Brier Score", "Area Under the Relative Operating Characteristic curve (AUROC)"],
-                    'Value': [ens_brier, auroc],
-                    'Benchmark Value': [ens_brier_benchmark, auroc_benchmark],
-                    'Skill Score': [brier_ss, auroc_ss]
-                }
+    except Exception:
 
-                # Creating DataFrame from dict
-                table_df = pd.DataFrame.from_dict(data_dict)
-                # Reordering columns to be correct
-                table_df = table_df[['Metric Name', 'Value', 'Benchmark Value', 'Skill Score']]
-                # Rounding all table values
-                table_df = table_df.round(3)
+        response = {
+            "error_bool": True,
+            "error_message": traceback.format_exc(),
+        }
 
-                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
-                table_df = table_df.replace('border="1"', 'border="0"')
-
-            else:
-                data_dict = {
-                    'Metric Name': ["Brier Score", "Area Under the Relative Operating Characteristic curve (AUROC)"],
-                    'Value': [ens_brier, auroc],
-                 }
-
-                # Creating DataFrame from dict
-                table_df = pd.DataFrame.from_dict(data_dict)
-                # Reordering columns to be correct
-                table_df = table_df[['Metric Name', 'Value']]
-                # Rounding all table values
-                table_df = table_df.round(3)
-
-                table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
-                table_df = table_df.replace('border="1"', 'border="0"')
-
-            response = {
-                "error_bool": False,
-                "table": table_df
-            }
-
-            return JsonResponse(response)
-
-        except Exception as e:
-
-            response = {
-                "error_bool": True,
-                "error_message": e.args[0]
-            }
-
-            return JsonResponse(response)
+        return JsonResponse(response)
 
 
 @login_required()

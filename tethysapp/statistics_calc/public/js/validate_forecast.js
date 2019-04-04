@@ -75,7 +75,7 @@ function plotData() {
                 let forecast_error_bool = resp["forecast_error_bool"];
                 let benchmark_error_bool = resp["benchmark_error_bool"];
 
-                if ( benchmark_error_bool && forecast_error_bool ) {
+                if (benchmark_error_bool && forecast_error_bool) {
                     // Plot forecasts and observed data with error bars
                     let trace1 = {
                         type: "scatter",
@@ -121,7 +121,7 @@ function plotData() {
 
                     Plotly.newPlot('plot', data, layout);
 
-                } else if ( benchmark_error_bool && (!forecast_error_bool) ) {
+                } else if (benchmark_error_bool && (!forecast_error_bool)) {
                     // Plot forecasts and observed data with error bars
                     let trace1 = {
                         type: "scatter",
@@ -160,7 +160,7 @@ function plotData() {
 
                     Plotly.newPlot('plot', data, layout);
 
-                } else if ( (!benchmark_error_bool) && forecast_error_bool ) {
+                } else if ((!benchmark_error_bool) && forecast_error_bool) {
                     // Plot forecasts and observed data with error bars
                     let trace1 = {
                         type: "scatter",
@@ -200,7 +200,7 @@ function plotData() {
 
                     Plotly.newPlot('plot', data, layout);
 
-                } else if ( (!benchmark_error_bool) && (!forecast_error_bool) ) {
+                } else if ((!benchmark_error_bool) && (!forecast_error_bool)) {
                     // Plot forecasts and observed data with error bars
                     let trace1 = {
                         type: "scatter",
@@ -346,7 +346,7 @@ $(document).ready(function () { // TODO: Add error checks
 });
 
 function validateBinary() {
-    let formData = new FormData(document.getElementsByName('validate_forecast')[0]);// getting the data from the form
+    let formData = new FormData(document.getElementsByName('validate_forecast')[0]);
     console.log(formData); // another sanity check
 
     $.ajax({
@@ -359,25 +359,49 @@ function validateBinary() {
         // handle a successful response
         success: function (resp) {
             if (!resp["error_bool"]) {
-                // let table = `<br><table class="table table-bordered table-hover">
-                //                <thead>
-                //                  <tr><th title="Field #1">Metric</th>
-                //                    <th title="Field #2">Value</th>
-                //                   </tr>
-                //                 </thead>
-                //                 <tbody>
-                //                   <tr>
-                //                     <td>Ensemble-Adjusted Brier Score</td>
-                //                     <td align="left">${resp["ens_brier"]}</td>
-                //                   </tr>
-                //                   <tr>
-                //                     <td>Area Under the Relative Operating Characteristic curve (AUROC)</td>
-                //                     <td align="left">${resp["auroc"]}</td>
-                //                   </tr>
-                //                 </tbody></table>`;
-
                 $('#validation_results_binary').html(resp["table"]);
-                console.log(resp) // TODO: Make sure that the controller is formatted correctly and that error are checked for.
+
+                let trace1 = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: "45 deg. Line",
+                    x: [0, 1],
+                    y: [0, 1],
+                    line: {
+                        color: '#7F7F7F',
+                        dash: 'dot',
+                    }
+                };
+                let trace2 = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: "ROC Curve",
+                    x: resp["fpr"],
+                    y: resp["tpr"],
+                    line: {color: '#17BECF'}
+                };
+
+
+                let data = [trace1, trace2];
+                let layout = {
+                    title: 'Receiver operating characteristic curve',
+                    width: 425,
+                    height: 425,
+
+                    xaxis: {
+                        title: {
+                            text: 'False Positive Rate',
+                        },
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'True Positive Rate',
+                        }
+                    }
+                };
+
+                Plotly.newPlot('ROC-plot', data, layout);
+
             } else {
                 console.log(resp["error_message"])
             }
