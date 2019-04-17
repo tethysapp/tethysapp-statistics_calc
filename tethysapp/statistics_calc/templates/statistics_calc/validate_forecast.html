@@ -2,133 +2,159 @@
 
 {% block app_content %}
 
-  <div class="jumbotron jumbotron-fluid">
-    <h1>Validate a Single Forecast</h1>
+    <div class="jumbotron jumbotron-fluid">
+        <h1>Validate a Single Forecast</h1>
 
-    <p>
-      This page is for validation of a single ensemble forecast that has been preprocessed and merged with observed
-      data (or water balance). You can calculate metrics and determine the forecast skill.
-    </p>
+        <p>
+            This page is for validation of a single ensemble forecast that has been preprocessed and merged with
+            observed
+            data (or water balance). You can calculate metrics and determine the forecast skill.
+        </p>
 
-    <div id="error_redirect_point"></div>
-  </div>
+        <div id="error_redirect_point"></div>
+    </div>
 
-  <form id="validate_forecast" name="validate_forecast" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+    <form id="validate_forecast" name="validate_forecast" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
-    <hr>
-    <h2>
-      Data Upload
-      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="Upload your merged forecast and possibly benchmark forecast data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
-    </span>
-    </h2>
-    <hr>
+        <hr>
+        <h2>
+            Data Upload
+            <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+                  title="Upload your merged forecast and possibly benchmark forecast data here in CSV format. See the example in the navigation bar (Example Forecast CSV) for how the files should be formatted">
+            </span>
+        </h2>
+        <hr>
 
-    <div class="input-group" id="merged_forecast_file_input">
-      <label class="input-group-btn">
+        <div class="input-group" id="merged_forecast_file_input">
+            <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
               Merged Forecast CSV File Upload<input type="file" name="forecast_csv" id="forecast_csv"
                                                     style="display: none;">
             </span>
-      </label>
-      <input type="text" id="merged_csv_name" class="form-control" readonly="">
-    </div>
+            </label>
+            <input type="text" id="merged_csv_name" class="form-control" readonly="">
+        </div>
 
-    <br>
+        <br>
 
-    <h3>
-      Calculate Skill Scores
-      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="If yes, then a benchmark forecast must be given to compare.">
-      </span>
-      <a href="https://byu-hydroinformatics.github.io/Hydrostats/api/hydrostats.ens_metrics.skill_score.html" target="_blank">
-        [Docs]
-      </a>
-    </h3>
-    <input type="checkbox" id="skill_score_bool" name="skill_score_bool" data-toggle="toggle" data-on="Yes" data-off="No"
-           data-onstyle="success" data-offstyle="danger" data-size="mini">
-    <br><br>
+        <h3>
+            Calculate Skill Scores
+            <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+                  title="If yes, then a benchmark forecast must be given to compare.">
+            </span>
+            <a href="https://hydrostats.readthedocs.io/en/stable/api/hydrostats.ens_metrics.skill_score.html"
+               target="_blank">
+                [Docs]
+            </a>
+        </h3>
+        <input type="checkbox" id="skill_score_bool" name="skill_score_bool" data-toggle="toggle" data-on="Yes"
+               data-off="No"
+               data-onstyle="success" data-offstyle="danger" data-size="small">
+        <br><br>
 
-    <div id="benchmark_input_div" style="display: none;">
-      <div class="input-group" id="benchmark_file_input">
-        <label class="input-group-btn">
+        <div id="benchmark_input_div" style="display: none;">
+            <div class="input-group" id="benchmark_file_input">
+                <label class="input-group-btn">
             <span class="btn btn-default waves-effect waves-light">
               Benchmark Forecast CSV File Upload<input type="file" name="benchmark_csv" id="benchmark_csv"
                                                        style="display: none;">
             </span>
-        </label>
-        <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
-      </div>
-    </div>
+                </label>
+                <input type="text" id="benchmark_csv_name" class="form-control" readonly="">
+            </div>
+        </div>
 
-    <div id="merged_csv_error_message"></div>
+        <div id="merged_csv_error_message"></div>
 
-    <br><br>
+        <br><br>
 
-    <hr>
-    <h2>
-      Visualize
-      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="Visualize the ensemble, observed (or water balance), and benchmark data.">
-    </span>
-    </h2>
-    <hr>
+        <hr>
+        <h2>
+            Visualize
+            <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+                  title="Visualize the ensemble, observed (or water balance), and benchmark data.">
+            </span>
+        </h2>
+        <hr>
 
-    <button type="button" class="btn btn-default btn-block" id="visualize_button">Create Plot</button>
+        <button type="button" class="btn btn-default btn-block" id="visualize_button">Create Plot</button>
 
-    <br>
-    <div id="plot">{# plotly plot goes here #}</div>
-    
-    <br><br><br>
+        <br>
+        <div id="plot">{# plotly plot goes here #}</div>
 
-    <hr>
-    <h2>
-      Validation
-      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="Calculate ensemble metrics indicating the goodness of fit of the forecast compared to the observed (or water balance) data. Also calculate the skill score of the forecast compared to the benchmark.">
-      </span>
-      <a href="https://byu-hydroinformatics.github.io/Hydrostats/ens_metrics.html" target="_blank">
-        [Docs]
-      </a>
-    </h2>
-    <hr>
+        <br><br><br>
 
-    <h3>
-      Ensemble Metric Validation
-    </h3>
-    <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
-      Validation
-    </button>
+        <hr>
+        <h2>
+            Validation
+            <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+                  title="Calculate ensemble metrics indicating the goodness of fit of the forecast compared to the observed (or water balance) data. Also calculate the skill score of the forecast compared to the benchmark.">
+            </span>
+            <a href="https://hydrostats.readthedocs.io/en/stable/ens_metrics.html" target="_blank">
+                [Docs]
+            </a>
+        </h2>
+        <hr>
 
-    <br>
-    <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
+        <h3>
+            Ensemble Metric Validation
+        </h3>
+        <button type="button" class="btn btn-default btn-block" id="validate_button_ensemble">Run Ensemble Metrics
+            Validation
+        </button>
 
-    <br><br><br>
+        <br>
+        <div id="validation_results_ensemble">{# HTML Table output goes here #}</div>
 
-    <h3>
-      Binary Ensemble Metric Validation
-    </h3>
+        <br><br><br>
 
-    <h4>
-      Event Threshold
-      <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-            title="The threshold for the event that you are trying to validate. For example, if the return period for a two year flood was 100 cms, and you wanted to see if the forecast captured that event, you would put 100 for the threshold.">
-    </span>
-    </h4>
-    <div class="form-group col-md-4" id="threshold_form">
-      <input class="form-control" type="number" placeholder="Enter Threshold Here" id="threshold" name="threshold">
-    </div>
+        <h3>
+            Binary Ensemble Metric Validation
+        </h3>
 
-    <br>
-    <button type="button" class="btn btn-default btn-block" id="validate_button_binary">
-      Run Binary Ensemble Metrics Validation
-    </button>
+        <h4>
+            Event Threshold
+            <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
+                  title="The threshold for the event that you are trying to validate. For example, if the return period for a two year flood was 100 cms, and you wanted to see if the forecast captured that event, you would put 100 for the threshold.">
+            </span>
+        </h4>
 
-    <br>
-    <div id="validation_results_binary">{# HTML Table output goes here #}</div>
-    <div id="ROC-plot">{# ROC Plot goes here #}</div>
+        <div id="single-threshold">
+            <div class="form-group col-md-4" id="threshold_form">
+                <input class="form-control" type="number" placeholder="Enter Threshold Here" id="threshold"
+                       name="threshold">
+            </div>
+        </div>
 
-  </form>
+        <div id="multiple-thresholds" style="display: none">
+            <div class="form-group col-md-4" id="threshold_form">
+                <input class="form-control" type="number" placeholder="Enter Observed Threshold Here"
+                       name="observed-threshold">
+            </div>
+
+            <div class="form-group col-md-4" id="threshold_form">
+                <input class="form-control" type="number" placeholder="Enter Forecast Threshold Here"
+                       name="forecast-threshold">
+            </div>
+        </div>
+
+        <br><br><br>
+
+        <p>Different Thresholds for Forecasts and Observed?</p>
+        <input type="checkbox" id="multiple-threshold-bool" name="multiple-threshold-bool" data-toggle="toggle"
+               data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger" data-size="small">
+        <br><br>
+
+        <br>
+        <button type="button" class="btn btn-default btn-block" id="validate_button_binary">
+            Run Binary Ensemble Metrics Validation
+        </button>
+
+        <br>
+        <div id="validation_results_binary">{# HTML Table output goes here #}</div>
+        <div id="ROC-plot">{# ROC Plot goes here #}</div>
+
+    </form>
 
 {% endblock %}

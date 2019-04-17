@@ -313,7 +313,7 @@ $(document).ready(function () { // TODO: Add error checks for the benchmark fore
 });
 
 function validateEnsemble() { // TODO: Make sure that the controller is formatted correctly and that error are checked for.
-    let formData = new FormData(document.getElementsByName('validate_forecast')[0]);// getting the data from the form
+    let formData = new FormData(document.getElementsByName('validate_forecast')[0]); // getting the data from the form
     console.log(formData); // another sanity check
 
     $.ajax({
@@ -326,17 +326,29 @@ function validateEnsemble() { // TODO: Make sure that the controller is formatte
         // handle a successful response
         success: function (resp) { // TODO: Use error bool in case of error
             $('#validation_results_ensemble').html(resp["table"]);
-            console.log(resp);
         },
 
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            $('#validation_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+            $('#validation_results_ensemble').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     })
 }
 
+// Function to hide/show multiple thresholds based on toggle
+$(document).ready(function () {
+    $("#multiple-threshold-bool").change(function (evt) {
+        evt.preventDefault();
+        if ($(this).is(":checked")) {
+            $("#multiple-thresholds").fadeIn();
+            $("#single-threshold").hide();
+        } else {
+            $("#multiple-thresholds").hide();
+            $("#single-threshold").fadeIn();
+        }
+    });
+});
 
 // Function to perform analysis of the binary ensemble metrics
 $(document).ready(function () { // TODO: Add error checks
@@ -408,7 +420,7 @@ function validateBinary() {
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            $('#validation_results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
+            $('#validation_results_binary').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg + ".</div>"); // add the error to the dom
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
     })

@@ -72,9 +72,9 @@ class StatisticsCalc(TethysAppBase):
                 controller='statistics_calc.controllers.merged_csv_download'
             ),
             UrlMap(
-                name='calculate_single',
-                url='calculate_single',
-                controller='statistics_calc.controllers.calculate_single'
+                name='validate_historical',
+                url='validate_historical',
+                controller='statistics_calc.controllers.validate_historical'
             ),
             UrlMap(
                 name='get_metric_names_abbr',

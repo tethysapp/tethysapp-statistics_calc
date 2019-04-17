@@ -592,7 +592,7 @@ def merged_csv_download(request):
 
 
 @login_required()
-def calculate_single(request):
+def validate_historical(request):
     """
     Controller for page to upload data to perform analysis on a single stream reach.
     """
@@ -602,7 +602,7 @@ def calculate_single(request):
 
     context = {'metric_loop_list': metric_loop_list}
 
-    return render(request, 'statistics_calc/calculate_single.html', context)
+    return render(request, 'statistics_calc/validate_historical.html', context)
 
 
 @login_required()
