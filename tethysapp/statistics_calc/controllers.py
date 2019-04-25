@@ -1663,23 +1663,37 @@ def validate_forecast_ensemble_metrics(request):
 def validate_forecast_binary_metrics(request):
 
     try:
-        # Parsing and processing the csv data
+        # Parsing and processing the csv data and other POST data
         csv_file_forecast = request.FILES.get('forecast_csv', None)
-        threshold = float(request.POST.get("threshold", None))
-        skill_score_bool = request.POST.get('skill_score_bool', None)
+        threshold_bool = True if request.POST.get("multiple-threshold-bool", None) == "on" else False
+        threshold_post = request.POST.get("threshold", None)
+        obs_threshold_post = request.POST.get("observed-threshold", None)
+        ens_threshold_post = request.POST.get("forecast-threshold", None)
+
+        threshold = float(threshold_post) if threshold_post else None
+        obs_threshold = float(obs_threshold_post) if obs_threshold_post else None
+        ens_threshold = float(ens_threshold_post) if ens_threshold_post else None
 
         df_forecast = pd.read_csv(csv_file_forecast, index_col=0)
         df_forecast.index = pd.to_datetime(df_forecast.index, infer_datetime_format=True, errors='coerce')
         df_forecast = df_forecast[df_forecast.index.notnull()]  # Dropping bad time values if necessary
 
         obs = df_forecast.iloc[:, 0].values
-
         forecast = df_forecast.iloc[:, 1:].values
+
         if forecast.ndim == 1:
             forecast = forecast.reshape((-1, 1))
 
-        ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
-        auroc = em.auroc(forecast, obs, threshold)[0]
+        if threshold_bool:
+            ens_brier = em.ens_brier(
+                fcst_ens=forecast, obs=obs, ens_threshold=ens_threshold, obs_threshold=obs_threshold,
+            ).mean()
+            auroc = em.auroc(
+                fcst_ens=forecast, obs=obs, ens_threshold=ens_threshold, obs_threshold=obs_threshold,
+            )[0]
+        else:
+            ens_brier = np.mean(em.ens_brier(forecast, obs, threshold))
+            auroc = em.auroc(forecast, obs, threshold)[0]
 
         data_dict = {
             'Metric Name': ["Ensemble Adjusted Brier Score", "AUROC"],
@@ -1697,8 +1711,12 @@ def validate_forecast_binary_metrics(request):
         table_df = table_df.to_html(classes="table table-hover table-striped", index=False)
         table_df = table_df.replace('border="1"', 'border="0"')
 
-        observed_bin = (obs > threshold).astype(np.int)
-        forecast_bin = (forecast > threshold).astype(np.int).mean(axis=1)
+        if threshold_bool:
+            observed_bin = (obs > obs_threshold).astype(np.int)
+            forecast_bin = (forecast > ens_threshold).astype(np.int).mean(axis=1)
+        else:
+            observed_bin = (obs > threshold).astype(np.int)
+            forecast_bin = (forecast > threshold).astype(np.int).mean(axis=1)
 
         fpr, tpr, _ = roc_curve(observed_bin, forecast_bin)
 

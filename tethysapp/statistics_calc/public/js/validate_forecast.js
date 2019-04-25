@@ -351,7 +351,7 @@ $(document).ready(function () {
 });
 
 // Function to perform analysis of the binary ensemble metrics
-$(document).ready(function () { // TODO: Add error checks
+$(document).ready(function () { // TODO: Add error checks here
     $("#validate_button_binary").click(function () {
         validateBinary();
     })
