@@ -59,7 +59,7 @@ function plotData() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/validate_forecast_plot/", // the endpoint
+        url: `${apiServer}/validate_forecast_plot/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -317,7 +317,7 @@ function validateEnsemble() { // TODO: Make sure that the controller is formatte
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/validate_forecast_ensemble_metrics/", // the endpoint
+        url: `${apiServer}/validate_forecast_ensemble_metrics/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -362,7 +362,7 @@ function validateBinary() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/validate_forecast_binary_metrics/", // the endpoint
+        url: `${apiServer}/validate_forecast_binary_metrics/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,

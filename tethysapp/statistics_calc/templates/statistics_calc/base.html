@@ -107,6 +107,12 @@
   {% url 'statistics_calc:validate_forecast' as validate_forecast %}
 
   {{ block.super }}
+
+  <script>
+      var baseStatic = "{% static 'statistics_calc/index.html' %}";
+      baseStatic = baseStatic.replace('\/index.html','');
+      var apiServer = `${baseStatic.replace("/static", "/apps")}`
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
   {# Allows csrf verification with AJAX #}
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> {# Plotly javascript api CDN #}

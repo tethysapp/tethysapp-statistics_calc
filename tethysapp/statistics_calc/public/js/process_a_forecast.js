@@ -60,7 +60,7 @@ function plotRawData() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/forecast_raw_data_ajax/", // the endpoint
+        url: `${apiServer}/forecast_raw_data_ajax/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -300,7 +300,7 @@ $(document).ready(function () {
 
         if ($("#time_range_bool").is(":checked") && !validation_error) {
             $.ajax({
-                url: "/apps/statistics-calc/forecast_check_dates_ajax/", // the endpoint
+                url: `${apiServer}/forecast_check_dates_ajax/`, // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
                 processData: false,
@@ -341,7 +341,7 @@ function plotForecast() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/forecast_plot_ajax/", // the endpoint
+        url: `${apiServer}/forecast_plot_ajax/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -516,7 +516,7 @@ $(document).ready(function () {
 
         if ($("#time_range_bool").is(":checked") && !validation_error) {
             $.ajax({
-                url: "/apps/statistics-calc/forecast_check_dates_ajax/", // the endpoint
+                url: `${apiServer}/forecast_check_dates_ajax/`, // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
                 processData: false,

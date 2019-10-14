@@ -176,7 +176,7 @@ function createHydrograph() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/hydrograph_ajax_plotly/", // the endpoint
+        url : `${apiServer}/hydrograph_ajax_plotly/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -265,7 +265,7 @@ function createHydrographDailyAvg() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/hydrograph_daily_avg_ajax_plotly/", // the endpoint
+        url : `${apiServer}/hydrograph_daily_avg_ajax_plotly/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -353,7 +353,7 @@ function createScatter() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        url: `${apiServer}/scatter_ajax_plotly/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -446,7 +446,7 @@ function createScatterLog() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: "/apps/statistics-calc/scatter_ajax_plotly/", // the endpoint
+        url: `${apiServer}/scatter_ajax_plotly/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,
@@ -662,7 +662,7 @@ $(document).ready(function(){
 
         // Retrieving the metric abbreviations to make sure that the user selected at least one metric
         $.ajax({
-            url: "/apps/statistics-calc/get_metric_names_abbr/",
+            url: `${apiServer}/get_metric_names_abbr/`,
             type: "GET",
             data: { "abbreviations": true },
             headers: {
@@ -699,11 +699,11 @@ $(document).ready(function(){
 // AJAX for table
 function createTable() {
     let formData = new FormData(document.getElementsByName('validate_stream')[0]);// getting the data from the form
-    console.log(formData); // another sanity check
+    // console.log(formData); // another sanity check
 
     // Creating the table
     $.ajax({
-        url : "/apps/statistics-calc/make_table_ajax/", // the endpoint
+        url : `${apiServer}/make_table_ajax/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -713,7 +713,7 @@ function createTable() {
         success : function(resp) {
             $("#metric-table").show();
             $('#table').html(resp); // Render the Table
-            console.log("success"); // another sanity check
+            // console.log("success"); // another sanity check
         },
 
         // handle a non-successful response
@@ -755,7 +755,7 @@ function createVolumeTable() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url : "/apps/statistics-calc/volume_table_ajax/", // the endpoint
+        url : `${apiServer}/volume_table_ajax/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
