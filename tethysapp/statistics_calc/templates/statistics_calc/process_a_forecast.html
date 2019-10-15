@@ -18,7 +18,8 @@
     </div>
   </div>
 
-  <form id="process_forecast_form" name="process_forecast_form" method="post" enctype="multipart/form-data" action="/apps/statistics-calc/forecast_csv_ajax/">
+  <form id="process_forecast_form" name="process_forecast_form" method="post" enctype="multipart/form-data" 
+  action="{% url 'statistics_calc:forecast_csv_ajax' %}">
     {% csrf_token %}
 
     <h2>Check Raw Data</h2>

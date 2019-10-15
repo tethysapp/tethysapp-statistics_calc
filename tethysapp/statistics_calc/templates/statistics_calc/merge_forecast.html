@@ -13,7 +13,7 @@
 
   {# data form #}
   <form id="merge_forecast_form" name="merge_forecast_form" method="post" enctype="multipart/form-data"
-        action="/apps/statistics-calc/merge_forecast_download_ajax/">
+        action="{% url 'statistics_calc:merge_forecast_download_ajax' %}">
     {% csrf_token %}
 
     {# File Input Button #}

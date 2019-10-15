@@ -19,7 +19,7 @@
   </div>
 
   <form id="pps_form" name="pps_form" method="post" enctype="multipart/form-data"
-        action="/apps/statistics-calc/pps_csv/">
+        action="{% url 'statistics_calc:pps_csv' %}">
     {% csrf_token %}
 
     <hr>

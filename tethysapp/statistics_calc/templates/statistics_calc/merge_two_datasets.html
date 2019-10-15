@@ -15,7 +15,7 @@
     </div>
 
     <form name="merge_form" id="merge_form" method="post" enctype="multipart/form-data"
-          action="/apps/statistics-calc/merged_csv_download/">
+          action="{% url 'statistics_calc:merged_csv_download' %}">
         {% csrf_token %}
 
         <div id="form_error_message" style="display: none">

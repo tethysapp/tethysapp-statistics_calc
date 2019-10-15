@@ -9,7 +9,7 @@
 
   <!-- data form-->
   <form id="persistence_benchmark" name="persistence_benchmark" method="post" enctype="multipart/form-data"
-        action="/apps/statistics-calc/persistence_benchmark_download/">
+        action="{% url 'statistics_calc:persistence_benchmark_download' %}">
     {% csrf_token %}
 
     {# Contains error message if a form error is there #}
