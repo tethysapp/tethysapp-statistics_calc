@@ -1,2 +1,5 @@
 .idea
 tethysapp/statistics_calc/tests/geckodriver.log
+tethysapp_statistics_calc.egg-info
+build/
+dist/

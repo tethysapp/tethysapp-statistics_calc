@@ -1,4 +1,3 @@
-# python 2.7
 # -*- coding: utf-8 -*-
 """
 Created on Jan 16 5:02:32 2018
