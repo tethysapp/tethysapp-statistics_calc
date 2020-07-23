@@ -14,14 +14,14 @@ resource_files += find_resource_files('tethysapp/' + app_package + '/public', 't
 
 setup(
     name=release_package,
-    version='1',
-    tags='',
-    description='',
+    version='1.0.0',
+    tags='Hydrostats,tethysapp',
+    description='A tethys app for hydrological validation',
     long_description='',
     keywords='',
     author='Wade Roberts',
     author_email='',
-    url='',
+    url='https://github.com/BYU-Hydroinformatics/tethysapp-statistics_calc',
     license='Standard MIT',
     packages=find_namespace_packages(),
     package_data={'': resource_files},
