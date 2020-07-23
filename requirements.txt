@@ -1,8 +1,0 @@
-django
-hydrostats
-pandas
-numpy
-requests
-pytz
-scipy
-scikit-learn
