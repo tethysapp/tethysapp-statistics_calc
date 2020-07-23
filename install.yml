@@ -13,7 +13,4 @@ requirements:
       - pytz
       - scipy
       - scikit-learn
-
-  pip:
-    - hydrostats
-
+      - hydrostats
