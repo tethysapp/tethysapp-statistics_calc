@@ -90,7 +90,7 @@ function plotRawData() {
     formData.append('desired_units', $("#desired_units").val());
 
     $.ajax({
-        url: `${apiServer}/pps_hydrograph_raw_data_ajax/`,
+        url: `${apiServer}pps_hydrograph_raw_data_ajax/`,
         type: "POST",
         data: formData,
         processData: false,
@@ -238,7 +238,7 @@ $(document).ready(function () {
             let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
 
             $.ajax({
-                url: `${apiServer}/pps_check_dates_ajax/`, // the endpoint
+                url: `${apiServer}pps_check_dates_ajax/`, // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
                 processData: false,
@@ -282,7 +282,7 @@ function ppsPlotHydrograph() {
     $('#pps_hydrograph').empty();
 
     $.ajax({
-        url : `${apiServer}/pps_hydrograph_ajax/`, // the endpoint
+        url : `${apiServer}pps_hydrograph_ajax/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
@@ -406,7 +406,7 @@ $(document).ready(function() {
             let formData = new FormData(document.getElementsByName('pps_form')[0]); // getting the data from the form
 
             $.ajax({  // Checking to make sure that the given dates fit into the timeseries
-                url: `${apiServer}/pps_check_dates_ajax/`, // the endpoint
+                url: `${apiServer}pps_check_dates_ajax/`, // the endpoint
                 type: "POST", // http method
                 data: formData, // data sent with the post request, the form data from above
                 processData: false,

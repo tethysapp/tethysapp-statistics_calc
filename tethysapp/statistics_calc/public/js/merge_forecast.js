@@ -47,7 +47,7 @@ function PlotMergedData() {
     let formData = new FormData(document.getElementsByName('merge_forecast_form')[0]); // getting the data from the form
 
     $.ajax({
-        url :  `${apiServer}/merge_forecast_plot_ajax/`, // the endpoint
+        url :  `${apiServer}merge_forecast_plot_ajax/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,

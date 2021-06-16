@@ -46,21 +46,21 @@
     <a href="{{ validate_historical_url }}">Validate Merged Time Series</a>
   </li>
 
-  <li class="{% if request.path == create_persistence_benchmark %}active{% endif %}">
-    <a href="{{ create_persistence_benchmark }}">Create a Persistence Benchmark Forecast</a>
-  </li>
+<!--  <li class="{% if request.path == create_persistence_benchmark %}active{% endif %}">-->
+<!--    <a href="{{ create_persistence_benchmark }}">Create a Persistence Benchmark Forecast</a>-->
+<!--  </li>-->
 
-  <li class="{% if request.path == process_a_forecast %}active{% endif %}">
-    <a href="{{ process_a_forecast }}">Process an Ensamble Forecast</a>
-  </li>
+<!--  <li class="{% if request.path == process_a_forecast %}active{% endif %}">-->
+<!--    <a href="{{ process_a_forecast }}">Process an Ensamble Forecast</a>-->
+<!--  </li>-->
 
-  <li class="{% if request.path == merge_forecast %}active{% endif %}">
-    <a href="{{ merge_forecast }}">Merge a Forecast for Analysis</a>
-  </li>
+<!--  <li class="{% if request.path == merge_forecast %}active{% endif %}">-->
+<!--    <a href="{{ merge_forecast }}">Merge a Forecast for Analysis</a>-->
+<!--  </li>-->
 
-  <li class="{% if request.path == validate_forecast %}active{% endif %}">
-    <a href="{{ validate_forecast }}">Validate a Forecast</a>
-  </li>
+<!--  <li class="{% if request.path == validate_forecast %}active{% endif %}">-->
+<!--    <a href="{{ validate_forecast }}">Validate a Forecast</a>-->
+<!--  </li>-->
 
   <li class="title">Examples</li>
 
@@ -72,13 +72,13 @@
     <a href="{{ merged_timeseries_csv_example }}">Example Merged Time Series CSV</a>
   </li>
 
-  <li class="{% if request.path == forecast_csv_example %}active{% endif %}">
-    <a href="{{ forecast_csv_example }}">Example Forecast CSV</a>
-  </li>
+<!--  <li class="{% if request.path == forecast_csv_example %}active{% endif %}">-->
+<!--    <a href="{{ forecast_csv_example }}">Example Forecast CSV</a>-->
+<!--  </li>-->
 
-  <li class="{% if request.path == merged_forecast_csv_example %}active{% endif %}">
-    <a href="{{ merged_forecast_csv_example }}">Example Merged Forecast CSV</a>
-  </li>
+<!--  <li class="{% if request.path == merged_forecast_csv_example %}active{% endif %}">-->
+<!--    <a href="{{ merged_forecast_csv_example }}">Example Merged Forecast CSV</a>-->
+<!--  </li>-->
 
 {% endblock %}
 
@@ -110,6 +110,7 @@
 
   <script>
       var apiServer = "{% url 'statistics_calc:home' %}";
+      console.log(apiServer)
   </script>
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
   {# Allows csrf verification with AJAX #}

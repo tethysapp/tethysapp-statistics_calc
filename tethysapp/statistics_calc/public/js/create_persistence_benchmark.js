@@ -74,7 +74,7 @@ function createHydrographPersistence() {
     console.log(formData); // another sanity check
 
     $.ajax({
-        url: `${apiServer}/visualize_persistence_benchmark/`, // the endpoint
+        url: `${apiServer}visualize_persistence_benchmark/`, // the endpoint
         type: "POST", // http method
         data: formData, // data sent with the post request, the form data from above
         processData: false,

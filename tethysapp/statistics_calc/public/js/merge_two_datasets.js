@@ -158,7 +158,7 @@ function plotMergedData() {
     $('#merged_hydrograph').empty();
 
     $.ajax({
-        url : `${apiServer}/merged_hydrograph/`, // the endpoint
+        url : `${apiServer}merged_hydrograph/`, // the endpoint
         type : "POST", // http method
         data : formData, // data sent with the post request, the form data from above
         processData : false,
