@@ -1,0 +1,39 @@
+{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
+{% set name = data.get('name')|replace("tethysapp-", "")|lower %}
+
+package:
+  name: {{ name }}
+  version: {{ data.get('version') }}
+
+about:
+  author: {{ data.get('author')}}
+  description: {{ data.get('description')}}
+  license: "{'name': 'release_package', 'version': '1.0.1', 'tags': 'Hydrostats,tethysapp', 'description': 'A tethys app for hydrological validation', 'long_description': '', 'author': 'Wade Roberts', 'author_email': '', 'url': 'https://github.com/BYU-Hydroinformatics/tethysapp-statistics_calc', 'license': 'Standard MIT'}"
+  dev_url: {{ data.get('url') }}
+
+outputs:
+  - name: {{ name }}
+extra:
+  author_email: ''
+  keywords: []
+  recipe-maintainers:
+  - TethysAppWarehouse
+
+build:
+  noarch: python
+  preserve_egg_dir: true
+  script: python setup.py install --record=record.txt
+requirements:
+  build:
+  - python
+  run:
+  - django
+  - pandas
+  - numpy
+  - requests
+  - pytz
+  - scipy
+  - scikit-learn
+  - hydrostats
+source:
+  path: ..
