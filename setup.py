@@ -14,7 +14,7 @@ resource_files += find_resource_files('tethysapp/' + app_package + '/public', 't
 
 setup(
     name=release_package,
-    version='1.0.0',
+    version='1.0.1',
     tags='Hydrostats,tethysapp',
     description='A tethys app for hydrological validation',
     long_description='',
